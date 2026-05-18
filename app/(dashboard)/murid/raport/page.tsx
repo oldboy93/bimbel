@@ -1,85 +1,225 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import {
-  Award, Loader2, Calendar, AlertCircle, Sparkles,
-  TrendingUp, ThumbsUp, Printer, CheckCircle2
-} from "lucide-react";
+import { Award, Loader2, AlertCircle, Download, FileText, ChevronDown, ChevronUp } from "lucide-react";
 import { tampilEnrollmentMurid } from "@/services/studentService";
-import { tampilRaport, tampilAssessmentTajwid } from "@/services/gradeService";
-import { Format, TAJWID_LEVELS, PROGRAM_TYPES } from "@/lib/helpers";
-import type { EnrollmentWithDetails, ReportCard, TajwidAssessment } from "@/types";
+import type { EnrollmentWithDetails } from "@/types";
+import type { RaportEntry } from "@/types/raport";
+import RaportRenderer from "@/components/raport/RaportRenderer";
 
 export default function MuridRaportPage() {
-  const [profile, setProfile] = useState<{ full_name: string } | null>(null);
+  const [profile, setProfile] = useState<{ full_name: string; tenant_id: string } | null>(null);
+  const [tenantName, setTenantName] = useState("");
+  const [guruName, setGuruName] = useState("");
   const [enrollments, setEnrollments] = useState<EnrollmentWithDetails[]>([]);
   const [selectedEnr, setSelectedEnr] = useState<EnrollmentWithDetails | null>(null);
-  const [raports, setRaports] = useState<ReportCard[]>([]);
-  const [tajwids, setTajwids] = useState<TajwidAssessment[]>([]);
+  const [raports, setRaports] = useState<RaportEntry[]>([]);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubLoading, setIsSubLoading] = useState(false);
+  const [isDownloading, setIsDownloading] = useState<string | null>(null);
   const supabase = createClient();
 
-  const printAreaRef = useRef<HTMLDivElement>(null);
-
-  // Load enrollments & profile
+  // Load profile, tenant, enrollments
   useEffect(() => {
-    const loadEnrollments = async () => {
+    const load = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
         const { data: prof } = await supabase
           .from("profiles")
-          .select("full_name")
+          .select("full_name, tenant_id")
           .eq("id", user.id)
           .single();
         setProfile(prof);
 
+        // Fetch tenant name
+        if (prof?.tenant_id) {
+          const { data: tenant } = await supabase
+            .from("tenants")
+            .select("name")
+            .eq("id", prof.tenant_id)
+            .single();
+          if (tenant?.name) setTenantName(tenant.name);
+        }
+
         const enrData = await tampilEnrollmentMurid(user.id);
         setEnrollments(enrData);
-        if (enrData.length > 0) {
-          setSelectedEnr(enrData[0]);
-        }
+        if (enrData.length > 0) setSelectedEnr(enrData[0]);
       } catch (err) {
-        console.error("Gagal memuat enrollment raport:", err);
+        console.error("Gagal memuat raport page:", err);
       } finally {
         setIsLoading(false);
       }
     };
-    loadEnrollments();
+    load();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Load raports & tajwids when selected enrollment changes
+  // Load raports when enrollment changes
   useEffect(() => {
     if (!selectedEnr) return;
-
-    const loadSubData = async () => {
+    const loadRaports = async () => {
       setIsSubLoading(true);
       try {
-        const [raportData, tajwidData] = await Promise.all([
-          tampilRaport(selectedEnr.id).catch(() => []),
-          tampilAssessmentTajwid(selectedEnr.id).catch(() => [])
-        ]);
+        const { data } = await supabase
+          .from("report_cards")
+          .select("*, profiles!guru_id(full_name)")
+          .eq("enrollment_id", selectedEnr.id)
+          .not("published_at", "is", null)
+          .order("created_at", { ascending: false });
 
-        const publishedRaports = raportData.filter((r) => r.published_at !== null);
-        setRaports(publishedRaports);
-        setTajwids(tajwidData);
+        setRaports((data ?? []) as RaportEntry[]);
+
+        // Ambil nama guru dari raport pertama jika ada
+        if (data && data.length > 0 && (data[0] as { profiles?: { full_name?: string } }).profiles?.full_name) {
+          setGuruName(((data[0] as { profiles?: { full_name?: string } }).profiles)?.full_name ?? "Guru Pembimbing");
+        }
       } catch (err) {
-        console.error("Gagal memuat sub-data raport:", err);
+        console.error("Gagal memuat raport:", err);
       } finally {
         setIsSubLoading(false);
       }
     };
-
-    loadSubData();
+    loadRaports();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedEnr]);
 
-  const handlePrint = () => {
-    window.print();
+  const handleDownload = (raportId: string, periodName: string) => {
+    const originalElement = document.getElementById(`raport-card-${raportId}`);
+    if (!originalElement) return;
+
+    setIsDownloading(raportId);
+
+    // Create off-screen container for perfect print layout
+    const tempContainer = document.createElement("div");
+    tempContainer.style.position = "absolute";
+    tempContainer.style.left = "-9999px";
+    tempContainer.style.top = "-9999px";
+    tempContainer.style.width = "746px"; // Mathematical fit for A4 with 0.25in margins at 96 DPI
+    document.body.appendChild(tempContainer);
+
+    // Clone the original element
+    const clone = originalElement.cloneNode(true) as HTMLElement;
+    
+    // Remove the print control bar from the clone so it doesn't appear in the PDF
+    const controlBar = clone.querySelector(".print\\:hidden");
+    if (controlBar) {
+      controlBar.remove();
+    }
+
+    // Ensure the clone is visible for canvas capture even if accordion is closed
+    clone.classList.remove("hidden");
+    clone.style.display = "block";
+    clone.style.width = "746px";
+    clone.style.margin = "0";
+    clone.style.padding = "0";
+    clone.style.boxShadow = "none";
+    clone.style.border = "none";
+    clone.style.borderRadius = "0px";
+
+    // Optimize spacing inside clone to guarantee single page fit
+    const innerContainer = clone.querySelector(".p-6, .md\\:p-8, .p-4") as HTMLElement;
+    if (innerContainer) {
+      innerContainer.style.padding = "12px 16px";
+    }
+
+    // Shrink header Kop Lembaga
+    const header = clone.querySelector(".bg-gradient-to-r") as HTMLElement;
+    if (header) {
+      header.style.padding = "8px 12px";
+      const title = header.querySelector("h1") as HTMLElement;
+      if (title) title.style.fontSize = "15px";
+      const subtitles = header.querySelectorAll("p");
+      subtitles.forEach((p) => {
+        (p as HTMLElement).style.fontSize = "8.5px";
+      });
+    }
+
+    // Shrink student info grid box
+    const infoBox = clone.querySelector(".grid-cols-2.bg-slate-50") as HTMLElement;
+    if (infoBox) {
+      infoBox.style.padding = "4px 8px";
+      infoBox.style.borderRadius = "8px";
+      infoBox.style.gap = "6px";
+    }
+
+    // Shrink spacing gaps
+    const spaces = clone.querySelectorAll(".space-y-6");
+    spaces.forEach((el) => {
+      el.classList.remove("space-y-6");
+      el.classList.add("space-y-2");
+    });
+
+    // Shrink section title badges
+    const secHeaders = clone.querySelectorAll(".py-2.px-3.rounded-xl, .bg-emerald-50, .bg-teal-50, .bg-blue-50, .bg-indigo-50");
+    secHeaders.forEach((el) => {
+      const htmlEl = el as HTMLElement;
+      htmlEl.style.padding = "3px 6px";
+      htmlEl.style.marginBottom = "3px";
+      htmlEl.style.borderRadius = "6px";
+    });
+
+    // Shrink penilaian rows
+    const rows = clone.querySelectorAll(".py-2.border-b");
+    rows.forEach((el) => {
+      const htmlEl = el as HTMLElement;
+      htmlEl.style.paddingTop = "1px";
+      htmlEl.style.paddingBottom = "1px";
+    });
+
+    // Shrink notes boxes (Catatan Guru, Rekomendasi)
+    const noteBoxes = clone.querySelectorAll(".p-4.rounded-2xl, .bg-blue-50\\/60, .bg-amber-50\\/60, .bg-teal-50\\/60");
+    noteBoxes.forEach((el) => {
+      const htmlEl = el as HTMLElement;
+      htmlEl.style.padding = "5px 8px";
+      htmlEl.style.borderRadius = "8px";
+    });
+
+    // Tighten signature margins to prevent overflow page breaks
+    const signatureText = clone.querySelectorAll(".mb-14, .mb-7");
+    signatureText.forEach((el) => {
+      (el as HTMLElement).style.marginBottom = "8px";
+    });
+
+    const borderGap = clone.querySelector(".pt-6.border-t") as HTMLElement;
+    if (borderGap) {
+      borderGap.classList.remove("pt-6");
+      borderGap.style.paddingTop = "6px";
+      borderGap.style.marginTop = "6px";
+    }
+
+    tempContainer.appendChild(clone);
+
+    const opt = {
+      margin:       0.25,
+      filename:     `Raport_${profile?.full_name ?? "Murid"}_${periodName.replace(/\s+/g, "_")}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2.2, useCORS: true, logging: false },
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+
+    // Dynamically load html2pdf
+    const script = document.createElement("script");
+    script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
+    script.onload = () => {
+      (window as any).html2pdf().from(clone).set(opt).save().then(() => {
+        document.body.removeChild(tempContainer);
+        setIsDownloading(null);
+      }).catch((err: any) => {
+        console.error(err);
+        document.body.removeChild(tempContainer);
+        setIsDownloading(null);
+      });
+    };
+    script.onerror = () => {
+      document.body.removeChild(tempContainer);
+      setIsDownloading(null);
+      console.error("Gagal memuat sistem PDF download.");
+    };
+    document.body.appendChild(script);
   };
 
   if (isLoading) {
@@ -87,62 +227,36 @@ export default function MuridRaportPage() {
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-          <p className="text-slate-400 text-sm">Memuat data penilaian...</p>
+          <p className="text-slate-400 text-sm">Memuat data raport...</p>
         </div>
       </div>
     );
   }
 
+  const activeRaportId = expandedId || (raports.length > 0 ? raports[0].id : null);
+  const activePeriod = raports.find(r => r.id === activeRaportId)?.period ?? "Periode";
+
   return (
     <div className="space-y-6">
-      {/* CSS Khusus untuk Mode Cetak Media Print */}
-      <style dangerouslySetInnerHTML={{ __html: `
-        @media print {
-          body * {
-            visibility: hidden;
-          }
-          #print-area, #print-area * {
-            visibility: visible;
-          }
-          #print-area {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            padding: 20px;
-          }
-          .no-print {
-            display: none !important;
-          }
-        }
-      `}} />
-
       {/* ── Header ── */}
-      <header className="mb-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4 no-print">
+      <header className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
             Raport Belajar <Award className="text-blue-600 h-6 w-6" />
           </h1>
-          <p className="text-slate-500 mt-2">Dapatkan rekapitulasi penilaian berkala, tingkat perkembangan membaca, tajwid, dan cetak raport PDF resmi.</p>
+          <p className="text-slate-500 text-sm mt-1.5 font-semibold">
+            Lihat laporan hasil belajar yang telah diterbitkan oleh guru pembimbing.
+          </p>
         </div>
-        {raports.length > 0 && (
-          <button
-            onClick={handlePrint}
-            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition shadow-sm w-fit"
-          >
-            <Printer size={16} />
-            Cetak Raport PDF
-          </button>
-        )}
       </header>
 
       {/* ── Selektor Kelas ── */}
       {enrollments.length > 1 && (
-        <div className="flex gap-2 p-1.5 bg-slate-100 rounded-2xl w-fit no-print">
-          {enrollments.map((enr) => (
+        <div className="flex gap-2 p-1.5 bg-slate-100 rounded-2xl w-fit">
+          {enrollments.map(enr => (
             <button
               key={enr.id}
-              onClick={() => setSelectedEnr(enr)}
+              onClick={() => { setSelectedEnr(enr); setExpandedId(null); }}
               className={`px-4 py-2 text-xs font-bold rounded-xl transition ${
                 selectedEnr?.id === enr.id
                   ? "bg-white text-blue-600 shadow-sm"
@@ -155,186 +269,95 @@ export default function MuridRaportPage() {
         </div>
       )}
 
-      {/* ── Konten Utama Raport ── */}
+      {/* ── Konten ── */}
       {!selectedEnr ? (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 flex gap-4 no-print">
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 flex gap-4">
           <AlertCircle size={22} className="text-amber-500 shrink-0 mt-0.5" />
           <div>
             <p className="font-bold text-amber-800">Kamu belum terdaftar di kelas manapun</p>
-            <p className="text-sm text-amber-700 mt-1">Silakan hubungi ustadz untuk mendaftarkan kamu agar penilaian raport dapat diakses.</p>
+            <p className="text-sm text-amber-700 mt-1">Silakan hubungi ustadz/ustadzah untuk didaftarkan ke kelas.</p>
           </div>
         </div>
+      ) : isSubLoading ? (
+        <div className="flex justify-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      ) : raports.length === 0 ? (
+        <div className="bg-white rounded-3xl border border-dashed border-slate-200 p-12 text-center">
+          <FileText className="mx-auto h-12 w-12 text-slate-200 mb-3" />
+          <p className="font-bold text-sm text-slate-500">Belum ada raport yang diterbitkan</p>
+          <p className="text-xs text-slate-400 mt-1">Guru pembimbing sedang mempersiapkan raport belajarmu.</p>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Bagian Raport Berkala */}
-          <div className="lg:col-span-2 space-y-4">
-            <h2 className="text-lg font-extrabold text-slate-900 flex items-center gap-2 no-print">
-              <Sparkles className="text-blue-600" size={20} /> Raport Prestasi
-            </h2>
-
-            {isSubLoading ? (
-              <div className="flex justify-center items-center py-20 no-print">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-              </div>
-            ) : raports.length === 0 ? (
-              <div className="bg-white rounded-3xl border border-slate-100 p-8 text-center text-slate-400 shadow-sm no-print">
-                <Award className="mx-auto h-12 w-12 text-slate-200 mb-3" />
-                <p className="font-bold text-sm text-slate-500">Raport belum diterbitkan</p>
-                <p className="text-xs text-slate-400 mt-1">Ustadz/Ustadzah sedang mengolah raport prestasi belajarmu.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {raports.map((r) => (
-                  <div key={r.id} id="print-area" ref={printAreaRef} className="bg-white rounded-3xl border border-slate-100 p-6 md:p-8 shadow-sm space-y-6">
-                    {/* KOP LEMBAGA (Hanya Terlihat Saat Cetak & Tampilan Atas) */}
-                    <div className="text-center border-b-2 border-slate-900 pb-4 mb-4">
-                      <h2 className="text-xl font-black text-slate-900 uppercase tracking-wide">
-                        Lembaga Pendidikan Al-Qur&apos;an & Calistung
-                      </h2>
-                      <p className="text-xs text-slate-500 mt-1 font-medium">Jl. Pendidikan No. 45, Komplek Bimbel Madani • Telp: 0812-3456-789</p>
-                    </div>
-
-                    {/* Informasi Siswa */}
-                    <div className="grid grid-cols-2 gap-4 text-xs md:text-sm text-slate-700 border-b border-slate-100 pb-4">
-                      <div>
-                        <p className="mb-1"><span className="text-slate-400 font-semibold block uppercase text-[10px]">Nama Murid:</span> <span className="font-extrabold text-slate-900">{profile?.full_name || "Siswa"}</span></p>
-                        <p><span className="text-slate-400 font-semibold block uppercase text-[10px]">Kelas Belajar:</span> <span className="font-extrabold text-slate-900">{selectedEnr.classes?.name || "-"}</span></p>
-                      </div>
-                      <div className="text-right">
-                        <p className="mb-1"><span className="text-slate-400 font-semibold block uppercase text-[10px]">Periode:</span> <span className="font-extrabold text-slate-900">{r.period}</span></p>
-                        <p><span className="text-slate-400 font-semibold block uppercase text-[10px]">Tanggal Terbit:</span> <span className="font-extrabold text-slate-900">{r.published_at ? Format.tanggalIndo(r.published_at) : "-"}</span></p>
-                      </div>
-                    </div>
-
-                    <div className="text-center my-4">
-                      <h3 className="text-base font-black text-slate-900 uppercase tracking-widest border-b border-slate-900 pb-1.5 w-fit mx-auto">
-                        Laporan Hasil Belajar (Raport)
-                      </h3>
-                    </div>
-
-                    {/* Nilai Detail Table */}
-                    {r.scores && Object.keys(r.scores).length > 0 && (
-                      <div className="space-y-3">
-                        <div className="border border-slate-200 rounded-xl overflow-hidden">
-                          <table className="w-full text-left text-xs md:text-sm">
-                            <thead>
-                              <tr className="bg-slate-50 border-b border-slate-200 font-bold text-slate-700 uppercase tracking-wider text-[11px]">
-                                <th className="py-3 px-4">No</th>
-                                <th className="py-3 px-4">Aspek Penilaian</th>
-                                <th className="py-3 px-4 text-center">Nilai Angka</th>
-                                <th className="py-3 px-4 text-center">Predikat</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 font-medium">
-                              {Object.entries(r.scores).map(([aspek, skor], idx) => (
-                                <tr key={aspek}>
-                                  <td className="py-3 px-4 text-slate-400">{idx + 1}</td>
-                                  <td className="py-3 px-4 font-bold text-slate-800 capitalize">{aspek.replace("_", " ")}</td>
-                                  <td className="py-3 px-4 text-center font-black text-slate-900">{skor}</td>
-                                  <td className="py-3 px-4 text-center">
-                                    <span className="font-extrabold text-xs">
-                                      {skor >= 85 ? "Sangat Baik (A)" :
-                                       skor >= 75 ? "Baik (B)" :
-                                       skor >= 60 ? "Cukup (C)" : "Kurang (D)"}
-                                    </span>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Kesimpulan Ringkasan */}
-                    {r.summary && (
-                      <div className="bg-blue-50/40 p-4 rounded-2xl border border-blue-100 space-y-1">
-                        <span className="text-blue-900 font-extrabold text-xs block uppercase tracking-wider">Catatan & Saran Perkembangan:</span>
-                        <p className="text-blue-800 text-sm leading-relaxed italic">
-                          &ldquo;{r.summary}&rdquo;
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Tanda Tangan */}
-                    <div className="grid grid-cols-2 text-center text-xs md:text-sm font-semibold text-slate-800 pt-8 border-t border-slate-100 gap-10">
-                      <div>
-                        <p className="text-slate-400 uppercase text-[10px] tracking-wider mb-1">Mengetahui,</p>
-                        <p className="font-bold mb-14">Orang Tua / Wali Murid</p>
-                        <p className="border-b border-slate-400 w-36 mx-auto"></p>
-                      </div>
-                      <div>
-                        <p className="text-slate-400 uppercase text-[10px] tracking-wider mb-1">Diterbitkan Oleh,</p>
-                        <p className="font-bold mb-14">Ustadz / Ustadzah</p>
-                        <p className="border-b border-slate-400 w-36 mx-auto font-extrabold text-slate-900">{r.guru_id ? "Guru Pembimbing" : ""}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Bagian Penilaian Tajwid */}
-          <div className="lg:col-span-1 space-y-4 no-print">
-            <h2 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
-              <TrendingUp className="text-blue-600" size={20} /> Penilaian Tajwid
-            </h2>
-
-            {isSubLoading ? (
-              <div className="flex justify-center items-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-              </div>
-            ) : tajwids.length === 0 ? (
-              <div className="bg-white rounded-3xl border border-slate-100 p-8 text-center text-slate-400 shadow-sm">
-                <Calendar className="mx-auto h-10 w-10 text-slate-200 mb-3" />
-                <p className="font-bold text-xs text-slate-500">Belum ada penilaian membaca</p>
-              </div>
-            ) : (
-              tajwids.slice(0, 3).map((t) => (
-                <div key={t.id} className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm space-y-4">
-                  <div className="flex justify-between items-center border-b border-slate-50 pb-3">
-                    <span className="text-xs font-extrabold text-slate-400">{Format.tanggalIndo(t.session_date)}</span>
-                    <span className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
-                      <ThumbsUp size={14} />
-                    </span>
-                  </div>
-
-                  <div className="space-y-3 text-sm">
-                    {/* Makhraj */}
-                    <div className="flex justify-between items-center">
-                      <span className="font-bold text-slate-600 text-xs">Makharijul Huruf</span>
-                      <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider ${
-                        TAJWID_LEVELS[t.makhraj_level]?.bg
-                      } ${TAJWID_LEVELS[t.makhraj_level]?.color}`}>
-                        {TAJWID_LEVELS[t.makhraj_level]?.label}
-                      </span>
-                    </div>
-
-                    {/* Kelancaran */}
-                    <div className="flex justify-between items-center">
-                      <span className="font-bold text-slate-600 text-xs">Kelancaran Membaca</span>
-                      <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider ${
-                        TAJWID_LEVELS[t.kelancaran_level]?.bg
-                      } ${TAJWID_LEVELS[t.kelancaran_level]?.color}`}>
-                        {TAJWID_LEVELS[t.kelancaran_level]?.label}
-                      </span>
-                    </div>
-
-                    {/* Tajwid */}
-                    <div className="flex justify-between items-center">
-                      <span className="font-bold text-slate-600 text-xs">Hukum Tajwid</span>
-                      <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider ${
-                        TAJWID_LEVELS[t.tajwid_level]?.bg
-                      } ${TAJWID_LEVELS[t.tajwid_level]?.color}`}>
-                        {TAJWID_LEVELS[t.tajwid_level]?.label}
-                      </span>
-                    </div>
+        <div className="space-y-4">
+          {raports.map((r, idx) => (
+            <div key={r.id}>
+              {/* Accordion header — clean toggle expand/collapse */}
+              <div
+                className="flex items-center justify-between bg-white border border-slate-100 rounded-2xl px-5 py-3.5 cursor-pointer hover:bg-slate-50/50 shadow-sm transition mb-2"
+                onClick={() => setExpandedId(expandedId === r.id ? null : r.id)}
+              >
+                <div className="flex items-center gap-3">
+                  <Award size={16} className="text-blue-600" />
+                  <div>
+                    <p className="font-black text-sm text-slate-800">{r.period}</p>
+                    <p className="text-[11px] text-slate-400 font-semibold capitalize">{r.class_type} · {selectedEnr.classes?.name}</p>
                   </div>
                 </div>
-              ))
-            )}
-          </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] bg-slate-50 text-slate-400 px-2.5 py-1 rounded-lg font-bold border border-slate-100">
+                    {expandedId === r.id ? "Terbuka" : "Tertutup"}
+                  </span>
+                  {expandedId === r.id
+                    ? <ChevronUp size={15} className="text-slate-400" />
+                    : <ChevronDown size={15} className="text-slate-400" />}
+                </div>
+              </div>
+
+              {/* Template rendered — always in DOM but hidden visually for print targeting */}
+              <div
+                id={`raport-card-${r.id}`}
+                className={`bg-white rounded-3xl p-1 shadow-sm border border-slate-100 transition-all duration-300 ${
+                  expandedId === r.id
+                    ? "block"
+                    : "hidden"
+                }`}
+              >
+                {/* Print Control Bar (Hidden during PDF generation) */}
+                <div className="flex justify-between items-center px-6 py-3 border-b border-slate-100 bg-slate-50/60 rounded-t-3xl print:hidden">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-xs font-bold text-slate-600">Raport Semester Resmi • {r.period}</span>
+                  </div>
+                  <button
+                    onClick={() => handleDownload(r.id, r.period)}
+                    disabled={isDownloading !== null}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-extrabold rounded-xl text-xs transition shadow-sm"
+                  >
+                    {isDownloading === r.id ? (
+                      <>
+                        <Loader2 size={13} className="animate-spin" /> Downloading...
+                      </>
+                    ) : (
+                      <>
+                        <Download size={13} /> Unduh PDF Raport
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div className="p-4">
+                  <RaportRenderer
+                    raport={r}
+                    studentName={profile?.full_name ?? "Murid"}
+                    className={selectedEnr.classes?.name ?? "-"}
+                    tenantName={tenantName || "Lembaga Bimbel"}
+                    guruName={guruName}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

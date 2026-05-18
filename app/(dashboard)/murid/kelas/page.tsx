@@ -23,6 +23,38 @@ function getYoutubeEmbedUrl(url: string): string | null {
   return null;
 }
 
+function renderArticleContent(content: string) {
+  if (!content) return null;
+  const lines = content.split("\n");
+  return lines.map((line, idx) => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("# ")) {
+      return <h1 key={idx} className="text-xl font-extrabold text-slate-900 mt-4 mb-2">{trimmed.slice(2)}</h1>;
+    }
+    if (trimmed.startsWith("## ")) {
+      return <h2 key={idx} className="text-lg font-black text-slate-800 mt-3 mb-2">{trimmed.slice(3)}</h2>;
+    }
+    if (trimmed.startsWith("### ")) {
+      return <h3 key={idx} className="text-base font-extrabold text-slate-800 mt-3 mb-1.5">{trimmed.slice(4)}</h3>;
+    }
+    if (trimmed.startsWith("> ")) {
+      return (
+        <blockquote key={idx} className="border-l-4 border-blue-500 pl-4 py-1.5 my-3 bg-blue-50/40 rounded-r-xl text-slate-700 font-medium italic text-sm">
+          {trimmed.slice(2)}
+        </blockquote>
+      );
+    }
+    if (trimmed.startsWith("* ") || trimmed.startsWith("- ")) {
+      return <li key={idx} className="ml-5 list-disc text-sm text-slate-600 mb-1 leading-relaxed">{trimmed.slice(2)}</li>;
+    }
+    if (trimmed === "") {
+      return <div key={idx} className="h-2" />;
+    }
+    return <p key={idx} className="text-sm text-slate-600 leading-relaxed mb-2.5 font-medium">{trimmed}</p>;
+  });
+}
+
+
 export default function MuridKelasPage() {
   const [enrollments, setEnrollments] = useState<EnrollmentWithDetails[]>([]);
   const [selectedEnr, setSelectedEnr] = useState<EnrollmentWithDetails | null>(null);
@@ -343,6 +375,7 @@ export default function MuridKelasPage() {
                       materials.map((m) => {
                         const isVideo = m.type === "video";
                         const isPdf = m.type === "pdf";
+                        const isArtikel = m.type === "artikel";
                         return (
                           <div
                             key={m.id}
@@ -353,13 +386,15 @@ export default function MuridKelasPage() {
                               <div className="flex justify-between items-center">
                                 <span className={`p-3 rounded-2xl inline-block ${
                                   isVideo ? "bg-rose-50 text-rose-600" :
-                                  isPdf ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
+                                  isPdf ? "bg-emerald-50 text-emerald-600" :
+                                  isArtikel ? "bg-indigo-50 text-indigo-600" : "bg-blue-50 text-blue-600"
                                 }`}>
                                   {isVideo ? <Play size={20} /> :
-                                   isPdf ? <FileText size={20} /> : <Globe size={20} />}
+                                   isPdf ? <FileText size={20} /> :
+                                   isArtikel ? <BookOpen size={20} /> : <Globe size={20} />}
                                 </span>
                                 <span className="text-[10px] uppercase font-extrabold tracking-wider text-slate-400 bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100">
-                                  {m.type}
+                                  {m.type === "artikel" ? "Artikel" : m.type}
                                 </span>
                               </div>
                               <div>
@@ -605,6 +640,58 @@ export default function MuridKelasPage() {
                   <p className="whitespace-pre-line text-sm bg-slate-50 p-6 rounded-2xl border border-slate-100 font-medium">
                     {selectedMaterial.description || "Silakan baca instruksi yang diberikan oleh guru Anda."}
                   </p>
+                </div>
+              )}
+
+              {/* ARTIKEL / RICH LESSON READER MODE */}
+              {selectedMaterial.type === "artikel" && (
+                <div className="space-y-6 animate-fade-in">
+                  {/* Parallax/Banner Cover Image */}
+                  {selectedMaterial.file_url && (
+                    <div className="w-full h-64 rounded-2xl overflow-hidden shadow-md relative border border-slate-100 bg-slate-50">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={selectedMaterial.file_url}
+                        alt="Sampul Artikel"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent flex items-end p-5">
+                        <div className="text-white">
+                          <span className="text-[10px] bg-indigo-600/90 text-white font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
+                            Artikel Pembelajaran
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* YouTube Video Embed Card if present in metadata */}
+                  {selectedMaterial.metadata && (selectedMaterial.metadata as any).youtube_url && getYoutubeEmbedUrl((selectedMaterial.metadata as any).youtube_url) && (
+                    <div className="space-y-2">
+                      <span className="text-[10px] text-slate-400 font-black uppercase tracking-wider block">Video Penunjang Materi</span>
+                      <div className="aspect-video w-full max-w-2xl mx-auto rounded-2xl overflow-hidden shadow-md border border-slate-100 bg-black">
+                        <iframe
+                          src={getYoutubeEmbedUrl((selectedMaterial.metadata as any).youtube_url)!}
+                          title={selectedMaterial.title}
+                          className="w-full h-full border-0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Prose Rich Content Body */}
+                  <div className="prose max-w-none bg-slate-50/40 rounded-2xl border border-slate-100 p-6">
+                    <div className="mb-4 pb-4 border-b border-slate-100 flex items-center justify-between text-xs text-slate-400 font-semibold">
+                      <span>Diterbitkan oleh Guru Pembimbing</span>
+                      <span>{Format.tanggalIndo(selectedMaterial.created_at)}</span>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      {renderArticleContent(selectedMaterial.description || "")}
+                    </div>
+                  </div>
                 </div>
               )}
 

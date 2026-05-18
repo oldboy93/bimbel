@@ -39,3 +39,7 @@ next-env.d.ts
 /print_profiles.js
 /seed_*.js
 /test_*.js
+/check_*.js
+/list_rpcs.js
+/scratch/
+/supabase/.temp/

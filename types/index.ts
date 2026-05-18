@@ -117,8 +117,9 @@ export interface Material {
   title: string;
   description?: string;
   file_url?: string;
-  type: 'pdf' | 'video' | 'link' | 'text';
+  type: 'pdf' | 'video' | 'link' | 'text' | 'artikel';
   is_published: boolean;
+  metadata?: any;
   created_at: string;
 }
 

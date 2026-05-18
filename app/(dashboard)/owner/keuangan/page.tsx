@@ -21,58 +21,79 @@ export default function OwnerKeuanganPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "paid" | "unpaid">("all");
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const supabase = createClient();
 
-  useEffect(() => {
-    const loadKeuangan = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+  const loadKeuangan = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-        // Ambil data profile owner untuk mendapatkan tenant_id
-        const { data: prof } = await supabase
-          .from("profiles")
-          .select("tenant_id")
-          .eq("id", user.id)
-          .single();
+      // Ambil data profile owner untuk mendapatkan tenant_id
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("tenant_id")
+        .eq("id", user.id)
+        .single();
 
-        if (!prof?.tenant_id) return;
+      if (!prof?.tenant_id) return;
 
-        // Ambil semua enrollment aktif di tenant tersebut beserta data kelas & profil siswa
-        const { data: enrollments } = await supabase
-          .from("enrollments")
-          .select(`
-            id,
-            status,
-            profiles!enrollments_student_id_fkey(full_name),
-            classes(name, price)
-          `)
-          .eq("tenant_id", prof.tenant_id);
+      // Ambil semua enrollment di tenant tersebut beserta data kelas & profil siswa
+      const { data: enrollments } = await supabase
+        .from("enrollments")
+        .select(`
+          id,
+          status,
+          profiles!enrollments_student_id_fkey(full_name),
+          classes(name, price)
+        `)
+        .eq("tenant_id", prof.tenant_id);
 
-        if (enrollments) {
-          const list: PaymentItem[] = enrollments.map((e: any) => {
-            // Kita buat status paid/unpaid statis secara variatif untuk keperluan mockup data keuangan premium
-            const isPaid = e.status === "active" ? (e.id.charCodeAt(0) % 3 !== 0) : false;
-            return {
-              enrollmentId: e.id,
-              studentName: e.profiles?.full_name ?? "Murid",
-              className: e.classes?.name ?? "Kelas Umum",
-              price: e.classes?.price ?? 0,
-              status: isPaid ? "paid" : "unpaid",
-            };
-          });
-          setPayments(list);
-        }
-      } catch (err) {
-        console.error("Gagal memuat keuangan owner:", err);
-      } finally {
-        setIsLoading(false);
+      if (enrollments) {
+        const list: PaymentItem[] = enrollments.map((e: any) => {
+          // Status active = Lunas (paid), status suspended atau status lainnya = Belum Bayar (unpaid)
+          const isPaid = e.status === "active";
+          return {
+            enrollmentId: e.id,
+            studentName: e.profiles?.full_name ?? "Murid",
+            className: e.classes?.name ?? "Kelas Umum",
+            price: e.classes?.price ?? 0,
+            status: isPaid ? "paid" : "unpaid",
+          };
+        });
+        setPayments(list);
       }
-    };
+    } catch (err) {
+      console.error("Gagal memuat keuangan owner:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadKeuangan();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleTogglePayment = async (enrollmentId: string, currentStatus: "paid" | "unpaid") => {
+    setIsUpdating(enrollmentId);
+    try {
+      const newStatus = currentStatus === "paid" ? "inactive" : "active";
+      const { error } = await supabase
+        .from("enrollments")
+        .update({ status: newStatus })
+        .eq("id", enrollmentId);
+      if (error) {
+        alert("Gagal memperbarui status pembayaran: " + error.message);
+      } else {
+        await loadKeuangan();
+      }
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    } finally {
+      setIsUpdating(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -190,6 +211,10 @@ export default function OwnerKeuanganPage() {
 
       {/* ── Table List ── */}
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="p-4 bg-slate-50/50 border-b border-slate-100 flex items-center justify-between text-xs text-slate-500 font-medium">
+          <span>Daftar Transaksi SPP Murid</span>
+          <span>💡 Tip: Klik tombol status siswa untuk langsung mengubah/flag status pembayaran</span>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -197,7 +222,7 @@ export default function OwnerKeuanganPage() {
                 <th className="py-4 px-6">Nama Murid</th>
                 <th className="py-4 px-6">Kelas</th>
                 <th className="py-4 px-6 text-right">SPP Bulanan</th>
-                <th className="py-4 px-6 text-center">Status</th>
+                <th className="py-4 px-6 text-center">Status Pembayaran</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm">
@@ -216,13 +241,28 @@ export default function OwnerKeuanganPage() {
                       {Format.rupiah(p.price)}
                     </td>
                     <td className="py-4 px-6 text-center">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-extrabold uppercase ${
-                        p.status === "paid"
-                          ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
-                          : "bg-amber-50 text-amber-600 border border-amber-100"
-                      }`}>
-                        {p.status === "paid" ? "Lunas" : "Belum Bayar"}
-                      </span>
+                      <button
+                        onClick={() => handleTogglePayment(p.enrollmentId, p.status)}
+                        disabled={isUpdating === p.enrollmentId}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold uppercase border transition-all active:scale-95 disabled:opacity-50 cursor-pointer ${
+                          p.status === "paid"
+                            ? "bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100/70"
+                            : "bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100/70"
+                        }`}
+                        title="Klik untuk mengubah status pembayaran siswa"
+                      >
+                        {isUpdating === p.enrollmentId ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : p.status === "paid" ? (
+                          <>
+                            <CheckCircle size={13} /> Lunas
+                          </>
+                        ) : (
+                          <>
+                            <Percent size={13} /> Belum Bayar
+                          </>
+                        )}
+                      </button>
                     </td>
                   </tr>
                 ))

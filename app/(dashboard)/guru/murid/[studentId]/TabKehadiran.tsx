@@ -22,33 +22,45 @@ interface Props {
 export default function TabKehadiran({ enrollmentId, guruId, tenantId, studentPhone, studentName }: Props) {
   const [records, setRecords] = useState<Attendance[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
   const [selectedStatus, setSelectedStatus] = useState<"H" | "I" | "A">("H");
   const [notes, setNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [savedToday, setSavedToday] = useState<Attendance | null>(null);
 
-  const today = new Date().toISOString().split("T")[0];
-
   const load = async () => {
     const data = await tampilAbsensiMurid(enrollmentId);
     setRecords(data);
-    const todayRec = data.find(r => r.date === today);
-    if (todayRec) { setSavedToday(todayRec); setSelectedStatus(todayRec.status); }
     setIsLoading(false);
   };
 
   useEffect(() => { load(); }, [enrollmentId]);
 
+  // Sync status and notes when date or records change
+  useEffect(() => {
+    const found = records.find(r => r.date === selectedDate);
+    if (found) {
+      setSavedToday(found);
+      setSelectedStatus(found.status);
+      setNotes(found.notes || "");
+    } else {
+      setSavedToday(null);
+      setSelectedStatus("H");
+      setNotes("");
+    }
+  }, [selectedDate, records]);
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await simpanAbsensi(enrollmentId, guruId, tenantId, today, selectedStatus, notes);
+      await simpanAbsensi(enrollmentId, guruId, tenantId, selectedDate, selectedStatus, notes);
 
       // Kirim WA jika ada nomor telepon wali siswa
       if (studentPhone) {
         const statusLabel = selectedStatus === "H" ? "HADIR 🟢" : selectedStatus === "I" ? "IZIN 🟡" : "ALPHA/TIDAK HADIR 🔴";
+        const formattedDate = new Date(selectedDate).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
         const customNote = notes ? `\n\nCatatan guru:\n"${notes}"` : "";
-        const msg = `Assalamu'alaikum Wr. Wb.\n\nBapak/Ibu Orang Tua/Wali Murid,\n\nKami menginformasikan bahwa ananda *${studentName}* hari ini dinyatakan *${statusLabel}* pada kelas bimbingan belajar.${customNote}\n\nJazakumullah khairan.\n— Bimbel Madani`;
+        const msg = `Assalamu'alaikum Wr. Wb.\n\nBapak/Ibu Orang Tua/Wali Murid,\n\nKami menginformasikan bahwa ananda *${studentName}* pada hari/tanggal *${formattedDate}* dinyatakan *${statusLabel}* pada kelas bimbingan belajar.${customNote}\n\nJazakumullah khairan.\n— Bimbel Al-Fatih`;
 
         await fetch("/api/whatsapp", {
           method: "POST",
@@ -61,7 +73,6 @@ export default function TabKehadiran({ enrollmentId, guruId, tenantId, studentPh
     }
 
     await load();
-    setNotes("");
     setIsSaving(false);
   };
 
@@ -100,12 +111,23 @@ export default function TabKehadiran({ enrollmentId, guruId, tenantId, studentPh
         </div>
       </div>
 
-      {/* Input Absensi Hari Ini */}
+      {/* Input Absensi per Pertemuan */}
       <div className="bg-white rounded-2xl border border-slate-100 p-5">
-        <h3 className="font-bold text-slate-900 mb-3">
-          Absensi Hari Ini{" "}
-          {savedToday && <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full ml-1">✓ Sudah diisi</span>}
-        </h3>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <h3 className="font-bold text-slate-900 flex items-center gap-1.5">
+            Absensi per Pertemuan
+            {savedToday && <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full ml-1">✓ Sudah diisi</span>}
+          </h3>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-500 uppercase">Tanggal Pertemuan:</span>
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={e => setSelectedDate(e.target.value)}
+              className="px-2.5 py-1.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </div>
+        </div>
         <div className="flex gap-2 mb-3">
           {(["H", "I", "A"] as const).map(s => {
             const cfg = STATUS_CONFIG[s];

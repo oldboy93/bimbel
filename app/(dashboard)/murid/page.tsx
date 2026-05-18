@@ -14,6 +14,19 @@ import { tampilAbsensiMurid, hitungStatistikAbsensi } from "@/services/attendanc
 import { DAY_NAMES, Format, PROGRAM_TYPES, getProgressColor } from "@/lib/helpers";
 import type { EnrollmentWithDetails, HafalanProgress, Schedule } from "@/types";
 
+const HADITHS = [
+  { text: "Barang siapa yang menempuh jalan untuk mencari ilmu, Allah akan memudahkan baginya jalan ke surga.", narrator: "HR. Muslim" },
+  { text: "Sebaik-baik kalian adalah orang yang mempelajari Al-Qur'an dan mengajarkannya.", narrator: "HR. Bukhari" },
+  { text: "Sesungguhnya Allah tidak melihat kepada rupa dan harta kalian, tetapi Dia melihat kepada hati dan amal kalian.", narrator: "HR. Muslim" },
+  { text: "Senyummu di hadapan saudaramu adalah sedekah.", narrator: "HR. Tirmidzi" },
+  { text: "Barang siapa yang beriman kepada Allah dan hari akhir, maka hendaklah ia berkata baik atau diam.", narrator: "HR. Bukhari & Muslim" },
+  { text: "Sesungguhnya kejujuran itu membawa kepada kebaikan, dan kebaikan itu membawa ke surga.", narrator: "HR. Bukhari & Muslim" },
+  { text: "Keridaan Allah tergantung pada keridaan kedua orang tua, dan kemurkaan Allah tergantung pada kemurkaan kedua orang tua.", narrator: "HR. Tirmidzi" },
+  { text: "Mukmin yang paling sempurna imannya adalah yang paling baik akhlaknya.", narrator: "HR. Tirmidzi" },
+  { text: "Menuntut ilmu itu wajib atas setiap Muslim.", narrator: "HR. Ibnu Majah" },
+  { text: "Orang yang menunjukkan kepada kebaikan, maka ia memperoleh pahala seperti orang yang melakukannya.", narrator: "HR. Muslim" }
+];
+
 // ── Tipe hasil per-enrollment ──────────────────────────────
 interface EnrollmentSummary {
   enrollment: EnrollmentWithDetails;
@@ -62,9 +75,34 @@ export default function MuridDashboard() {
           ]);
 
           const stats = hitungStatistikAbsensi(riwayatAbsensi);
-          const jadwalHariIni = (enr.schedules ?? []).filter(
-            (s) => s.day_of_week === todayIdx
-          );
+          
+          const parseSession = (s: any) => {
+            const rawNotes = s.material_notes || "";
+            if (rawNotes.startsWith("DATE:")) {
+              const parts = rawNotes.split("|NOTES:");
+              const dateStr = parts[0].replace("DATE:", "");
+              const notesStr = parts[1] || "";
+              return { isCustom: true, date: dateStr, notes: notesStr };
+            }
+            return { isCustom: false, date: null, notes: rawNotes };
+          };
+
+          const jadwalHariIni = (enr.schedules ?? []).filter((s) => {
+            const parsed = parseSession(s);
+            if (parsed.isCustom) {
+              const todayStrLocal = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD
+              return parsed.date === todayStrLocal;
+            }
+            return s.day_of_week === todayIdx;
+          }).map(s => {
+            const parsed = parseSession(s);
+            return {
+              ...s,
+              parsedNotes: parsed.notes,
+              customDate: parsed.date,
+              isCustom: parsed.isCustom
+            };
+          });
 
           return {
             enrollment: enr,
@@ -303,26 +341,66 @@ export default function MuridDashboard() {
                       </div>
                     </div>
 
-                    {/* Jadwal Minggu Ini */}
+                     {/* Jadwal Belajar / Daftar Pertemuan */}
                     {(s.enrollment.schedules ?? []).length > 0 && (
                       <div>
                         <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                          Jadwal Belajar
+                          Daftar Pertemuan & Jadwal
                         </p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {(s.enrollment.schedules ?? []).map((sch, i) => (
-                            <span
-                              key={i}
-                              className={`text-xs px-2.5 py-1 rounded-lg font-medium border ${
-                                sch.day_of_week === todayIdx
-                                  ? "bg-blue-600 text-white border-blue-600"
-                                  : "bg-slate-50 text-slate-500 border-slate-200"
-                              }`}
-                            >
-                              {DAY_NAMES[sch.day_of_week]}
-                              {sch.time_start ? ` ${sch.time_start.slice(0, 5)}` : ""}
-                            </span>
-                          ))}
+                        <div className="space-y-1.5">
+                          {(s.enrollment.schedules ?? [])
+                            .map(sch => {
+                              const rawNotes = sch.material_notes || "";
+                              let isCustom = false;
+                              let dateStr = "";
+                              let cleanNotes = rawNotes;
+                              if (rawNotes.startsWith("DATE:")) {
+                                const parts = rawNotes.split("|NOTES:");
+                                dateStr = parts[0].replace("DATE:", "");
+                                cleanNotes = parts[1] || "";
+                                isCustom = true;
+                              }
+                              return { ...sch, isCustom, dateStr, cleanNotes };
+                            })
+                            .sort((a, b) => {
+                              if (a.isCustom && b.isCustom) {
+                                return new Date(b.dateStr).getTime() - new Date(a.dateStr).getTime();
+                              }
+                              return a.day_of_week - b.day_of_week;
+                            })
+                            .map((sch, i) => {
+                              const todayStrLocal = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD
+                              const isToday = sch.isCustom 
+                                ? sch.dateStr === todayStrLocal
+                                : sch.day_of_week === todayIdx;
+
+                              return (
+                                <div
+                                  key={i}
+                                  className={`flex justify-between items-center text-xs p-2 rounded-xl border transition ${
+                                    isToday
+                                      ? "bg-blue-50 border-blue-100 text-blue-800"
+                                      : "bg-slate-50 border-slate-100 text-slate-600"
+                                  }`}
+                                >
+                                  <div>
+                                    <p className="font-bold">{sch.activity}</p>
+                                    <p className="text-[10px] text-slate-400 mt-0.5 font-medium">
+                                      {sch.isCustom 
+                                        ? `📅 ${new Date(sch.dateStr).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}`
+                                        : `🔄 Setiap ${DAY_NAMES[sch.day_of_week]}`
+                                      }
+                                      {sch.cleanNotes && ` • ${sch.cleanNotes}`}
+                                    </p>
+                                  </div>
+                                  {sch.time_start && (
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg shrink-0 ${isToday ? "bg-blue-600 text-white" : "bg-slate-200 text-slate-600"}`}>
+                                      {sch.time_start.slice(0, 5)}
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
                         </div>
                       </div>
                     )}
@@ -335,18 +413,28 @@ export default function MuridDashboard() {
       )}
 
       {/* ── Motivasi ── */}
-      <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 rounded-2xl p-5 flex items-start gap-4">
-        <div className="p-2.5 bg-emerald-600 rounded-xl shrink-0">
-          <Star size={18} className="text-white" />
-        </div>
-        <div>
-          <p className="font-bold text-emerald-800 text-sm">Kata Mutiara Hari Ini</p>
-          <p className="text-emerald-700 text-sm mt-1 italic">
-            &ldquo;Barang siapa yang menempuh jalan untuk mencari ilmu, Allah akan memudahkan baginya jalan ke surga.&rdquo;
-          </p>
-          <p className="text-emerald-500 text-xs mt-1">— HR. Muslim</p>
-        </div>
-      </div>
+      {(() => {
+        const start = new Date(today.getFullYear(), 0, 0);
+        const diff = today.getTime() - start.getTime();
+        const oneDay = 1000 * 60 * 60 * 24;
+        const dayOfYear = Math.floor(diff / oneDay);
+        const dailyHadith = HADITHS[dayOfYear % HADITHS.length];
+
+        return (
+          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 rounded-2xl p-5 flex items-start gap-4 shadow-sm hover:shadow-md transition">
+            <div className="p-2.5 bg-emerald-600 rounded-xl shrink-0">
+              <Star size={18} className="text-white" />
+            </div>
+            <div>
+              <p className="font-bold text-emerald-800 text-xs uppercase tracking-wider">Hadits Shahih Hari Ini</p>
+              <p className="text-emerald-700 text-sm mt-1.5 italic font-medium leading-relaxed">
+                &ldquo;{dailyHadith.text}&rdquo;
+              </p>
+              <p className="text-emerald-500 text-xs mt-1.5 font-bold">— {dailyHadith.narrator}</p>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Quick Actions ── */}
       <section>
