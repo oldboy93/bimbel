@@ -178,8 +178,8 @@ export default function LoginPage() {
               <span className="font-black text-sm text-slate-800 tracking-wide">Portal Akademik Bimbel</span>
             </div>
             
-            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Selamat Datang</h2>
-            <p className="text-slate-500 text-sm mt-1.5 font-semibold">Silakan masuk menggunakan akun akademik terdaftar Anda.</p>
+            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Selamat Datang di Bimbel</h2>
+            <p className="text-slate-500 text-sm mt-1.5 font-semibold">Silakan masuk Email Akun Bimbel Anda..</p>
           </div>
 
           {error && (

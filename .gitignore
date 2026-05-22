@@ -43,3 +43,4 @@ next-env.d.ts
 /list_rpcs.js
 /scratch/
 /supabase/.temp/
+.env
