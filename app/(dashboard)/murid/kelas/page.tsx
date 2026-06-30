@@ -163,7 +163,9 @@ export default function MuridKelasPage() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const enrData = await tampilEnrollmentMurid(user.id);
+        const activeStudentId = localStorage.getItem("active_student_id") || user.id;
+
+        const enrData = await tampilEnrollmentMurid(activeStudentId);
         setEnrollments(enrData);
         if (enrData.length > 0) {
           setSelectedEnr(enrData[0]);

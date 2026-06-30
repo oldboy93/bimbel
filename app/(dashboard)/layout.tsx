@@ -10,6 +10,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<string>("murid");
   const [fullName, setFullName] = useState<string>("Memuat...");
   const [isLoading, setIsLoading] = useState(true);
+  const [siblings, setSiblings] = useState<{ id: string; full_name: string }[]>([]);
+  const [activeStudentId, setActiveStudentId] = useState<string>("");
   const router = useRouter();
   const pathname = usePathname();
   const supabase = createClient();
@@ -24,13 +26,35 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("role, full_name")
+        .select("id, role, full_name, phone, tenant_id")
         .eq("id", session.user.id)
         .single();
 
       if (profile) {
         setRole(profile.role || "murid");
         setFullName(profile.full_name || "Pengguna");
+
+        const currentActive = localStorage.getItem("active_student_id") || profile.id;
+        setActiveStudentId(currentActive);
+        if (!localStorage.getItem("active_student_id")) {
+          localStorage.setItem("active_student_id", profile.id);
+        }
+
+        if (profile.role === "murid" && profile.phone) {
+          const { data: sibs } = await supabase
+            .from("profiles")
+            .select("id, full_name")
+            .eq("phone", profile.phone)
+            .eq("tenant_id", profile.tenant_id)
+            .eq("role", "murid");
+          if (sibs && sibs.length > 1) {
+            setSiblings(sibs);
+            if (!sibs.some(s => s.id === currentActive)) {
+              localStorage.setItem("active_student_id", profile.id);
+              setActiveStudentId(profile.id);
+            }
+          }
+        }
       }
       setIsLoading(false);
     };
@@ -38,7 +62,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     fetchUserRole();
   }, [supabase, router]);
 
+  const handleSiblingChange = (id: string) => {
+    localStorage.setItem("active_student_id", id);
+    setActiveStudentId(id);
+    window.location.reload();
+  };
+
   const handleLogout = async () => {
+    localStorage.removeItem("active_student_id");
     await supabase.auth.signOut();
     router.push("/login");
     router.refresh();
@@ -82,9 +113,32 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <aside className="hidden md:flex flex-col w-64 bg-white text-slate-700 border-r border-slate-100">
         <div className="p-6">
           <h2 className="text-2xl font-black text-blue-600 tracking-tight">Bimbel Kita</h2>
-          <div className="mt-4 bg-blue-50/40 p-3 rounded-2xl border border-blue-100/30">
-            <p className="text-sm font-extrabold truncate text-slate-800">{fullName}</p>
-            <p className="text-[10px] text-blue-600 uppercase tracking-wider font-extrabold mt-0.5">{role}</p>
+          <div className="mt-4 bg-blue-50/40 p-3 rounded-2xl border border-blue-100/30 space-y-2">
+            <div>
+              <p className="text-sm font-extrabold truncate text-slate-800">
+                {siblings.find(s => s.id === activeStudentId)?.full_name || fullName}
+              </p>
+              <p className="text-[10px] text-blue-600 uppercase tracking-wider font-extrabold mt-0.5">{role}</p>
+            </div>
+            
+            {role === "murid" && siblings.length > 1 && (
+              <div className="pt-2 border-t border-blue-100/50">
+                <label className="text-[9px] uppercase tracking-wider font-extrabold text-slate-400 block mb-1">
+                  Pilih Anak:
+                </label>
+                <select
+                  value={activeStudentId}
+                  onChange={(e) => handleSiblingChange(e.target.value)}
+                  className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-700 cursor-pointer"
+                >
+                  {siblings.map((sib) => (
+                    <option key={sib.id} value={sib.id}>
+                      {sib.full_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
         </div>
         
@@ -122,6 +176,22 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
       {/* Main Content */}
       <main className="flex-1 pb-20 md:pb-0 relative overflow-y-auto max-h-screen">
+        {role === "murid" && siblings.length > 1 && (
+          <div className="md:hidden bg-white border-b border-slate-100 px-4 py-3 sticky top-0 z-30 flex items-center justify-between shadow-sm">
+            <span className="text-xs font-extrabold text-slate-500">Anak:</span>
+            <select
+              value={activeStudentId}
+              onChange={(e) => handleSiblingChange(e.target.value)}
+              className="text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-700 cursor-pointer max-w-[200px]"
+            >
+              {siblings.map((sib) => (
+                <option key={sib.id} value={sib.id}>
+                  {sib.full_name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div className="p-4 md:p-8 max-w-5xl mx-auto">
           {children}
         </div>

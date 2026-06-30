@@ -53,16 +53,18 @@ export default function MuridDashboard() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      const activeStudentId = localStorage.getItem("active_student_id") || user.id;
+
       // Ambil profil murid
       const { data: prof } = await supabase
         .from("profiles")
         .select("id, full_name")
-        .eq("id", user.id)
+        .eq("id", activeStudentId)
         .single();
       if (!prof) { setIsLoading(false); return; }
       setProfile(prof);
 
-      // Ambil seluruh enrollment murid yang sedang login
+      // Ambil seluruh enrollment murid yang aktif
       const enrollments = await tampilEnrollmentMurid(prof.id);
 
       // Untuk tiap enrollment, ambil data hafalan + absensi

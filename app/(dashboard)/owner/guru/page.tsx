@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { provisionUser, deleteUser } from "@/app/actions/provision";
-import { Plus, Trash2, Mail, Phone, MapPin, Loader2, X, Users } from "lucide-react";
+import { provisionUser, deleteUser, updateUser, getStudentEmails } from "@/app/actions/provision";
+import { Plus, Trash2, Mail, Phone, MapPin, Loader2, X, Users, Pencil } from "lucide-react";
 
 interface Teacher {
   id: string;
@@ -29,6 +29,17 @@ export default function GuruManagement() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
 
+  // Edit form states
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editUserId, setEditUserId] = useState("");
+  const [editFullName, setEditFullName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editAddress, setEditAddress] = useState("");
+  const [editPassword, setEditPassword] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+
+  const [emailMap, setEmailMap] = useState<Record<string, string>>({});
+
   const supabase = createClient();
 
   const fetchTeachers = async () => {
@@ -44,6 +55,11 @@ export default function GuruManagement() {
       if (error) throw error;
 
       setTeachers(profiles || []);
+
+      const emailRes = await getStudentEmails();
+      if (emailRes.success && emailRes.emailMap) {
+        setEmailMap(emailRes.emailMap);
+      }
     } catch (err: any) {
       console.error(err);
     } finally {
@@ -54,6 +70,39 @@ export default function GuruManagement() {
   useEffect(() => {
     fetchTeachers();
   }, []);
+
+  const openEditModal = (teacher: Teacher) => {
+    setEditUserId(teacher.id);
+    setEditFullName(teacher.full_name);
+    setEditPhone(teacher.phone || "");
+    setEditAddress(teacher.address || "");
+    setEditPassword("");
+    setEditEmail(emailMap[teacher.id] || "");
+    setErrorMessage(null);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateTeacher = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    const result = await updateUser({
+      userId: editUserId,
+      fullName: editFullName,
+      phone: editPhone,
+      address: editAddress,
+      email: editEmail,
+      password: editPassword || undefined,
+      role: "guru"
+    });
+    if (result.success) {
+      setIsEditModalOpen(false);
+      fetchTeachers();
+    } else {
+      setErrorMessage(result.error || "Gagal memperbarui data guru.");
+    }
+    setIsSubmitting(false);
+  };
 
   const handleAddTeacher = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,6 +189,9 @@ export default function GuruManagement() {
               <div className="space-y-3">
                 <div>
                   <h3 className="text-lg font-bold text-slate-900">{teacher.full_name}</h3>
+                  {emailMap[teacher.id] && (
+                    <span className="text-xs font-normal text-slate-400 block mb-1">({emailMap[teacher.id]})</span>
+                  )}
                   <span className="inline-block mt-1 px-2.5 py-1 text-xs font-semibold bg-emerald-50 text-emerald-700 rounded-lg">
                     Aktif Mengajar
                   </span>
@@ -161,13 +213,22 @@ export default function GuruManagement() {
                 </div>
               </div>
 
-              <button
-                onClick={() => handleDeleteTeacher(teacher.id)}
-                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition"
-                title="Hapus Guru"
-              >
-                <Trash2 size={18} />
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => openEditModal(teacher)}
+                  className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition"
+                  title="Ubah Data Guru"
+                >
+                  <Pencil size={18} />
+                </button>
+                <button
+                  onClick={() => handleDeleteTeacher(teacher.id)}
+                  className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition"
+                  title="Hapus Guru"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -263,6 +324,101 @@ export default function GuruManagement() {
                   className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition disabled:opacity-50"
                 >
                   {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Simpan & Daftarkan"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Modal Edit Guru */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center p-6 border-b border-slate-100">
+              <h2 className="text-xl font-bold text-slate-900">Ubah Data Guru</h2>
+              <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-slate-600 rounded-lg p-1">
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateTeacher} className="p-6 space-y-4">
+              {errorMessage && (
+                <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm text-center font-medium">
+                  {errorMessage}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Nama Lengkap</label>
+                <input
+                  type="text"
+                  required
+                  value={editFullName}
+                  onChange={(e) => setEditFullName(e.target.value)}
+                  placeholder="Ustadz / Ustadzah..."
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Email Akun</label>
+                <input
+                  type="email"
+                  required
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                  placeholder="nama@bimbel.com"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Nomor HP / WhatsApp</label>
+                <input
+                  type="text"
+                  value={editPhone}
+                  onChange={(e) => setEditPhone(e.target.value)}
+                  placeholder="0812xxxxxxxx"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Alamat Lengkap</label>
+                <textarea
+                  value={editAddress}
+                  onChange={(e) => setEditAddress(e.target.value)}
+                  placeholder="Alamat tempat tinggal guru..."
+                  rows={2}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Ubah Password <span className="text-slate-400 font-normal">(kosongkan jika tidak ingin diubah)</span></label>
+                <input
+                  type="password"
+                  value={editPassword}
+                  onChange={(e) => setEditPassword(e.target.value)}
+                  placeholder="Password baru..."
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="px-5 py-3 text-slate-500 hover:bg-slate-50 font-semibold rounded-xl transition"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Simpan Perubahan"}
                 </button>
               </div>
             </form>

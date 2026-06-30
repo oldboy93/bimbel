@@ -28,10 +28,12 @@ export default function MuridRaportPage() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
+        const activeStudentId = localStorage.getItem("active_student_id") || user.id;
+
         const { data: prof } = await supabase
           .from("profiles")
           .select("full_name, tenant_id")
-          .eq("id", user.id)
+          .eq("id", activeStudentId)
           .single();
         setProfile(prof);
 
@@ -45,7 +47,7 @@ export default function MuridRaportPage() {
           if (tenant?.name) setTenantName(tenant.name);
         }
 
-        const enrData = await tampilEnrollmentMurid(user.id);
+        const enrData = await tampilEnrollmentMurid(activeStudentId);
         setEnrollments(enrData);
         if (enrData.length > 0) setSelectedEnr(enrData[0]);
       } catch (err) {

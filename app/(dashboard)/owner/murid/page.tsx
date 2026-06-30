@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { provisionUser, deleteUser } from "@/app/actions/provision";
+import { provisionUser, deleteUser, updateUser, getStudentEmails } from "@/app/actions/provision";
 import { tampilSemuaMurid, daftarkanMurid, tampilEnrollmentMurid } from "@/services/studentService";
 import {
   Plus, Trash2, Phone, MapPin, Loader2, X, GraduationCap,
-  BookOpen, KeyRound, Eye, EyeOff, ChevronDown
+  BookOpen, KeyRound, Eye, EyeOff, ChevronDown, Pencil
 } from "lucide-react";
 import type { Profile, Class, EnrollmentWithDetails } from "@/types";
 import { PROGRAM_TYPES } from "@/lib/helpers";
@@ -36,6 +36,17 @@ export default function StudentManagement() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
 
+  // Edit form states
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editUserId, setEditUserId] = useState("");
+  const [editFullName, setEditFullName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editAddress, setEditAddress] = useState("");
+  const [editPassword, setEditPassword] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+
+  const [emailMap, setEmailMap] = useState<Record<string, string>>({});
+
   // Enroll form states
   const [selectedClassId, setSelectedClassId] = useState("");
   const [parentPin, setParentPin] = useState(generatePin());
@@ -44,12 +55,16 @@ export default function StudentManagement() {
 
   const fetchData = async () => {
     setIsLoading(true);
-    const [muridList, kelasData] = await Promise.all([
+    const [muridList, kelasData, emailRes] = await Promise.all([
       tampilSemuaMurid(),
       supabase.from("classes").select("*").eq("is_active", true).order("name"),
+      getStudentEmails(),
     ]);
     setStudents(muridList);
     setClasses(kelasData.data ?? []);
+    if (emailRes.success && emailRes.emailMap) {
+      setEmailMap(emailRes.emailMap);
+    }
     setIsLoading(false);
   };
 
@@ -66,6 +81,39 @@ export default function StudentManagement() {
       fetchData();
     } else {
       setErrorMessage(result.error || "Gagal menambahkan murid.");
+    }
+    setIsSubmitting(false);
+  };
+
+  const openEditModal = (student: Profile) => {
+    setEditUserId(student.id);
+    setEditFullName(student.full_name);
+    setEditPhone(student.phone || "");
+    setEditAddress(student.address || "");
+    setEditPassword("");
+    setEditEmail(emailMap[student.id] || "");
+    setErrorMessage(null);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateStudent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    const result = await updateUser({
+      userId: editUserId,
+      fullName: editFullName,
+      phone: editPhone,
+      address: editAddress,
+      email: editEmail,
+      password: editPassword || undefined,
+      role: "murid"
+    });
+    if (result.success) {
+      setIsEditModalOpen(false);
+      fetchData();
+    } else {
+      setErrorMessage(result.error || "Gagal memperbarui data murid.");
     }
     setIsSubmitting(false);
   };
@@ -158,7 +206,12 @@ export default function StudentManagement() {
                     {student.full_name.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900">{student.full_name}</h3>
+                    <h3 className="font-bold text-slate-900 flex flex-wrap items-center gap-x-2">
+                      {student.full_name}
+                      {emailMap[student.id] && (
+                        <span className="text-xs font-normal text-slate-400">({emailMap[student.id]})</span>
+                      )}
+                    </h3>
                     <div className="flex flex-wrap gap-3 mt-0.5 text-sm text-slate-500">
                       {student.phone && <span className="flex items-center gap-1"><Phone size={12} />{student.phone}</span>}
                       {student.address && <span className="flex items-center gap-1"><MapPin size={12} /><span className="truncate max-w-[160px]">{student.address}</span></span>}
@@ -174,6 +227,10 @@ export default function StudentManagement() {
                   <button onClick={() => toggleExpand(student)}
                     className={`p-2 rounded-xl text-slate-400 hover:bg-slate-50 transition ${expandedStudentId === student.id ? "rotate-180" : ""}`}>
                     <ChevronDown size={20} className="transition-transform" />
+                  </button>
+                  <button onClick={() => openEditModal(student)}
+                    className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition">
+                    <Pencil size={16} />
                   </button>
                   <button onClick={() => handleDeleteStudent(student.id)}
                     className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition">
@@ -250,7 +307,7 @@ export default function StudentManagement() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1">Password</label>
-                  <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Bimbel123!"
+                  <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min. 8 karakter (opsional)"
                     className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" />
                 </div>
               </div>
@@ -327,6 +384,51 @@ export default function StudentManagement() {
                 <button type="submit" disabled={isSubmitting || classes.length === 0}
                   className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition disabled:opacity-50">
                   {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Daftarkan ke Kelas"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Modal Edit Murid */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+            <div className="flex justify-between items-center p-6 border-b border-slate-100">
+              <h2 className="text-xl font-bold text-slate-900">Ubah Data Murid</h2>
+              <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"><X size={20} /></button>
+            </div>
+            <form onSubmit={handleUpdateStudent} className="p-6 space-y-4">
+              {errorMessage && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-medium text-center">{errorMessage}</div>}
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Nama Lengkap Murid</label>
+                <input type="text" required value={editFullName} onChange={(e) => setEditFullName(e.target.value)} placeholder="Nama murid..."
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Email Murid</label>
+                <input type="email" required value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="email@bimbel.com"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">No. HP Wali Murid</label>
+                <input type="text" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} placeholder="0812xxxxxxxx"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Alamat</label>
+                <textarea value={editAddress} onChange={(e) => setEditAddress(e.target.value)} rows={2} placeholder="Alamat murid..."
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition resize-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Ubah Password <span className="text-slate-400 font-normal">(kosongkan jika tidak ingin diubah)</span></label>
+                <input type="password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} placeholder="Password baru..."
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" />
+              </div>
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                <button type="button" onClick={() => setIsEditModalOpen(false)} className="px-5 py-3 text-slate-500 hover:bg-slate-50 font-semibold rounded-xl transition">Batal</button>
+                <button type="submit" disabled={isSubmitting} className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition disabled:opacity-50">
+                  {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Simpan Perubahan"}
                 </button>
               </div>
             </form>
