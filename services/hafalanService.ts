@@ -36,20 +36,50 @@ export const tampilHafalanTerkini = async (enrollmentId: string): Promise<Hafala
 export const simpanHafalan = async (input: {
   enrollmentId: string;
   guruId: string;
-  surahNumber: number;
+  mode: 'surat' | 'juz';
+  surahNumber?: number;
   surahName: string;
   totalAyat: number;
   ayatReached: number;
   sessionDate: string;
   notes?: string;
+  juzNumber?: number;
 }): Promise<HafalanProgress> => {
   const db = getDb();
+  const baseQuery = db.from('hafalan_progress').select('*').eq('enrollment_id', input.enrollmentId).order('session_date', { ascending: false }).limit(1);
+
+  const matchingQuery = input.mode === 'surat'
+    ? baseQuery.eq('surah_number', input.surahNumber)
+    : baseQuery.eq('surah_number', 0).eq('surah_name', `Juz ${input.juzNumber}`);
+
+  const { data: existing, error: existingError } = await matchingQuery.maybeSingle();
+  if (existingError) throw new Error(existingError.message);
+
+  if (existing) {
+    const { data, error } = await db
+      .from('hafalan_progress')
+      .update({
+        guru_id: input.guruId,
+        surah_number: input.mode === 'juz' ? 0 : input.surahNumber,
+        surah_name: input.surahName,
+        total_ayat: input.totalAyat,
+        ayat_reached: input.ayatReached,
+        session_date: input.sessionDate,
+        notes: input.notes ?? '',
+      })
+      .eq('id', existing.id)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return data as HafalanProgress;
+  }
+
   const { data, error } = await db
     .from('hafalan_progress')
     .insert({
       enrollment_id: input.enrollmentId,
       guru_id: input.guruId,
-      surah_number: input.surahNumber,
+      surah_number: input.mode === 'juz' ? 0 : input.surahNumber,
       surah_name: input.surahName,
       total_ayat: input.totalAyat,
       ayat_reached: input.ayatReached,

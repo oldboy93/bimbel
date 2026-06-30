@@ -119,10 +119,10 @@ export default function LoginPage() {
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Main Container */}
-      <div className="flex w-full max-w-7xl mx-auto my-auto p-4 md:p-8 shrink-0 min-h-[90vh] items-stretch justify-center gap-6">
+      <div className="flex w-full max-w-7xl mx-auto my-auto p-4 md:p-8 shrink-0 min-h-[90vh] items-stretch justify-center gap-0">
         
         {/* Left Side: Professional Information (Hidden on Mobile) */}
-        <div className="hidden lg:flex flex-1 flex-col justify-between bg-gradient-to-br from-blue-50/70 to-indigo-50/50 border border-slate-200/50 rounded-3xl p-10 relative overflow-hidden">
+        <div className="hidden lg:flex flex-1 flex-col justify-between bg-gradient-to-br from-blue-50/70 to-indigo-50/50 border border-slate-200/50 rounded-l-3xl p-10 shadow-lg relative overflow-hidden">
           <div className="absolute inset-0 bg-grid-slate-900/[0.015] bg-[size:30px_30px]" />
           
           {/* Header */}
@@ -169,7 +169,7 @@ export default function LoginPage() {
         </div>
 
         {/* Right Side: Clean Light Mode Form Card */}
-        <div className="w-full max-w-lg flex flex-col justify-center bg-white border border-slate-200/80 rounded-3xl p-8 md:p-10 shadow-lg relative">
+        <div className="w-full max-w-lg flex flex-col justify-center bg-white border border-slate-200/80 rounded-3xl lg:rounded-r-3xl lg:rounded-l-none p-8 md:p-10 shadow-lg relative">
           <div className="mb-8">
             <div className="lg:hidden flex items-center gap-2.5 mb-6">
               <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
@@ -179,7 +179,7 @@ export default function LoginPage() {
             </div>
             
             <h2 className="text-2xl font-black text-slate-900 tracking-tight">Selamat Datang di Bimbel</h2>
-            <p className="text-slate-500 text-sm mt-1.5 font-semibold">Silakan masuk Email Akun Bimbel Anda..</p>
+            <p className="text-slate-500 text-sm mt-1.5 font-semibold">Silakan masuk Email Akun Bimbel Anda.</p>
           </div>
 
           {error && (
