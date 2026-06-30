@@ -26,7 +26,7 @@ export default function LandingPage() {
               <GraduationCap size={22} className="animate-pulse" />
             </div>
             <span className="text-xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent tracking-tight">
-              BimbelKita
+              Alhanif
             </span>
           </div>
 
@@ -168,7 +168,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto space-y-16">
           <div className="text-center max-w-2xl mx-auto space-y-3">
             <h2 className="text-xs font-extrabold text-blue-600 tracking-widest uppercase">Pendidikan Unggul</h2>
-            <h3 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Kenapa Harus BimbelKita?</h3>
+            <h3 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Kenapa Harus Alhanif?</h3>
             <p className="text-sm sm:text-base text-slate-500 font-medium">Kami mengutamakan sinergi pendidikan akhlak, kemandirian, dan kemudahan pemantauan oleh orang tua secara modern.</p>
           </div>
 
@@ -302,7 +302,7 @@ export default function LandingPage() {
         <div className="max-w-2xl mx-auto space-y-8 relative z-10">
           <h3 className="text-3xl sm:text-4xl font-black tracking-tight leading-snug">Mari Antarkan Ananda ke Jenjang Prestasi Terbaik</h3>
           <p className="text-blue-100 text-sm sm:text-base leading-relaxed max-w-lg mx-auto font-medium">
-            Gabung bersama keluarga besar BimbelKita. Pantau kehadiran dan hafalan Qur'an buah hati Anda secara praktis lewat Portal Akademik kami.
+            Gabung bersama keluarga besar Alhanif. Pantau kehadiran dan hafalan Qur'an buah hati Anda secara praktis lewat Portal Akademik kami.
           </p>
           <div className="pt-2">
             <Link
@@ -318,7 +318,7 @@ export default function LandingPage() {
       {/* Minimalist Footer */}
       <footer className="border-t border-slate-200/50 py-12 px-6 lg:px-16 text-center text-slate-400 bg-white">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-6">
-          <p className="text-xs font-bold">&copy; {new Date().getFullYear()} BimbelKita. Seluruh hak cipta dilindungi.</p>
+          <p className="text-xs font-bold">&copy; {new Date().getFullYear()} Alhanif. Seluruh hak cipta dilindungi.</p>
           <div className="flex gap-6 text-xs font-bold text-slate-400">
             <a href="#keunggulan" className="hover:text-blue-600 transition">Keunggulan</a>
             <a href="#program" className="hover:text-blue-600 transition">Program</a>

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
-  title: "Bimbel Kita",
+  title: "Alhanif",
   description: "Sistem Manajemen Pembelajaran Calistung & Tahfidz",
 };
 

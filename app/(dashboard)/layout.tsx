@@ -85,15 +85,15 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       { name: "Pengaturan", href: "/owner/pengaturan", icon: Settings },
     ],
     guru: [
-      { name: "Beranda",        href: "/guru",        icon: Home        },
-      { name: "Daftar Murid",   href: "/guru/murid",  icon: Users       },
-      { name: "Materi Belajar", href: "/guru/materi", icon: BookOpen    },
-      { name: "Absensi",        href: "/guru/absen",  icon: Calendar    },
+      { name: "Beranda", href: "/guru", icon: Home },
+      { name: "Daftar Murid", href: "/guru/murid", icon: Users },
+      { name: "Materi Belajar", href: "/guru/materi", icon: BookOpen },
+      { name: "Absensi", href: "/guru/absen", icon: Calendar },
     ],
     murid: [
-      { name: "Beranda",     href: "/murid",        icon: Home   },
-      { name: "Kelas Saya",  href: "/murid/kelas",  icon: Book   },
-      { name: "Raport",      href: "/murid/raport", icon: Award  },
+      { name: "Beranda", href: "/murid", icon: Home },
+      { name: "Kelas Saya", href: "/murid/kelas", icon: Book },
+      { name: "Raport", href: "/murid/raport", icon: Award },
     ],
   };
 
@@ -112,7 +112,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       {/* Sidebar (Desktop) */}
       <aside className="hidden md:flex flex-col w-64 bg-white text-slate-700 border-r border-slate-100">
         <div className="p-6">
-          <h2 className="text-2xl font-black text-blue-600 tracking-tight">Bimbel Kita</h2>
+          <h2 className="text-2xl font-black text-blue-600 tracking-tight">Alhanif</h2>
           <div className="mt-4 bg-blue-50/40 p-3 rounded-2xl border border-blue-100/30 space-y-2">
             <div>
               <p className="text-sm font-extrabold truncate text-slate-800">
@@ -120,7 +120,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               </p>
               <p className="text-[10px] text-blue-600 uppercase tracking-wider font-extrabold mt-0.5">{role}</p>
             </div>
-            
+
             {role === "murid" && siblings.length > 1 && (
               <div className="pt-2 border-t border-blue-100/50">
                 <label className="text-[9px] uppercase tracking-wider font-extrabold text-slate-400 block mb-1">
@@ -141,20 +141,19 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             )}
           </div>
         </div>
-        
+
         <nav className="flex-1 px-4 space-y-1.5 mt-4">
           {activeMenus.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
             return (
-              <Link 
-                key={item.href} 
-                href={item.href} 
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all group ${
-                  isActive 
-                    ? "bg-blue-600 text-white shadow-md shadow-blue-500/10" 
-                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
-                }`}
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all group ${isActive
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/10"
+                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                  }`}
               >
                 <Icon size={20} className={isActive ? "text-white" : "text-slate-400 group-hover:text-slate-600 transition-colors"} />
                 <span className="font-semibold text-sm">{item.name}</span>
@@ -162,9 +161,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
-        
+
         <div className="p-4 border-t border-slate-100">
-          <button 
+          <button
             onClick={handleLogout}
             className="flex w-full items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-red-50 hover:text-red-600 transition"
           >
@@ -203,9 +202,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           const isActive = pathname === item.href;
           const Icon = item.icon;
           return (
-            <Link 
-              key={item.href} 
-              href={item.href} 
+            <Link
+              key={item.href}
+              href={item.href}
               className={`flex flex-col items-center py-1 ${isActive ? "text-blue-600" : "text-slate-400"}`}
             >
               <Icon size={22} />
@@ -213,7 +212,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </Link>
           );
         })}
-        <button 
+        <button
           onClick={handleLogout}
           className="flex flex-col items-center py-1 text-slate-400 hover:text-red-500 transition"
         >

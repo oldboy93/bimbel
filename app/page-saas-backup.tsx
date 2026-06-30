@@ -1,13 +1,13 @@
 import Link from 'next/link';
-import { 
-  BookOpen, 
-  Sparkles, 
-  CheckCircle2, 
-  MessageSquare, 
-  ShieldCheck, 
-  ArrowRight, 
-  Activity, 
-  FileText, 
+import {
+  BookOpen,
+  Sparkles,
+  CheckCircle2,
+  MessageSquare,
+  ShieldCheck,
+  ArrowRight,
+  Activity,
+  FileText,
   Users,
   GraduationCap
 } from 'lucide-react';
@@ -15,18 +15,18 @@ import {
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/20 to-indigo-50/30 text-slate-900 overflow-x-hidden font-sans selection:bg-blue-100 selection:text-blue-800">
-      
+
       {/* Premium Header */}
       <header className="sticky top-0 z-50 backdrop-blur-md bg-white/70 border-b border-slate-100/80 px-6 lg:px-16 py-4 transition-all duration-300">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          
+
           {/* Logo */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/10">
               <GraduationCap size={22} className="animate-pulse" />
             </div>
             <span className="text-xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent tracking-tight">
-              BimbelKita
+              Alhanif
             </span>
           </div>
 
@@ -39,8 +39,8 @@ export default function LandingPage() {
 
           {/* Action Button */}
           <div className="flex items-center gap-4">
-            <Link 
-              href="/login" 
+            <Link
+              href="/login"
               className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-md shadow-blue-500/10 hover:shadow-lg hover:shadow-blue-500/20 hover:-translate-y-0.5 transition-all duration-200"
             >
               Masuk Dashboard
@@ -51,7 +51,7 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <section className="relative px-6 lg:px-16 pt-12 pb-24 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-        
+
         {/* Soft Background Blobs */}
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl -z-10 animate-pulse duration-[8000ms]" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-400/10 rounded-full blur-3xl -z-10 animate-pulse duration-[10000ms]" />
@@ -61,7 +61,7 @@ export default function LandingPage() {
           <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-100/50 rounded-full text-blue-600 font-extrabold text-xs tracking-wider uppercase animate-bounce">
             <Sparkles size={14} /> Platform Bimbel Tahfidz & Calistung #1
           </div>
-          
+
           <div className="space-y-4">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.1]">
               Membentuk Generasi <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Cerdas</span> & <span className="bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">Qur'ani</span>
@@ -72,14 +72,14 @@ export default function LandingPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <Link 
-              href="/login" 
+            <Link
+              href="/login"
               className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-sm rounded-2xl shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 group"
             >
               Coba Demo Sekarang <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </Link>
-            <a 
-              href="#fitur" 
+            <a
+              href="#fitur"
               className="px-8 py-4 bg-white/80 hover:bg-white text-slate-700 hover:text-slate-900 border border-slate-200/80 font-bold text-sm rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center justify-center"
             >
               Pelajari Fitur
@@ -106,7 +106,7 @@ export default function LandingPage() {
         {/* Hero Right Content - Interactive Visual App Card Mockups */}
         <div className="lg:col-span-6 relative mt-12 lg:mt-0 flex justify-center lg:justify-end animate-fade-in">
           <div className="relative w-full max-w-[460px] aspect-[4/3] bg-gradient-to-br from-blue-500/10 to-indigo-500/5 rounded-[2.5rem] border border-white/20 p-6 flex items-center justify-center">
-            
+
             {/* Live Student Stat Card (Floating Left) */}
             <div className="absolute top-4 left-[-16px] sm:left-[-32px] w-52 bg-white/95 backdrop-blur-lg p-4 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 space-y-3 hover:-translate-y-1 transition-all duration-300">
               <div className="flex items-center gap-2.5">
@@ -173,7 +173,7 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            
+
             {/* Fitur 1 */}
             <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition duration-300 space-y-4 group">
               <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition duration-300">
@@ -276,11 +276,11 @@ export default function LandingPage() {
         <div className="max-w-2xl mx-auto space-y-8 relative z-10">
           <h3 className="text-3xl sm:text-4xl font-black tracking-tight leading-snug">Mari Bergabung dan Cetak Generasi Gemilang</h3>
           <p className="text-blue-100 text-sm sm:text-base leading-relaxed max-w-lg mx-auto font-medium">
-            Lacak kemudahan evaluasi proses KBM anak-anak Anda di platform BimbelKita sekarang juga. Masuk ke halaman dashboard di bawah ini.
+            Lacak kemudahan evaluasi proses KBM anak-anak Anda di platform Alhanif sekarang juga. Masuk ke halaman dashboard di bawah ini.
           </p>
           <div className="pt-2">
-            <Link 
-              href="/login" 
+            <Link
+              href="/login"
               className="inline-block px-8 py-4 bg-white text-blue-600 font-black text-sm rounded-2xl shadow-xl hover:shadow-2xl hover:scale-[1.03] active:scale-95 transition-all duration-300"
             >
               Masuk ke Area Dashboard
@@ -292,7 +292,7 @@ export default function LandingPage() {
       {/* Minimalist Footer */}
       <footer className="border-t border-slate-200/50 py-12 px-6 lg:px-16 text-center text-slate-400 bg-white">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-6">
-          <p className="text-xs font-bold">&copy; {new Date().getFullYear()} BimbelKita. Seluruh hak cipta dilindungi.</p>
+          <p className="text-xs font-bold">&copy; {new Date().getFullYear()} Alhanif. Seluruh hak cipta dilindungi.</p>
           <div className="flex gap-6 text-xs font-bold text-slate-400">
             <a href="#fitur" className="hover:text-blue-600 transition">Fitur</a>
             <a href="#program" className="hover:text-blue-600 transition">Program</a>
