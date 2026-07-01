@@ -90,4 +90,4 @@ Akses terisolasi untuk melihat pencapaian prestasi dan materi pembelajaran murid
 ---
 
 > [!NOTE]
-> Semua data pengujian (seperti akun ustadz.ahmad@bimbel.com, ali@bimbel.com, dan PIN wali murid) sudah disiapkan dengan matang dalam sistem sehingga siap dipresentasikan kapan saja kepada klien.
+> Semua data pengujian (seperti akun ustadz.ahmad@alhanif.online, ali@alhanif.online, dan PIN wali murid) sudah disiapkan dengan matang dalam sistem sehingga siap dipresentasikan kapan saja kepada klien.

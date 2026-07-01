@@ -64,7 +64,7 @@ BEGIN
   INSERT INTO auth.users (id, instance_id, email, encrypted_password, email_confirmed_at,
     aud, role, raw_user_meta_data, raw_app_meta_data, created_at, updated_at)
   VALUES (v_guru1, '00000000-0000-0000-0000-000000000000',
-    'ustadz.ahmad@bimbel.com', v_pwd, now(),
+    'ustadz.ahmad@alhanif.online', v_pwd, now(),
     'authenticated', 'authenticated',
     '{"role":"guru","full_name":"Ustadz Ahmad Fauzi"}'::jsonb,
     '{"provider":"email","providers":["email"]}'::jsonb,
@@ -75,7 +75,7 @@ BEGIN
   INSERT INTO auth.users (id, instance_id, email, encrypted_password, email_confirmed_at,
     aud, role, raw_user_meta_data, raw_app_meta_data, created_at, updated_at)
   VALUES (v_guru2, '00000000-0000-0000-0000-000000000000',
-    'ustadzah.siti@bimbel.com', v_pwd, now(),
+    'ustadzah.siti@alhanif.online', v_pwd, now(),
     'authenticated', 'authenticated',
     '{"role":"guru","full_name":"Ustadzah Siti Rahmawati"}'::jsonb,
     '{"provider":"email","providers":["email"]}'::jsonb,
@@ -86,7 +86,7 @@ BEGIN
   INSERT INTO auth.users (id, instance_id, email, encrypted_password, email_confirmed_at,
     aud, role, raw_user_meta_data, raw_app_meta_data, created_at, updated_at)
   VALUES (v_guru3, '00000000-0000-0000-0000-000000000000',
-    'ustadz.ridwan@bimbel.com', v_pwd, now(),
+    'ustadz.ridwan@alhanif.online', v_pwd, now(),
     'authenticated', 'authenticated',
     '{"role":"guru","full_name":"Ustadz Ridwan Hakim"}'::jsonb,
     '{"provider":"email","providers":["email"]}'::jsonb,
@@ -97,7 +97,7 @@ BEGIN
   INSERT INTO auth.users (id, instance_id, email, encrypted_password, email_confirmed_at,
     aud, role, raw_user_meta_data, raw_app_meta_data, created_at, updated_at)
   VALUES (v_murid1, '00000000-0000-0000-0000-000000000000',
-    'murid.ali@bimbel.com', v_pwd, now(),
+    'murid.ali@alhanif.online', v_pwd, now(),
     'authenticated', 'authenticated',
     '{"role":"murid","full_name":"Muhammad Ali Akbar"}'::jsonb,
     '{"provider":"email","providers":["email"]}'::jsonb,
@@ -108,7 +108,7 @@ BEGIN
   INSERT INTO auth.users (id, instance_id, email, encrypted_password, email_confirmed_at,
     aud, role, raw_user_meta_data, raw_app_meta_data, created_at, updated_at)
   VALUES (v_murid2, '00000000-0000-0000-0000-000000000000',
-    'murid.fatimah@bimbel.com', v_pwd, now(),
+    'murid.fatimah@alhanif.online', v_pwd, now(),
     'authenticated', 'authenticated',
     '{"role":"murid","full_name":"Fatimah Azzahra"}'::jsonb,
     '{"provider":"email","providers":["email"]}'::jsonb,
@@ -119,7 +119,7 @@ BEGIN
   INSERT INTO auth.users (id, instance_id, email, encrypted_password, email_confirmed_at,
     aud, role, raw_user_meta_data, raw_app_meta_data, created_at, updated_at)
   VALUES (v_murid3, '00000000-0000-0000-0000-000000000000',
-    'murid.ibrahim@bimbel.com', v_pwd, now(),
+    'murid.ibrahim@alhanif.online', v_pwd, now(),
     'authenticated', 'authenticated',
     '{"role":"murid","full_name":"Ibrahim Musa"}'::jsonb,
     '{"provider":"email","providers":["email"]}'::jsonb,
@@ -130,7 +130,7 @@ BEGIN
   INSERT INTO auth.users (id, instance_id, email, encrypted_password, email_confirmed_at,
     aud, role, raw_user_meta_data, raw_app_meta_data, created_at, updated_at)
   VALUES (v_murid4, '00000000-0000-0000-0000-000000000000',
-    'murid.khadijah@bimbel.com', v_pwd, now(),
+    'murid.khadijah@alhanif.online', v_pwd, now(),
     'authenticated', 'authenticated',
     '{"role":"murid","full_name":"Khadijah Nur Aisyah"}'::jsonb,
     '{"provider":"email","providers":["email"]}'::jsonb,
@@ -141,7 +141,7 @@ BEGIN
   INSERT INTO auth.users (id, instance_id, email, encrypted_password, email_confirmed_at,
     aud, role, raw_user_meta_data, raw_app_meta_data, created_at, updated_at)
   VALUES (v_murid5, '00000000-0000-0000-0000-000000000000',
-    'murid.umar@bimbel.com', v_pwd, now(),
+    'murid.umar@alhanif.online', v_pwd, now(),
     'authenticated', 'authenticated',
     '{"role":"murid","full_name":"Umar bin Khattab Jr"}'::jsonb,
     '{"provider":"email","providers":["email"]}'::jsonb,
@@ -293,11 +293,11 @@ END $$;
 -- 
 -- Akun untuk login (semua password: Bimbel123!):
 -- Owner  : (gunakan akun yang sudah dibuat sebelumnya di Supabase)
--- Guru 1 : ustadz.ahmad@bimbel.com
--- Guru 2 : ustadzah.siti@bimbel.com
--- Guru 3 : ustadz.ridwan@bimbel.com
--- Murid 1: murid.ali@bimbel.com
--- Murid 2: murid.fatimah@bimbel.com
--- Murid 3: murid.ibrahim@bimbel.com
--- Murid 4: murid.khadijah@bimbel.com
--- Murid 5: murid.umar@bimbel.com
+-- Guru 1 : ustadz.ahmad@alhanif.online
+-- Guru 2 : ustadzah.siti@alhanif.online
+-- Guru 3 : ustadz.ridwan@alhanif.online
+-- Murid 1: murid.ali@alhanif.online
+-- Murid 2: murid.fatimah@alhanif.online
+-- Murid 3: murid.ibrahim@alhanif.online
+-- Murid 4: murid.khadijah@alhanif.online
+-- Murid 5: murid.umar@alhanif.online

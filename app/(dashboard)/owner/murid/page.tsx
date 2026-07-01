@@ -11,7 +11,7 @@ import {
 import type { Profile, Class, EnrollmentWithDetails } from "@/types";
 import { PROGRAM_TYPES } from "@/lib/helpers";
 
-const tenantId = process.env.NEXT_PUBLIC_TENANT_ID!;
+
 
 // ── Helper generate PIN 6 digit ──────────────────────────────
 const generatePin = () => String(Math.floor(100000 + Math.random() * 900000));
@@ -138,7 +138,9 @@ export default function StudentManagement() {
     setIsSubmitting(true);
     setErrorMessage(null);
     try {
-      await daftarkanMurid(selectedStudent.id, selectedClassId, tenantId, parentPin);
+      const { data: { user } } = await supabase.auth.getUser();
+      const actualTenantId = user?.app_metadata?.tenant_id || process.env.NEXT_PUBLIC_TENANT_ID || "11111111-1111-1111-1111-111111111111";
+      await daftarkanMurid(selectedStudent.id, selectedClassId, actualTenantId, parentPin);
       setIsEnrollModalOpen(false);
       // Refresh enrollments for the expanded student
       if (expandedStudentId === selectedStudent.id) {
@@ -302,7 +304,7 @@ export default function StudentManagement() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1">Email</label>
-                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@bimbel.com"
+                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@alhanif.online"
                     className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" />
                 </div>
                 <div>
@@ -407,7 +409,7 @@ export default function StudentManagement() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">Email Murid</label>
-                <input type="email" required value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="email@bimbel.com"
+                <input type="email" required value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="email@alhanif.online"
                   className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" />
               </div>
               <div>

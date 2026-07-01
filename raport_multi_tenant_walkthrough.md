@@ -11,16 +11,16 @@ Berikut adalah daftar akun pengujian yang telah terkonfigurasi di database untuk
 ### 🏢 Tenant 1: Bimbel Al-Hikmah (`al-hikmah`)
 | Peran | Nama Pengguna | Surel (Email) | Kelas Asal | Tipe Kelas |
 | :--- | :--- | :--- | :--- | :--- |
-| **Owner** | Admin Owner | `admin@bimbel.com` | - | - |
-| **Guru** | Ustadz Ahmad Fauzi | `ustadz.ahmad@bimbel.com` | - | - |
-| **Murid 1** | Muhammad Ali Akbar | `murid.ali@bimbel.com` | Tahfidz Pagi — Kelas A | **Tahfidz** |
-| **Murid 2** | Umar bin Khattab Jr | `murid.umar@bimbel.com` | Calistung Kelas A | **Calistung** |
+| **Owner** | Admin Owner | `admin@alhanif.online` | - | - |
+| **Guru** | Ustadz Ahmad Fauzi | `ustadz.ahmad@alhanif.online` | - | - |
+| **Murid 1** | Muhammad Ali Akbar | `murid.ali@alhanif.online` | Tahfidz Pagi — Kelas A | **Tahfidz** |
+| **Murid 2** | Umar bin Khattab Jr | `murid.umar@alhanif.online` | Calistung Kelas A | **Calistung** |
 
 ### 🏢 Tenant 2: Bimbel Al-Fatih (`al-fatih`)
 | Peran | Nama Pengguna | Surel (Email) | Kelas Asal | Tipe Kelas |
 | :--- | :--- | :--- | :--- | :--- |
-| **Guru** | Ustadz Hasan Al-Fatih | `ustadz.hasan@bimbel.com` | - | - |
-| **Murid** | Zayd Ar-Rayyan | `murid.zayd@bimbel.com` | Calistung Super Al-Fatih | **Calistung** |
+| **Guru** | Ustadz Hasan Al-Fatih | `ustadz.hasan@alhanif.online` | - | - |
+| **Murid** | Zayd Ar-Rayyan | `murid.zayd@alhanif.online` | Calistung Super Al-Fatih | **Calistung** |
 
 ---
 
@@ -52,7 +52,7 @@ Buka browser dan navigasikan ke `http://localhost:3000`.
 ### 🟢 Skenario A: Mengisi Raport Tahfidz (Murid: Muhammad Ali Akbar)
 1. **Masuk ke Aplikasi:**
    - Akses halaman login di `http://localhost:3000/login`.
-   - Masuk menggunakan akun **Guru Tenant 1**: `ustadz.ahmad@bimbel.com` (Sandi: `Bimbel123!`).
+   - Masuk menggunakan akun **Guru Tenant 1**: `ustadz.ahmad@alhanif.online` (Sandi: `Bimbel123!`).
    - Perhatikan popup loading dinamis yang menampilkan *"Masuk ke Bimbel Al-Hikmah..."* sebagai bukti deteksi tenant sukses.
 2. **Buka Profil Murid:**
    - Masuk ke menu **Daftar Murid**.
@@ -91,7 +91,7 @@ Untuk membuktikan bahwa sistem SaaS terisolasi dengan aman menggunakan *Row Leve
 
 1. **Keluar** dari akun Ustadz Ahmad.
 2. **Masuk** menggunakan akun **Guru Tenant 2 (Bimbel Al-Fatih)**:
-   - Surel: `ustadz.hasan@bimbel.com` (Sandi: `Bimbel123!`).
+   - Surel: `ustadz.hasan@alhanif.online` (Sandi: `Bimbel123!`).
    - Popup loading akan menampilkan *"Masuk ke Bimbel Al-Fatih..."*.
 3. **Verifikasi Keamanan:**
    - Buka menu **Daftar Murid**.
@@ -103,7 +103,7 @@ Untuk membuktikan bahwa sistem SaaS terisolasi dengan aman menggunakan *Row Leve
 ## 🖨️ Langkah 5: Mengakses & Mencetak Raport (Sisi Murid / Orang Tua)
 
 1. **Masuk sebagai Murid:**
-   - Masuk menggunakan akun Murid Tenant 1: `murid.ali@bimbel.com` (Sandi: `Bimbel123!`).
+   - Masuk menggunakan akun Murid Tenant 1: `murid.ali@alhanif.online` (Sandi: `Bimbel123!`).
 2. **Buka Menu Raport:**
    - Masuk ke menu **Raport Belajar** di navigasi utama.
    - Anda akan melihat daftar raport yang sudah diterbitkan.

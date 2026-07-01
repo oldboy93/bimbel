@@ -50,12 +50,15 @@ export default function ClassManagement() {
     setIsSubmitting(true);
     setErrorMessage(null);
 
+    const { data: { user } } = await supabase.auth.getUser();
+    const actualTenantId = user?.app_metadata?.tenant_id || tenantId;
+
     const { error } = await supabase.from("classes").insert({
       name,
       type,
       description,
       price: parseInt(price) || 0,
-      tenant_id: tenantId,
+      tenant_id: actualTenantId,
       is_active: true,
     });
 

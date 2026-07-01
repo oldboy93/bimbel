@@ -272,7 +272,7 @@ export default function GuruManagement() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="nama@bimbel.com"
+                    placeholder="nama@alhanif.online"
                     className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
                   />
                 </div>
@@ -367,7 +367,7 @@ export default function GuruManagement() {
                   required
                   value={editEmail}
                   onChange={(e) => setEditEmail(e.target.value)}
-                  placeholder="nama@bimbel.com"
+                  placeholder="nama@alhanif.online"
                   className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
                 />
               </div>
