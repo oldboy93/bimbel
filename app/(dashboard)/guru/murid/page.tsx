@@ -12,6 +12,7 @@ export default function StudentListPage() {
   const [filtered, setFiltered] = useState<EnrollmentWithDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [filterClassId, setFilterClassId] = useState("all");
 
   useEffect(() => {
     tampilSemuaEnrollment().then((data) => {
@@ -25,12 +26,16 @@ export default function StudentListPage() {
     const q = search.toLowerCase();
     setFiltered(
       enrollments.filter(
-        (e) =>
-          e.profiles?.full_name?.toLowerCase().includes(q) ||
-          e.classes?.name?.toLowerCase().includes(q)
+        (e) => {
+          const matchSearch = e.profiles?.full_name?.toLowerCase().includes(q) || e.classes?.name?.toLowerCase().includes(q);
+          const matchClass = filterClassId === "all" || e.class_id === filterClassId;
+          return matchSearch && matchClass;
+        }
       )
     );
-  }, [search, enrollments]);
+  }, [search, filterClassId, enrollments]);
+
+  const uniqueClasses = Array.from(new Map(enrollments.map(e => [e.class_id, { id: e.class_id, name: e.classes?.name }])).values()).filter(c => c.name);
 
   if (isLoading) {
     return (
@@ -53,16 +58,27 @@ export default function StudentListPage() {
         </p>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-        <input
-          type="text"
-          placeholder="Cari nama murid atau kelas..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
-        />
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <input
+            type="text"
+            placeholder="Cari nama murid atau kelas..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
+          />
+        </div>
+        <div className="sm:w-64">
+          <select value={filterClassId} onChange={(e) => setFilterClassId(e.target.value)}
+            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
+            <option value="all">Semua Kelas</option>
+            {uniqueClasses.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* List */}
