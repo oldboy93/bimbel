@@ -104,7 +104,7 @@ export default function StudentManagement() {
 
   const handleDownloadTemplate = () => {
     const ws = XLSX.utils.json_to_sheet([
-      { "Nama Lengkap": "Budi Santoso", "Email": "budi@alhanif.online", "Password": "", "No HP": "08123456789", "Alamat": "Jl. Merdeka 1" }
+      { "Nama Lengkap": "Budi Santoso", "Email": "budi@alhanif.online", "Password": "", "No HP": "08123456789", "Alamat": "Jl. Merdeka 1", "Nama Kelas": "Kelas Tahsin A" }
     ]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Template_Murid");
@@ -124,6 +124,9 @@ export default function StudentManagement() {
         const ws = wb.Sheets[wsname];
         const data = XLSX.utils.sheet_to_json(ws);
         
+        const { data: { user } } = await supabase.auth.getUser();
+        const actualTenantId = user?.app_metadata?.tenant_id || "11111111-1111-1111-1111-111111111111";
+        
         let successCount = 0;
         let failCount = 0;
         for (const row of data as any[]) {
@@ -132,6 +135,7 @@ export default function StudentManagement() {
           const rowPassword = row["Password"] || row["password"] || "";
           const rowPhone = row["No HP"] || row["no hp"] || row["Phone"] || "";
           const rowAddress = row["Alamat"] || row["alamat"] || row["Address"] || "";
+          const rowClassName = row["Kelas"] || row["Nama Kelas"] || row["kelas"] || "";
 
           if (rowName && rowEmail) {
             const res = await provisionUser({
@@ -142,8 +146,17 @@ export default function StudentManagement() {
               phone: String(rowPhone),
               address: rowAddress,
             });
-            if (res.success) successCount++;
-            else failCount++;
+            if (res.success) {
+              successCount++;
+              if (rowClassName && res.userId) {
+                const targetClass = classes.find(c => c.name.toLowerCase() === String(rowClassName).toLowerCase().trim());
+                if (targetClass) {
+                  await daftarkanMurid(res.userId, targetClass.id, actualTenantId, generatePin());
+                }
+              }
+            } else {
+              failCount++;
+            }
           }
         }
         alert(`Import Selesai! Berhasil ditambahkan: ${successCount}, Gagal: ${failCount}`);
