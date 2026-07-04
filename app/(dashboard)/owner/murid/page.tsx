@@ -442,7 +442,8 @@ export default function StudentManagement() {
               )}
             </div>
           ))}
-          </div>
+            </div>
+          ))}
         </div>
       )}
 
