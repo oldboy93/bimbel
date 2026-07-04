@@ -5,7 +5,7 @@ import type { HafalanProgress } from "@/types";
 import { QURAN_SURAHS, getSurahByNumber } from "@/lib/quranData";
 import { QURAN_JUZS, getHalamanByJuz, getJuzPageRange } from "@/lib/quranJuz";
 import { getProgressColor } from "@/lib/helpers";
-import { Loader2, BookOpen, Plus, Trash2 } from "lucide-react";
+import { Loader2, BookOpen, Plus, Trash2, Trophy } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 interface Props {
@@ -22,7 +22,7 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
   const [showForm, setShowForm] = useState(false);
 
   // Form state
-  const [mode, setMode] = useState<'surat' | 'juz'>('surat');
+  const [mode, setMode] = useState<'surat' | 'juz'>('juz');
   const [surahNum, setSurahNum] = useState(1);
   const [juzNum, setJuzNum] = useState(1);
   const [ayatReached, setAyatReached] = useState(0);
@@ -202,7 +202,7 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
               <label className="block text-sm font-semibold text-slate-700 mb-1">
                 {mode === 'surat' ? 'Ayat Dicapai' : 'Halaman Dicapai'} <span className="text-slate-400 font-normal">(maks. {totalProgress})</span>
               </label>
-              <div className="relative">
+              <div className="relative py-6 flex items-center">
                 <input
                   type="range"
                   min={0}
@@ -213,19 +213,23 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
                     const next = Math.min(totalProgress, Math.max(0, +e.target.value));
                     if (mode === 'surat') setAyatReached(next); else setPageReached(next);
                   }}
-                  className="w-full accent-blue-600"
+                  className="w-full accent-indigo-600 relative z-20 cursor-pointer"
                 />
-                <div className="pointer-events-none absolute inset-x-0 top-8 h-6">
-                  {keyframeMarks.map(mark => {
-                    const left = totalProgress > 0 ? Math.min(100, (mark / totalProgress) * 100) : 0;
-                    const reached = currentReached >= mark;
-                    return (
-                      <div key={mark} style={{ left: `${left}%` }} className="absolute top-0 -translate-x-1/2 text-center">
-                        <span className={`block h-2 w-2 rounded-full ${reached ? 'bg-emerald-500 border border-emerald-600' : 'bg-slate-300 border border-slate-200'}`} />
-                        <span className={`mt-1 block text-[10px] ${reached ? 'text-emerald-700 font-semibold' : 'text-slate-400'}`}>{mark}</span>
-                      </div>
-                    );
-                  })}
+                <div className="pointer-events-none absolute inset-x-0 flex items-center px-[8px] z-10">
+                  <div className="relative w-full">
+                    {keyframeMarks.map(mark => {
+                      if (mark > totalProgress) return null;
+                      const left = totalProgress > 0 ? Math.min(100, (mark / totalProgress) * 100) : 0;
+                      const reached = currentReached >= mark;
+                      return (
+                        <div key={mark} style={{ left: `${left}%` }} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center">
+                          <div className={`flex items-center justify-center h-6 w-6 rounded-full shadow-sm transition-all z-30 font-bold text-[11px] ${reached ? 'bg-indigo-600 border-[3px] border-white text-white scale-110 shadow-indigo-200' : 'bg-slate-200 border-[3px] border-white text-slate-500'}`}>
+                            {mark}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
@@ -281,9 +285,47 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
                 </div>
               )}
 
-              {isKeyframeReached && (
-                <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-                  Peringatan: Anda sudah mencapai titik ujian penting pada {mode === 'surat' ? 'ayat' : 'halaman'} {currentReached}. Sebaiknya lakukan ujian hafalan sebelum menambah setoran baru.
+              {isKeyframeReached ? (
+                <div className="mt-6 rounded-3xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-white p-6 shadow-sm relative overflow-hidden">
+                  <div className="absolute -top-6 -right-6 text-indigo-200/40 rotate-12">
+                    <Trophy size={120} />
+                  </div>
+                  <div className="relative z-10 space-y-4">
+                    <div className="flex items-start gap-4">
+                      <div className="flex shrink-0 items-center justify-center w-12 h-12 rounded-full bg-indigo-600 text-white shadow-md shadow-indigo-200">
+                        <Trophy size={24} />
+                      </div>
+                      <div>
+                        <h4 className="font-black text-indigo-900 text-lg">Milestone Tercapai! 🎉</h4>
+                        <p className="text-sm text-indigo-700 mt-1 leading-relaxed font-medium">
+                          Masya Allah, murid telah mencapai titik evaluasi di {mode === 'surat' ? 'ayat' : 'halaman'} ke-{currentReached}.
+                          Silakan masukkan catatan evaluasi ustadz/ustadzah di bawah ini sebagai laporan.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="pt-2">
+                      <label className="block text-xs font-extrabold text-indigo-900 uppercase tracking-widest mb-2">
+                        Catatan Evaluasi Milestone
+                      </label>
+                      <textarea 
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        placeholder="Contoh: Kelancaran sudah baik, namun panjang pendek (mad) masih perlu diperhatikan..."
+                        className="w-full px-4 py-3 rounded-xl border border-indigo-200 bg-white text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none h-24 placeholder:text-slate-400"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-4">
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Catatan Ustadz/Ustadzah (Opsional)</label>
+                  <textarea 
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Tambahkan catatan untuk sesi ini (contoh: tajwid lancar)..."
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white min-h-[80px]"
+                  />
                 </div>
               )}
             </div>

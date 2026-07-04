@@ -55,27 +55,27 @@ export async function middleware(request: NextRequest) {
   );
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
   const isDashboardRoute = pathname.startsWith('/owner') || pathname.startsWith('/guru') || pathname.startsWith('/murid');
 
   // 1. Belum login -> redirect ke /login
-  if (!session && isDashboardRoute) {
+  if (!user && isDashboardRoute) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
   // 2. Sudah login tapi akses /login -> otomatis diarahkan ke dashboard sesuai role
-  if (session && pathname === '/login') {
+  if (user && pathname === '/login') {
     // app_metadata lebih aman (hanya bisa diset server/admin), fallback ke user_metadata untuk user lama
-    const role = session.user.app_metadata?.role ?? session.user.user_metadata?.role ?? 'murid';
+    const role = user.app_metadata?.role ?? user.user_metadata?.role ?? 'murid';
     return NextResponse.redirect(new URL(`/${role}`, request.url));
   }
 
   // 3. Role Guard: guru tidak bisa akses /owner, dst.
-  if (session && isDashboardRoute) {
-    const role = session.user.app_metadata?.role ?? session.user.user_metadata?.role ?? 'murid';
+  if (user && isDashboardRoute) {
+    const role = user.app_metadata?.role ?? user.user_metadata?.role ?? 'murid';
     const routeRole = pathname.split('/')[1]; // ambil segmen ke-1, misal: 'murid' dari '/murid'
     
     // Pastikan user tidak menembus batas role lain (kecuali owner yang bebas)

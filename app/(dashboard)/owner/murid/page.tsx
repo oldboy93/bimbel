@@ -23,6 +23,11 @@ export default function StudentManagement() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEnrollModalOpen, setIsEnrollModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Profile | null>(null);
+  const [selectedClassId, setSelectedClassId] = useState("");
+  const [parentPin, setParentPin] = useState("");
+  const [showEnrollPin, setShowEnrollPin] = useState(true);
+  const [showAddPassword, setShowAddPassword] = useState(false);
+  const [showEditPassword, setShowEditPassword] = useState(false);
   const [studentEnrollments, setStudentEnrollments] = useState<EnrollmentWithDetails[]>([]);
   const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -125,10 +130,25 @@ export default function StudentManagement() {
     else alert(result.error);
   };
 
-  const openEnrollModal = (student: Profile) => {
+  const openEnrollModal = async (student: Profile) => {
     setSelectedStudent(student);
     setSelectedClassId(classes[0]?.id ?? "");
-    setParentPin(generatePin());
+    
+    // Coba ambil PIN yang sudah ada dari kelas lain yang diikuti murid ini
+    const { data } = await supabase
+      .from("enrollments")
+      .select("parent_pin")
+      .eq("student_id", student.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (data && data.parent_pin) {
+      setParentPin(data.parent_pin);
+    } else {
+      setParentPin(generatePin());
+    }
+    
+    setShowEnrollPin(true);
     setIsEnrollModalOpen(true);
   };
 
@@ -309,8 +329,13 @@ export default function StudentManagement() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1">Password</label>
-                  <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min. 8 karakter (opsional)"
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" />
+                  <div className="relative">
+                    <input type={showAddPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min. 8 karakter (opsional)"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition pr-10" />
+                    <button type="button" onClick={() => setShowAddPassword(!showAddPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition">
+                      {showAddPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
               </div>
               <div>
@@ -371,7 +396,16 @@ export default function StudentManagement() {
                 <div className="flex gap-2">
                   <div className="flex-1 flex items-center gap-3 px-4 py-3 border border-amber-200 bg-amber-50 rounded-xl">
                     <KeyRound size={16} className="text-amber-600 shrink-0" />
-                    <span className="font-mono font-bold text-amber-700 text-lg tracking-widest">{parentPin}</span>
+                    <input 
+                      type={showEnrollPin ? "text" : "password"} 
+                      value={parentPin}
+                      onChange={(e) => setParentPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      className="bg-transparent border-none outline-none font-mono font-bold text-amber-700 text-lg tracking-widest w-full"
+                      placeholder="PIN 6 digit"
+                    />
+                    <button type="button" onClick={() => setShowEnrollPin(!showEnrollPin)} className="text-amber-500 hover:text-amber-700 transition">
+                      {showEnrollPin ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
                   </div>
                   <button type="button" onClick={() => setParentPin(generatePin())}
                     className="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl text-sm transition">
@@ -424,8 +458,13 @@ export default function StudentManagement() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">Ubah Password <span className="text-slate-400 font-normal">(kosongkan jika tidak ingin diubah)</span></label>
-                <input type="password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} placeholder="Password baru..."
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" />
+                <div className="relative">
+                  <input type={showEditPassword ? "text" : "password"} value={editPassword} onChange={(e) => setEditPassword(e.target.value)} placeholder="Password baru..."
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition pr-10" />
+                  <button type="button" onClick={() => setShowEditPassword(!showEditPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition">
+                    {showEditPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
               <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
                 <button type="button" onClick={() => setIsEditModalOpen(false)} className="px-5 py-3 text-slate-500 hover:bg-slate-50 font-semibold rounded-xl transition">Batal</button>
