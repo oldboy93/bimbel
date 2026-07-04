@@ -119,7 +119,7 @@ export default function GuruDashboard() {
                     <p className="text-sm text-slate-500">{cls.count} murid aktif</p>
                   </div>
                 </div>
-                <Link href="/guru/murid"
+                <Link href={`/guru/murid?class_id=${cid}`}
                   className="px-4 py-2 text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 font-semibold rounded-xl transition">
                   Kelola
                 </Link>
