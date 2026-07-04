@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { provisionUser, deleteUser, updateUser, getStudentEmails } from "@/app/actions/provision";
 import { tampilSemuaMurid, daftarkanMurid, tampilEnrollmentMurid } from "@/services/studentService";
+import * as XLSX from "xlsx";
 import {
   Plus, Trash2, Phone, MapPin, Loader2, X, GraduationCap,
-  BookOpen, KeyRound, Eye, EyeOff, ChevronDown, Pencil
+  BookOpen, KeyRound, Eye, EyeOff, ChevronDown, Pencil, Upload, Download
 } from "lucide-react";
 import type { Profile, Class, EnrollmentWithDetails } from "@/types";
 import { PROGRAM_TYPES } from "@/lib/helpers";
@@ -33,6 +34,8 @@ export default function StudentManagement() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [visiblePins, setVisiblePins] = useState<Record<string, boolean>>({});
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isAddingMore, setIsAddingMore] = useState(false);
 
   // Add form states
   const [email, setEmail] = useState("");
@@ -40,6 +43,7 @@ export default function StudentManagement() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [selectedAddClassId, setSelectedAddClassId] = useState("");
 
   // Edit form states
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -76,15 +80,81 @@ export default function StudentManagement() {
     e.preventDefault();
     setIsSubmitting(true);
     setErrorMessage(null);
+    setSuccessMessage(null);
     const result = await provisionUser({ email, password: password || undefined, fullName, role: "murid", phone, address });
-    if (result.success) {
-      setIsAddModalOpen(false);
-      setEmail(""); setPassword(""); setFullName(""); setPhone(""); setAddress("");
+    if (result.success && result.userId) {
+      if (selectedAddClassId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        const actualTenantId = user?.app_metadata?.tenant_id || "11111111-1111-1111-1111-111111111111";
+        await daftarkanMurid(result.userId, selectedAddClassId, actualTenantId, generatePin());
+      }
+      setEmail(""); setPassword(""); setFullName(""); setPhone(""); setAddress(""); setSelectedAddClassId("");
       fetchData();
+      if (isAddingMore) {
+        setSuccessMessage(`Berhasil menambahkan murid: ${fullName}`);
+        setTimeout(() => setSuccessMessage(null), 3000);
+      } else {
+        setIsAddModalOpen(false);
+      }
     } else {
       setErrorMessage(result.error || "Gagal menambahkan murid.");
     }
     setIsSubmitting(false);
+  };
+
+  const handleDownloadTemplate = () => {
+    const ws = XLSX.utils.json_to_sheet([
+      { "Nama Lengkap": "Budi Santoso", "Email": "budi@alhanif.online", "Password": "", "No HP": "08123456789", "Alamat": "Jl. Merdeka 1" }
+    ]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template_Murid");
+    XLSX.writeFile(wb, "Template_Import_Murid.xlsx");
+  };
+
+  const handleImportCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsLoading(true);
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const bstr = evt.target?.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json(ws);
+        
+        let successCount = 0;
+        let failCount = 0;
+        for (const row of data as any[]) {
+          const rowName = row["Nama"] || row["nama"] || row["Nama Lengkap"] || row["Name"] || "";
+          const rowEmail = row["Email"] || row["email"] || "";
+          const rowPassword = row["Password"] || row["password"] || "";
+          const rowPhone = row["No HP"] || row["no hp"] || row["Phone"] || "";
+          const rowAddress = row["Alamat"] || row["alamat"] || row["Address"] || "";
+
+          if (rowName && rowEmail) {
+            const res = await provisionUser({
+              email: rowEmail,
+              password: rowPassword ? String(rowPassword) : undefined,
+              fullName: rowName,
+              role: "murid",
+              phone: String(rowPhone),
+              address: rowAddress,
+            });
+            if (res.success) successCount++;
+            else failCount++;
+          }
+        }
+        alert(`Import Selesai! Berhasil ditambahkan: ${successCount}, Gagal: ${failCount}`);
+      } catch (err: any) {
+        alert("Gagal membaca file: " + err.message);
+      }
+      fetchData();
+      e.target.value = "";
+      setIsLoading(false);
+    };
+    reader.readAsBinaryString(file);
   };
 
   const openEditModal = (student: Profile) => {
@@ -206,11 +276,25 @@ export default function StudentManagement() {
           </h1>
           <p className="text-slate-500 mt-1">Kelola data murid dan pendaftaran kelas (enrollment).</p>
         </div>
-        <button onClick={() => setIsAddModalOpen(true)}
-          className="flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all shadow-md shadow-blue-500/10 active:scale-95">
-          <Plus size={20} />
-          Tambah Murid Baru
-        </button>
+        <div className="flex flex-wrap items-center gap-3 mt-4 sm:mt-0">
+          <button onClick={handleDownloadTemplate}
+            className="flex items-center gap-2 px-5 py-3 bg-amber-500 text-white font-semibold rounded-xl hover:bg-amber-600 transition-all shadow-md shadow-amber-500/10 active:scale-95">
+            <Download size={20} />
+            Template Excel
+          </button>
+          <button onClick={() => document.getElementById("csv-upload")?.click()}
+            className="flex items-center gap-2 px-5 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all shadow-md shadow-emerald-500/10 active:scale-95">
+            <Upload size={20} />
+            Import Excel
+          </button>
+          <input type="file" id="csv-upload" className="hidden" accept=".csv, .xlsx, .xls" onChange={handleImportCSV} />
+          
+          <button onClick={() => setIsAddModalOpen(true)}
+            className="flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all shadow-md shadow-blue-500/10 active:scale-95">
+            <Plus size={20} />
+            Tambah Murid Baru
+          </button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -327,6 +411,7 @@ export default function StudentManagement() {
             </div>
             <form onSubmit={handleAddStudent} className="p-6 space-y-4">
               {errorMessage && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-medium text-center">{errorMessage}</div>}
+              {successMessage && <div className="bg-emerald-50 text-emerald-600 p-3 rounded-lg text-sm font-medium text-center">{successMessage}</div>}
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">Nama Lengkap Murid</label>
                 <input type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Nama murid..."
@@ -359,10 +444,24 @@ export default function StudentManagement() {
                 <textarea value={address} onChange={(e) => setAddress(e.target.value)} rows={2} placeholder="Alamat murid..."
                   className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition resize-none" />
               </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Daftarkan ke Kelas <span className="text-slate-400 font-normal">(opsional)</span></label>
+                <select value={selectedAddClassId} onChange={(e) => setSelectedAddClassId(e.target.value)}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition bg-white">
+                  <option value="">-- Pilih Kelas --</option>
+                  {classes.map((k) => (
+                    <option key={k.id} value={k.id}>{k.name} ({k.type})</option>
+                  ))}
+                </select>
+                <p className="text-xs text-slate-400 mt-1">Jika dipilih, sistem akan otomatis mendaftarkan murid dan membuat PIN acak.</p>
+              </div>
               <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
                 <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-5 py-3 text-slate-500 hover:bg-slate-50 font-semibold rounded-xl transition">Batal</button>
-                <button type="submit" disabled={isSubmitting} className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition disabled:opacity-50">
-                  {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Simpan & Daftarkan"}
+                <button type="submit" onClick={() => setIsAddingMore(true)} disabled={isSubmitting} className="flex items-center gap-2 px-6 py-3 bg-indigo-50 text-indigo-700 font-semibold rounded-xl hover:bg-indigo-100 transition disabled:opacity-50">
+                  {isSubmitting && isAddingMore ? <Loader2 className="h-4 w-4 animate-spin" /> : "Simpan & Tambah Lagi"}
+                </button>
+                <button type="submit" onClick={() => setIsAddingMore(false)} disabled={isSubmitting} className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition disabled:opacity-50">
+                  {isSubmitting && !isAddingMore ? <Loader2 className="h-4 w-4 animate-spin" /> : "Simpan Saja"}
                 </button>
               </div>
             </form>
