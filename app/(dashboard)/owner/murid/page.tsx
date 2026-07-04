@@ -32,6 +32,7 @@ export default function StudentManagement() {
   const [studentEnrollments, setStudentEnrollments] = useState<EnrollmentWithDetails[]>([]);
   const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
   const [filterClassId, setFilterClassId] = useState("all");
+  const [collapsedLetters, setCollapsedLetters] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [visiblePins, setVisiblePins] = useState<Record<string, boolean>>({});
@@ -280,6 +281,10 @@ export default function StudentManagement() {
     setVisiblePins((prev) => ({ ...prev, [enrollmentId]: !prev[enrollmentId] }));
   };
 
+  const toggleLetterCollapse = (letter: string) => {
+    setCollapsedLetters(prev => ({ ...prev, [letter]: !prev[letter] }));
+  };
+
   const filteredStudents = students.filter(s => {
     if (filterClassId !== "all") {
        return s.enrollments?.some((e: any) => e.class_id === filterClassId);
@@ -352,10 +357,19 @@ export default function StudentManagement() {
         <div className="space-y-8">
           {sortedLetters.map((letter) => (
             <div key={letter} className="space-y-3">
-              <h2 className="text-xl font-bold text-slate-800 border-b-2 border-slate-100 pb-2 flex items-center gap-3">
-                <span className="bg-blue-100 text-blue-700 w-8 h-8 rounded-lg flex items-center justify-center text-sm">{letter}</span>
+              <h2 
+                onClick={() => toggleLetterCollapse(letter)}
+                className="text-xl font-bold text-slate-800 border-b-2 border-slate-100 pb-2 flex items-center justify-between cursor-pointer group"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="bg-blue-100 text-blue-700 w-8 h-8 rounded-lg flex items-center justify-center text-sm group-hover:bg-blue-200 transition">{letter}</span>
+                  <span className="text-sm font-normal text-slate-400 group-hover:text-slate-600 transition">
+                    ({groupedStudents[letter].length} murid)
+                  </span>
+                </div>
+                <ChevronDown size={20} className={`text-slate-400 transition-transform ${collapsedLetters[letter] ? 'rotate-180' : ''}`} />
               </h2>
-              {groupedStudents[letter].map((student) => (
+              {!collapsedLetters[letter] && groupedStudents[letter].map((student) => (
                 <div key={student.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition">
               {/* Card Header */}
               <div className="p-5 flex justify-between items-center">
