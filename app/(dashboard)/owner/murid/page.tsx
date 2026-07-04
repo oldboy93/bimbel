@@ -127,6 +127,17 @@ export default function StudentManagement() {
     else alert(result.error);
   };
 
+  const handleUnenroll = async (enrollmentId: string, studentId: string) => {
+    if (!confirm("Hapus kelas ini dari daftar yang diikuti murid?")) return;
+    const { error } = await supabase.from("enrollments").delete().eq("id", enrollmentId);
+    if (error) {
+      alert("Gagal menghapus kelas: " + error.message);
+    } else {
+      const updated = await tampilEnrollmentMurid(studentId);
+      setStudentEnrollments(updated);
+    }
+  };
+
   const openEnrollModal = async (student: Profile) => {
     setSelectedStudent(student);
     setSelectedClassId(classes[0]?.id ?? "");
@@ -290,6 +301,9 @@ export default function StudentManagement() {
                                   {isPinVisible ? <EyeOff size={12} /> : <Eye size={12} />}
                                 </button>
                               </div>
+                              <button onClick={() => handleUnenroll(enr.id, student.id)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="Hapus Kelas">
+                                <Trash2 size={16} />
+                              </button>
                             </div>
                           </div>
                         );
