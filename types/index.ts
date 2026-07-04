@@ -24,6 +24,7 @@ export interface Profile {
   date_of_birth?: string;
   is_active: boolean;
   created_at: string;
+  enrollments?: { class_id: string }[];
 }
 
 export interface Class {

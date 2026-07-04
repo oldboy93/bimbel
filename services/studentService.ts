@@ -13,7 +13,7 @@ export const tampilSemuaMurid = async (): Promise<Profile[]> => {
   const db = getDb();
   const { data, error } = await db
     .from('profiles')
-    .select('*')
+    .select('*, enrollments(class_id)')
     .eq('role', 'murid')
     .eq('is_active', true)
     .order('full_name');

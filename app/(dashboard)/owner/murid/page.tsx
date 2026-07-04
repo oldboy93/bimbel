@@ -31,6 +31,7 @@ export default function StudentManagement() {
   const [showEditPassword, setShowEditPassword] = useState(false);
   const [studentEnrollments, setStudentEnrollments] = useState<EnrollmentWithDetails[]>([]);
   const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
+  const [filterClassId, setFilterClassId] = useState("all");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [visiblePins, setVisiblePins] = useState<Record<string, boolean>>({});
@@ -279,6 +280,22 @@ export default function StudentManagement() {
     setVisiblePins((prev) => ({ ...prev, [enrollmentId]: !prev[enrollmentId] }));
   };
 
+  const filteredStudents = students.filter(s => {
+    if (filterClassId !== "all") {
+       return s.enrollments?.some((e: any) => e.class_id === filterClassId);
+    }
+    return true;
+  });
+
+  const groupedStudents = filteredStudents.reduce((acc, student) => {
+    const letter = student.full_name.charAt(0).toUpperCase();
+    if (!acc[letter]) acc[letter] = [];
+    acc[letter].push(student);
+    return acc;
+  }, {} as Record<string, Profile[]>);
+  
+  const sortedLetters = Object.keys(groupedStudents).sort();
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -310,22 +327,36 @@ export default function StudentManagement() {
         </div>
       </div>
 
+      <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
+        <label className="text-sm font-semibold text-slate-700 whitespace-nowrap">Filter Kelas:</label>
+        <select value={filterClassId} onChange={(e) => setFilterClassId(e.target.value)}
+          className="w-full sm:w-64 px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition bg-white text-sm">
+          <option value="all">Semua Kelas</option>
+          {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+      </div>
+
       {isLoading ? (
         <div className="flex justify-center items-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
         </div>
-      ) : students.length === 0 ? (
+      ) : sortedLetters.length === 0 ? (
         <div className="bg-white rounded-2xl border border-slate-100 p-12 text-center max-w-lg mx-auto">
           <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-blue-600">
             <GraduationCap size={32} />
           </div>
-          <h3 className="text-lg font-bold text-slate-950">Belum Ada Murid</h3>
-          <p className="text-slate-500 text-sm mt-2">Tambahkan murid pertama untuk memulai enrollment ke kelas.</p>
+          <h3 className="text-lg font-bold text-slate-950">Tidak Ada Murid</h3>
+          <p className="text-slate-500 text-sm mt-2">Tidak ada data murid yang ditemukan untuk pencarian/filter ini.</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {students.map((student) => (
-            <div key={student.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition">
+        <div className="space-y-8">
+          {sortedLetters.map((letter) => (
+            <div key={letter} className="space-y-3">
+              <h2 className="text-xl font-bold text-slate-800 border-b-2 border-slate-100 pb-2 flex items-center gap-3">
+                <span className="bg-blue-100 text-blue-700 w-8 h-8 rounded-lg flex items-center justify-center text-sm">{letter}</span>
+              </h2>
+              {groupedStudents[letter].map((student) => (
+                <div key={student.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition">
               {/* Card Header */}
               <div className="p-5 flex justify-between items-center">
                 <div className="flex items-center gap-4">
@@ -411,6 +442,7 @@ export default function StudentManagement() {
               )}
             </div>
           ))}
+          </div>
         </div>
       )}
 
