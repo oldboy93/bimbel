@@ -52,9 +52,6 @@ export default function StudentManagement() {
 
   const [emailMap, setEmailMap] = useState<Record<string, string>>({});
 
-  // Enroll form states
-  const [selectedClassId, setSelectedClassId] = useState("");
-  const [parentPin, setParentPin] = useState(generatePin());
 
   const supabase = createClient();
 
