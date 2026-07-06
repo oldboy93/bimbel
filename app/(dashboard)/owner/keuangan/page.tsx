@@ -44,6 +44,7 @@ export default function OwnerKeuanganPage() {
         .select(`
           id,
           status,
+          spp_status,
           profiles!enrollments_student_id_fkey(full_name),
           classes(name, price)
         `)
@@ -51,8 +52,8 @@ export default function OwnerKeuanganPage() {
 
       if (enrollments) {
         const list: PaymentItem[] = enrollments.map((e: any) => {
-          // Status active = Lunas (paid), status suspended atau status lainnya = Belum Bayar (unpaid)
-          const isPaid = e.status === "active";
+          // Gunakan spp_status baru jika ada, jika null maka fallback ke status === "active"
+          const isPaid = e.spp_status ? (e.spp_status === "paid") : (e.status === "active");
           return {
             enrollmentId: e.id,
             studentName: e.profiles?.full_name ?? "Murid",
@@ -78,10 +79,10 @@ export default function OwnerKeuanganPage() {
   const handleTogglePayment = async (enrollmentId: string, currentStatus: "paid" | "unpaid") => {
     setIsUpdating(enrollmentId);
     try {
-      const newStatus = currentStatus === "paid" ? "inactive" : "active";
+      const newSppStatus = currentStatus === "paid" ? "unpaid" : "paid";
       const { error } = await supabase
         .from("enrollments")
-        .update({ status: newStatus })
+        .update({ spp_status: newSppStatus })
         .eq("id", enrollmentId);
       if (error) {
         alert("Gagal memperbarui status pembayaran: " + error.message);

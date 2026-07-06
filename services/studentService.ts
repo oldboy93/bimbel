@@ -74,6 +74,19 @@ export const daftarkanMurid = async (
   parentPin: string
 ): Promise<Enrollment> => {
   const db = getDb();
+  
+  // Check if student is already enrolled in this class
+  const { data: existing } = await db
+    .from('enrollments')
+    .select('id')
+    .eq('student_id', studentId)
+    .eq('class_id', classId)
+    .maybeSingle();
+
+  if (existing) {
+    throw new Error("Murid sudah terdaftar di kelas ini!");
+  }
+
   const { data, error } = await db
     .from('enrollments')
     .insert({

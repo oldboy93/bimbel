@@ -46,6 +46,7 @@ export interface Enrollment {
   parent_pin?: string;
   enrolled_at: string;
   status: 'active' | 'inactive' | 'graduated';
+  spp_status?: 'paid' | 'unpaid';
   // Joined relations (optional)
   profiles?: Profile;
   classes?: Class;

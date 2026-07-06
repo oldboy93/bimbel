@@ -153,7 +153,11 @@ export default function StudentManagement() {
               if (rowClassName && res.userId) {
                 const targetClass = classes.find(c => c.name.toLowerCase() === String(rowClassName).toLowerCase().trim());
                 if (targetClass) {
-                  await daftarkanMurid(res.userId, targetClass.id, actualTenantId, generatePin());
+                  try {
+                    await daftarkanMurid(res.userId, targetClass.id, actualTenantId, generatePin());
+                  } catch (enrollErr) {
+                    console.warn(`Siswa ${rowName} dilewati pendaftaran kelasnya:`, enrollErr);
+                  }
                 }
               }
             } else {

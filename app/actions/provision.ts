@@ -59,6 +59,45 @@ export async function provisionUser(input: ProvisionInput) {
     });
 
     if (authError) {
+      // SMART UPSERT: Jika user sudah terdaftar, perbarui data profil mereka
+      if (
+        authError.message.includes("already registered") ||
+        authError.message.includes("already exists") ||
+        authError.message.includes("already been registered")
+      ) {
+        const { data: allUsers } = await adminSupabase.auth.admin.listUsers({ perPage: 1000 });
+        const existingUser = allUsers?.users.find(u => u.email?.toLowerCase() === input.email.toLowerCase());
+        
+        if (existingUser) {
+          // Cegah peretasan lintas tenant (cross-tenant security check)
+          const userTenantId = existingUser.app_metadata?.tenant_id || existingUser.user_metadata?.tenant_id;
+          if (userTenantId && userTenantId !== tenantId) {
+            return { success: false, error: "Email ini sudah terdaftar di tenant/sekolah lain." };
+          }
+
+          // Perbarui metadata user auth
+          await adminSupabase.auth.admin.updateUserById(existingUser.id, {
+            user_metadata: { role: input.role, full_name: input.fullName }
+          });
+
+          // Perbarui data profile di database
+          const { error: profileError } = await adminSupabase
+            .from("profiles")
+            .update({
+              full_name: input.fullName,
+              phone: input.phone || "",
+              address: input.address || "",
+            })
+            .eq("id", existingUser.id);
+
+          if (profileError) {
+            return { success: false, error: `Gagal memperbarui profil: ${profileError.message}` };
+          }
+
+          revalidatePath(`/owner/${input.role}`);
+          return { success: true, userId: existingUser.id };
+        }
+      }
       return { success: false, error: authError.message };
     }
 
