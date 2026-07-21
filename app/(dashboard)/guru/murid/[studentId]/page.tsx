@@ -84,7 +84,6 @@ export default function StudentDetailPage() {
       <div className="flex gap-1 bg-slate-100/60 p-1 rounded-2xl border border-slate-200/20 overflow-x-auto scrollbar-hide">
         {[
           { key: "jadwal",    label: "Jadwal"   },
-          { key: "kehadiran", label: "Kehadiran"},
           ...(enrollment?.classes?.type === "calistung" ? [] : [{ key: "hafalan", label: "Hafalan" }]),
           ...(enrollment?.classes?.type === "calistung" ? [] : [{ key: "murajaah", label: "Murajaah" }]),
           { key: "iqro",      label: "Iqro & Iksar" },
@@ -115,7 +114,6 @@ export default function StudentDetailPage() {
         ) : (
           <>
             {activeTab === "jadwal"    && <TabJadwal    enrollmentId={enrollment.id} />}
-            {activeTab === "kehadiran" && <TabKehadiran  enrollmentId={enrollment.id} guruId={guruId} tenantId={tenantId} studentPhone={student.phone || ""} studentName={student.full_name} />}
             {activeTab === "hafalan"   && <TabHafalan    enrollmentId={enrollment.id} guruId={guruId} studentPhone={student.phone || ""} studentName={student.full_name} />}
             {activeTab === "murajaah"  && <TabMurajaah  enrollmentId={enrollment.id} guruId={guruId} studentPhone={student.phone || ""} studentName={student.full_name} />}
             {activeTab === "iqro"      && <TabIqro      enrollmentId={enrollment.id} guruId={guruId} studentPhone={student.phone || ""} studentName={student.full_name} />}

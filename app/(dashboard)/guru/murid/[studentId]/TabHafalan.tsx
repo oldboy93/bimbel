@@ -20,6 +20,7 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [selectedDetail, setSelectedDetail] = useState<HafalanProgress | null>(null);
 
   // Form state
   const [mode, setMode] = useState<'surat' | 'juz'>('juz');
@@ -426,13 +427,24 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
         ) : riwayat.map(r => {
           const p = hitungPersenHafalan(r.ayat_reached, r.total_ayat);
           return (
-            <div key={r.id} className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+            <div
+              key={r.id}
+              onClick={() => setSelectedDetail(r)}
+              className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm hover:border-blue-300 hover:shadow-md transition cursor-pointer group"
+            >
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <p className="font-bold text-slate-900">{r.surah_name}</p>
-                  <p className="text-xs text-slate-400">{new Date(r.session_date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
+                  <p className="font-bold text-slate-900 group-hover:text-blue-600 transition flex items-center gap-1.5">
+                    {r.surah_name}
+                    <span className="text-[10px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                      Klik detail ➔
+                    </span>
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    {new Date(r.session_date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                  </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                   <span className="text-sm font-black text-blue-600">{r.ayat_reached}/{r.total_ayat}</span>
                   <button onClick={() => handleHapus(r.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition">
                     <Trash2 size={14} />
@@ -442,11 +454,92 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
               <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
                 <div className={`h-full rounded-full ${getProgressColor(p)}`} style={{ width: `${p}%` }} />
               </div>
-              {r.notes && <p className="text-xs text-slate-500 mt-2 italic">"{r.notes}"</p>}
+              {r.notes && <p className="text-xs text-slate-500 mt-2 italic line-clamp-2">"{r.notes}"</p>}
             </div>
           );
         })}
       </div>
+
+      {/* MODAL DETAIL HAFALAN */}
+      {selectedDetail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-slate-100 space-y-5">
+            <div className="flex justify-between items-start border-b border-slate-100 pb-3">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-blue-600">Rincian Hafalan</span>
+                <h3 className="text-xl font-extrabold text-slate-900">{selectedDetail.surah_name}</h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Tanggal: {new Date(selectedDetail.session_date).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedDetail(null)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-slate-500">Pencapaian Hafalan</p>
+                  <p className="text-2xl font-black text-blue-600">
+                    {selectedDetail.ayat_reached} <span className="text-sm font-bold text-slate-500">/ {selectedDetail.total_ayat} {selectedDetail.surah_number === 0 ? 'Halaman' : 'Ayat'}</span>
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span className="text-2xl font-black text-emerald-600">
+                    {hitungPersenHafalan(selectedDetail.ayat_reached, selectedDetail.total_ayat)}%
+                  </span>
+                  <p className="text-[11px] text-slate-400">Tuntas</p>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold text-slate-500 mb-1">Catatan Ustadz / Evaluasi</p>
+                <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 text-sm text-slate-700 min-h-[70px]">
+                  {selectedDetail.notes ? (
+                    <p className="italic">"{selectedDetail.notes}"</p>
+                  ) : (
+                    <p className="text-slate-400 italic">Tidak ada catatan tambahan.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2 border-t border-slate-100">
+              <button
+                onClick={() => {
+                  const target = selectedDetail;
+                  setSelectedDetail(null);
+                  if (target.surah_number === 0 && target.surah_name.startsWith('Juz ')) {
+                    const parsedJuz = parseInt(target.surah_name.replace('Juz ', '').split(' ')[0], 10);
+                    setMode('juz');
+                    if (!Number.isNaN(parsedJuz)) setJuzNum(parsedJuz);
+                    setPageReached(target.ayat_reached);
+                  } else {
+                    setMode('surat');
+                    setSurahNum(target.surah_number);
+                    setAyatReached(target.ayat_reached);
+                  }
+                  if (target.notes) setNotes(target.notes);
+                  setShowForm(true);
+                }}
+                className="flex-1 py-3 bg-blue-600 text-white font-bold text-sm rounded-xl hover:bg-blue-700 transition"
+              >
+                Perbarui / Edit Sesi Ini
+              </button>
+              <button
+                onClick={() => setSelectedDetail(null)}
+                className="py-3 px-4 bg-slate-100 text-slate-700 font-semibold text-sm rounded-xl hover:bg-slate-200 transition"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

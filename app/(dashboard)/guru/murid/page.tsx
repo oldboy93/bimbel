@@ -6,10 +6,12 @@ import type { EnrollmentWithDetails } from "@/types";
 import { Loader2, GraduationCap, Phone, MapPin, ChevronRight, Search, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { PROGRAM_TYPES } from "@/lib/helpers";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 function StudentListContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const initClassId = searchParams.get("class_id") || "all";
   
   const [enrollments, setEnrollments] = useState<EnrollmentWithDetails[]>([]);
@@ -19,18 +21,31 @@ function StudentListContent() {
   const [filterClassId, setFilterClassId] = useState(initClassId);
   const [collapsedLetters, setCollapsedLetters] = useState<Record<string, boolean>>({});
   const [isInitialized, setIsInitialized] = useState(false);
+  const supabase = createClient();
 
-  // Load saved class selection on mount ONLY if no class_id query parameter is present
+  // Check auth session & load saved class selection on mount
   useEffect(() => {
-    const queryClassId = searchParams.get("class_id");
-    if (!queryClassId) {
-      const saved = localStorage.getItem("guru_murid_selected_class");
-      if (saved) {
-        setFilterClassId(saved);
+    const checkSessionAndClass = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/login");
+        return;
       }
-    }
-    setIsInitialized(true);
-  }, [searchParams]);
+
+      const queryClassId = searchParams.get("class_id");
+      if (!queryClassId) {
+        const saved = localStorage.getItem("guru_murid_selected_class");
+        if (saved) {
+          setFilterClassId(saved);
+        } else {
+          setFilterClassId("all");
+        }
+      }
+      setIsInitialized(true);
+    };
+
+    checkSessionAndClass();
+  }, [searchParams, router]);
 
   // Save selection whenever it changes (only after initialization)
   useEffect(() => {
@@ -43,6 +58,9 @@ function StudentListContent() {
     tampilSemuaEnrollment().then((data) => {
       setEnrollments(data);
       setFiltered(data);
+      setIsLoading(false);
+    }).catch((err) => {
+      console.error("Gagal memuat data enrollment:", err);
       setIsLoading(false);
     });
   }, []);
