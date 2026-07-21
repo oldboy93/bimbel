@@ -30,13 +30,16 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
   const [examPages, setExamPages] = useState<number | null>(null);
   const [sessionDate, setSessionDate] = useState(new Date().toISOString().split("T")[0]);
   const [notes, setNotes] = useState("");
+  const [juzKelipatan, setJuzKelipatan] = useState<3 | 5>(3);
 
   const selectedSurah = getSurahByNumber(surahNum);
   const selectedJuz = getHalamanByJuz(juzNum);
   const selectedJuzRange = getJuzPageRange(juzNum);
   const totalProgress = mode === 'surat' ? selectedSurah?.ayat ?? 1 : selectedJuz?.halaman ?? 1;
   const currentReached = mode === 'surat' ? ayatReached : pageReached;
-  const keyframeMarks = [3, 5, 8, 10, 13, 15, 18, 20];
+  const keyframeMarks = juzKelipatan === 3
+    ? [3, 6, 9, 12, 15, 18, 21]
+    : [5, 10, 15, 20, 25];
   const isKeyframeReached = keyframeMarks.includes(currentReached) && currentReached > 0;
   const availableExamMarks = mode === 'juz'
     ? keyframeMarks.filter(mark => mark <= currentReached)
@@ -195,6 +198,77 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
                 {selectedJuzRange && (
                   <p className="text-xs text-slate-500 mt-2">Range halaman: {selectedJuzRange.start}–{selectedJuzRange.end}</p>
                 )}
+              </div>
+            )}
+
+            {mode === 'juz' && (
+              <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <div>
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Sistem Kelipatan</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button type="button" onClick={() => { setJuzKelipatan(3); setPageReached(0); }}
+                      className={`py-2 px-3 rounded-xl border text-xs font-bold transition ${juzKelipatan === 3 ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm shadow-indigo-100' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'}`}>
+                      Kelipatan 3 Halaman
+                    </button>
+                    <button type="button" onClick={() => { setJuzKelipatan(5); setPageReached(0); }}
+                      className={`py-2 px-3 rounded-xl border text-xs font-bold transition ${juzKelipatan === 5 ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm shadow-indigo-100' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'}`}>
+                      Kelipatan 5 Halaman
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Pintasan Setoran ({juzKelipatan} Halaman)</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {juzKelipatan === 3 ? (
+                      <>
+                        <button type="button" onClick={() => setPageReached(Math.min(totalProgress, 3))}
+                          className={`py-2 px-1 text-[11px] font-bold rounded-xl border transition ${pageReached === 3 ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-300'}`}>
+                          3 Hlm Pertama (Hlm 3)
+                        </button>
+                        <button type="button" onClick={() => setPageReached(Math.min(totalProgress, 6))}
+                          className={`py-2 px-1 text-[11px] font-bold rounded-xl border transition ${pageReached === 6 ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-300'}`}>
+                          3 Hlm Kedua (Hlm 6)
+                        </button>
+                        <button type="button" onClick={() => setPageReached(Math.min(totalProgress, 9))}
+                          className={`py-2 px-1 text-[11px] font-bold rounded-xl border transition ${pageReached === 9 ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-300'}`}>
+                          3 Hlm Ketiga (Hlm 9)
+                        </button>
+                        <button type="button" onClick={() => setPageReached(Math.min(totalProgress, 12))}
+                          className={`py-2 px-1 text-[11px] font-bold rounded-xl border transition ${pageReached === 12 ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-300'}`}>
+                          3 Hlm Keempat (Hlm 12)
+                        </button>
+                        <button type="button" onClick={() => setPageReached(Math.min(totalProgress, 15))}
+                          className={`py-2 px-1 text-[11px] font-bold rounded-xl border transition ${pageReached === 15 ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-300'}`}>
+                          3 Hlm Kelima (Hlm 15)
+                        </button>
+                        <button type="button" onClick={() => setPageReached(Math.min(totalProgress, 18))}
+                          className={`py-2 px-1 text-[11px] font-bold rounded-xl border transition ${pageReached === 18 ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-300'}`}>
+                          3 Hlm Keenam (Hlm 18)
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button type="button" onClick={() => setPageReached(Math.min(totalProgress, 5))}
+                          className={`py-2 px-1 text-[11px] font-bold rounded-xl border transition ${pageReached === 5 ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-300'}`}>
+                          5 Hlm Pertama (Hlm 5)
+                        </button>
+                        <button type="button" onClick={() => setPageReached(Math.min(totalProgress, 10))}
+                          className={`py-2 px-1 text-[11px] font-bold rounded-xl border transition ${pageReached === 10 ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-300'}`}>
+                          5 Hlm Kedua (Hlm 10)
+                        </button>
+                        <button type="button" onClick={() => setPageReached(Math.min(totalProgress, 15))}
+                          className={`py-2 px-1 text-[11px] font-bold rounded-xl border transition ${pageReached === 15 ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-300'}`}>
+                          5 Hlm Ketiga (Hlm 15)
+                        </button>
+                        <button type="button" onClick={() => setPageReached(Math.min(totalProgress, 20))}
+                          className={`py-2 px-1 text-[11px] font-bold rounded-xl border transition ${pageReached === 20 ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-300'}`}>
+                          5 Hlm Keempat (Hlm 20)
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 

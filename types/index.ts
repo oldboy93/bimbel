@@ -87,6 +87,37 @@ export interface HafalanProgress {
   created_at: string;
 }
 
+export interface IqroProgress {
+  id: string;
+  tenant_id?: string;
+  enrollment_id: string;
+  guru_id: string;
+  type: 'iqro' | 'iksar';
+  jilid: number;
+  halaman: number;
+  total_halaman: number;
+  level: 'kurang' | 'cukup' | 'lancar' | 'mahir';
+  session_date: string;
+  notes?: string;
+  created_at: string;
+}
+
+export interface MurajaahSession {
+  id: string;
+  tenant_id?: string;
+  enrollment_id: string;
+  guru_id: string;
+  hafalan_ref_id?: string;
+  hafalan_type: 'surat' | 'juz';
+  surah_number?: number;
+  surah_name: string;
+  ayat_or_page_range?: string;
+  quality: 'lancar' | 'perlu_perbaikan' | 'mengulang';
+  session_date: string;
+  notes?: string;
+  created_at: string;
+}
+
 export interface TajwidAssessment {
   id: string;
   enrollment_id: string;

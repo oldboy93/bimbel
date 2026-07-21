@@ -23,29 +23,71 @@ export default function AbsensiHarianPage() {
   const [savedCount, setSavedCount] = useState(0);
   const [guruId, setGuruId] = useState("");
   const [tenantId, setTenantId] = useState("");
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Load saved class selection on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("guru_absen_selected_class");
+    if (saved) {
+      setSelectedClass(saved);
+    }
+    setIsInitialized(true);
+  }, []);
+
+  // Save selection whenever it changes (only after initialization)
+  useEffect(() => {
+    if (isInitialized && selectedClass) {
+      localStorage.setItem("guru_absen_selected_class", selectedClass);
+    }
+  }, [selectedClass, isInitialized]);
 
   const supabase = createClient();
-  const today = new Date().toISOString().split("T")[0];
-  const todayLabel = new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const [selectedDate, setSelectedDate] = useState<string>(() => new Date().toISOString().split("T")[0]);
 
+  // Load user profile & enrollments on mount
   useEffect(() => {
-    const load = async () => {
+    const loadMetadata = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) setGuruId(user.id);
 
       const data = await tampilSemuaEnrollment();
       setEnrollments(data);
-
-      // Default semua Hadir
-      const defaultStatuses: Record<string, Status> = {};
-      data.forEach(e => { defaultStatuses[e.id] = "H"; });
-      setStatuses(defaultStatuses);
-
       if (data[0]) setTenantId(data[0].tenant_id);
+    };
+    loadMetadata();
+  }, []);
+
+  // Fetch attendances whenever selectedDate or enrollments change
+  useEffect(() => {
+    if (enrollments.length === 0) {
+      setIsLoading(false);
+      return;
+    }
+
+    const fetchAttendances = async () => {
+      setIsLoading(true);
+      const { data: existing } = await supabase
+        .from("attendances")
+        .select("enrollment_id, status")
+        .eq("date", selectedDate);
+
+      const updatedStatuses: Record<string, Status> = {};
+      // Set default H (Hadir)
+      enrollments.forEach(e => {
+        updatedStatuses[e.id] = "H";
+      });
+      // Merge with existing attendance data
+      if (existing) {
+        existing.forEach(a => {
+          updatedStatuses[a.enrollment_id] = a.status as Status;
+        });
+      }
+      setStatuses(updatedStatuses);
       setIsLoading(false);
     };
-    load();
-  }, []);
+
+    fetchAttendances();
+  }, [selectedDate, enrollments]);
 
   const classList = Array.from(
     new Map(enrollments.map(e => [e.class_id, e.classes?.name ?? "-"])).entries()
@@ -68,7 +110,7 @@ export default function AbsensiHarianPage() {
     for (const enr of filtered) {
       const status = statuses[enr.id] ?? "H";
       await supabase.from("attendances").upsert(
-        { enrollment_id: enr.id, guru_id: guruId, tenant_id: tenantId, date: today, status },
+        { enrollment_id: enr.id, guru_id: guruId, tenant_id: tenantId, date: selectedDate, status },
         { onConflict: "enrollment_id,date" }
       );
       count++;
@@ -84,11 +126,28 @@ export default function AbsensiHarianPage() {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-extrabold text-slate-900 flex items-center gap-3">
-          <CalendarCheck className="text-blue-600 h-8 w-8" /> Absensi Harian
-        </h1>
-        <p className="text-slate-500 mt-1">{todayLabel}</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-900 flex items-center gap-3">
+            <CalendarCheck className="text-blue-600 h-8 w-8" /> Absensi Harian
+          </h1>
+          <p className="text-slate-500 mt-1">Kelola absensi kehadiran murid</p>
+        </div>
+
+        {/* Date Picker */}
+        <div className="flex items-center gap-2 bg-white px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm w-fit self-start sm:self-auto">
+          <span className="text-sm font-semibold text-slate-600">Tanggal:</span>
+          <input
+            type="date"
+            value={selectedDate}
+            max={new Date().toISOString().split("T")[0]}
+            onChange={(e) => {
+              setSelectedDate(e.target.value);
+              setSavedCount(0);
+            }}
+            className="text-sm font-bold text-slate-800 outline-none bg-transparent cursor-pointer"
+          />
+        </div>
       </div>
 
       {/* Filter Kelas */}

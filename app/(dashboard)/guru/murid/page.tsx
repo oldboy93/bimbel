@@ -18,6 +18,26 @@ function StudentListContent() {
   const [search, setSearch] = useState("");
   const [filterClassId, setFilterClassId] = useState(initClassId);
   const [collapsedLetters, setCollapsedLetters] = useState<Record<string, boolean>>({});
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Load saved class selection on mount ONLY if no class_id query parameter is present
+  useEffect(() => {
+    const queryClassId = searchParams.get("class_id");
+    if (!queryClassId) {
+      const saved = localStorage.getItem("guru_murid_selected_class");
+      if (saved) {
+        setFilterClassId(saved);
+      }
+    }
+    setIsInitialized(true);
+  }, [searchParams]);
+
+  // Save selection whenever it changes (only after initialization)
+  useEffect(() => {
+    if (isInitialized && filterClassId) {
+      localStorage.setItem("guru_murid_selected_class", filterClassId);
+    }
+  }, [filterClassId, isInitialized]);
 
   useEffect(() => {
     tampilSemuaEnrollment().then((data) => {

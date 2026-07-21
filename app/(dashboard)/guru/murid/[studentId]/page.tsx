@@ -12,11 +12,12 @@ import type { Profile, EnrollmentWithDetails } from "@/types";
 import TabJadwal from "./TabJadwal";
 import TabKehadiran from "./TabKehadiran";
 import TabHafalan from "./TabHafalan";
+import TabMurajaah from "./TabMurajaah";
+import TabIqro from "./TabIqro";
 import TabTajwid from "./TabTajwid";
 import TabCalistung from "./TabCalistung";
 import TabCatatan from "./TabCatatan";
 import TabRaport from "./TabRaport";
-
 
 export default function StudentDetailPage() {
   const params = useParams();
@@ -82,12 +83,14 @@ export default function StudentDetailPage() {
       {/* Tabs */}
       <div className="flex gap-1 bg-slate-100/60 p-1 rounded-2xl border border-slate-200/20 overflow-x-auto scrollbar-hide">
         {[
-          { key: "jadwal",   label: "Jadwal"   },
-          { key: "kehadiran",label: "Kehadiran"},
+          { key: "jadwal",    label: "Jadwal"   },
+          { key: "kehadiran", label: "Kehadiran"},
           ...(enrollment?.classes?.type === "calistung" ? [] : [{ key: "hafalan", label: "Hafalan" }]),
-          { key: "tajwid",   label: enrollment?.classes?.type === "calistung" ? "Calistung" : "Tajwid" },
-          { key: "catatan",  label: "Catatan"  },
-          { key: "raport",   label: "Raport" },
+          ...(enrollment?.classes?.type === "calistung" ? [] : [{ key: "murajaah", label: "Murajaah" }]),
+          { key: "iqro",      label: "Iqro & Iksar" },
+          { key: "tajwid",    label: enrollment?.classes?.type === "calistung" ? "Calistung" : "Tajwid" },
+          { key: "catatan",   label: "Catatan"  },
+          { key: "raport",    label: "Raport" },
         ].map((tab) => (
           <button
             key={tab.key}
@@ -114,6 +117,8 @@ export default function StudentDetailPage() {
             {activeTab === "jadwal"    && <TabJadwal    enrollmentId={enrollment.id} />}
             {activeTab === "kehadiran" && <TabKehadiran  enrollmentId={enrollment.id} guruId={guruId} tenantId={tenantId} studentPhone={student.phone || ""} studentName={student.full_name} />}
             {activeTab === "hafalan"   && <TabHafalan    enrollmentId={enrollment.id} guruId={guruId} studentPhone={student.phone || ""} studentName={student.full_name} />}
+            {activeTab === "murajaah"  && <TabMurajaah  enrollmentId={enrollment.id} guruId={guruId} studentPhone={student.phone || ""} studentName={student.full_name} />}
+            {activeTab === "iqro"      && <TabIqro      enrollmentId={enrollment.id} guruId={guruId} studentPhone={student.phone || ""} studentName={student.full_name} />}
             {activeTab === "tajwid"    && (
               enrollment?.classes?.type === "calistung"
                 ? <TabCalistung enrollmentId={enrollment.id} guruId={guruId} />
