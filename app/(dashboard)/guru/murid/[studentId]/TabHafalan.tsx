@@ -32,6 +32,7 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
   const [sessionDate, setSessionDate] = useState(new Date().toISOString().split("T")[0]);
   const [notes, setNotes] = useState("");
   const [juzKelipatan, setJuzKelipatan] = useState<3 | 5>(3);
+  const [status, setStatus] = useState<'lulus' | 'ngulang'>('lulus');
 
   const selectedSurah = getSurahByNumber(surahNum);
   const selectedJuz = getHalamanByJuz(juzNum);
@@ -119,6 +120,7 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
         sessionDate,
         notes,
         juzNumber: mode === 'juz' ? juzNum : undefined,
+        status,
       });
 
       if (studentPhone) {
@@ -142,6 +144,7 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
     setNotes("");
     setAyatReached(0);
     setPageReached(0);
+    setStatus('lulus');
     load();
     setIsSaving(false);
   };
@@ -164,6 +167,35 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
       {showForm && (
         <form onSubmit={handleSimpan} className="bg-white rounded-2xl border border-blue-100 p-5 space-y-4 shadow-sm">
           <h3 className="font-bold text-slate-900">Sesi Hafalan</h3>
+
+          {/* ── STATUS LULUS / NGULANG ── */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Hasil Sesi</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setStatus('lulus')}
+                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border font-bold transition ${
+                  status === 'lulus'
+                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm shadow-emerald-200'
+                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-emerald-300'
+                }`}
+              >
+                <span>✅</span> Lulus
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatus('ngulang')}
+                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border font-bold transition ${
+                  status === 'ngulang'
+                    ? 'bg-amber-500 text-white border-amber-500 shadow-sm shadow-amber-200'
+                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-amber-300'
+                }`}
+              >
+                <span>🔄</span> Ngulang
+              </button>
+            </div>
+          </div>
 
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-2">
@@ -426,6 +458,7 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
           </div>
         ) : riwayat.map(r => {
           const p = hitungPersenHafalan(r.ayat_reached, r.total_ayat);
+          const statusLulus = (r.status ?? 'lulus') === 'lulus';
           return (
             <div
               key={r.id}
@@ -433,18 +466,25 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
               className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm hover:border-blue-300 hover:shadow-md transition cursor-pointer group"
             >
               <div className="flex justify-between items-start mb-2">
-                <div>
-                  <p className="font-bold text-slate-900 group-hover:text-blue-600 transition flex items-center gap-1.5">
-                    {r.surah_name}
-                    <span className="text-[10px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-                      Klik detail ➔
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-bold text-slate-900 group-hover:text-blue-600 transition">
+                      {r.surah_name}
+                    </p>
+                    {/* ── STATUS BADGE ── */}
+                    <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
+                      statusLulus
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        : 'bg-amber-50 text-amber-700 border-amber-200'
+                    }`}>
+                      {statusLulus ? '✅ Lulus' : '🔄 Ngulang'}
                     </span>
-                  </p>
-                  <p className="text-xs text-slate-400">
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">
                     {new Date(r.session_date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
                   </p>
                 </div>
-                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-2 ml-2" onClick={(e) => e.stopPropagation()}>
                   <span className="text-sm font-black text-blue-600">{r.ayat_reached}/{r.total_ayat}</span>
                   <button onClick={() => handleHapus(r.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition">
                     <Trash2 size={14} />
@@ -452,7 +492,7 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
                 </div>
               </div>
               <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                <div className={`h-full rounded-full ${getProgressColor(p)}`} style={{ width: `${p}%` }} />
+                <div className={`h-full rounded-full ${statusLulus ? getProgressColor(p) : 'bg-amber-400'}`} style={{ width: `${p}%` }} />
               </div>
               {r.notes && <p className="text-xs text-slate-500 mt-2 italic line-clamp-2">"{r.notes}"</p>}
             </div>
@@ -488,7 +528,14 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
                     {selectedDetail.ayat_reached} <span className="text-sm font-bold text-slate-500">/ {selectedDetail.total_ayat} {selectedDetail.surah_number === 0 ? 'Halaman' : 'Ayat'}</span>
                   </p>
                 </div>
-                <div className="text-right">
+                <div className="text-right flex flex-col items-end gap-1.5">
+                  <span className={`inline-flex items-center gap-1.5 text-xs font-extrabold px-3 py-1 rounded-full ${
+                    (selectedDetail.status ?? 'lulus') === 'lulus'
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : 'bg-amber-100 text-amber-700'
+                  }`}>
+                    {(selectedDetail.status ?? 'lulus') === 'lulus' ? '✅ Lulus' : '🔄 Ngulang'}
+                  </span>
                   <span className="text-2xl font-black text-emerald-600">
                     {hitungPersenHafalan(selectedDetail.ayat_reached, selectedDetail.total_ayat)}%
                   </span>
@@ -524,6 +571,7 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
                     setAyatReached(target.ayat_reached);
                   }
                   if (target.notes) setNotes(target.notes);
+                  setStatus(target.status ?? 'lulus');
                   setShowForm(true);
                 }}
                 className="flex-1 py-3 bg-blue-600 text-white font-bold text-sm rounded-xl hover:bg-blue-700 transition"

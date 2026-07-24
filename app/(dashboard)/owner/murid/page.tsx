@@ -376,41 +376,66 @@ export default function StudentManagement() {
               {!collapsedLetters[letter] && groupedStudents[letter].map((student) => (
                 <div key={student.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition">
               {/* Card Header */}
-              <div className="p-5 flex justify-between items-center">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-blue-100 text-blue-700 rounded-xl flex items-center justify-center font-bold text-sm">
+              <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                  <div className="w-10 h-10 bg-blue-100 text-blue-700 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 mt-0.5 sm:mt-0">
                     {student.full_name.charAt(0).toUpperCase()}
                   </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900 flex flex-wrap items-center gap-x-2">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-slate-900 text-base leading-snug break-words">
                       {student.full_name}
                       {emailMap[student.id] && (
-                        <span className="text-xs font-normal text-slate-400">({emailMap[student.id]})</span>
+                        <span className="text-xs font-normal text-slate-400 block sm:inline sm:ml-2 break-all">
+                          ({emailMap[student.id]})
+                        </span>
                       )}
                     </h3>
-                    <div className="flex flex-wrap gap-3 mt-0.5 text-sm text-slate-500">
-                      {student.phone && <span className="flex items-center gap-1"><Phone size={12} />{student.phone}</span>}
-                      {student.address && <span className="flex items-center gap-1"><MapPin size={12} /><span className="truncate max-w-[160px]">{student.address}</span></span>}
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1 text-xs sm:text-sm text-slate-500">
+                      {student.phone && (
+                        <span className="flex items-center gap-1 shrink-0">
+                          <Phone size={12} className="text-slate-400" />
+                          {student.phone}
+                        </span>
+                      )}
+                      {student.address && (
+                        <span className="flex items-center gap-1 min-w-0">
+                          <MapPin size={12} className="text-slate-400 shrink-0" />
+                          <span className="truncate max-w-[180px] sm:max-w-[240px]">{student.address}</span>
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => openEnrollModal(student)}
-                    className="flex items-center gap-1.5 px-3 py-2 text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 font-semibold rounded-xl transition">
-                    <BookOpen size={14} />
-                    Daftar Kelas
+
+                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 justify-end">
+                  <button
+                    onClick={() => openEnrollModal(student)}
+                    className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 font-semibold rounded-xl transition"
+                    title="Daftar Kelas"
+                  >
+                    <BookOpen size={14} className="shrink-0" />
+                    <span>Daftar Kelas</span>
                   </button>
-                  <button onClick={() => toggleExpand(student)}
-                    className={`p-2 rounded-xl text-slate-400 hover:bg-slate-50 transition ${expandedStudentId === student.id ? "rotate-180" : ""}`}>
-                    <ChevronDown size={20} className="transition-transform" />
+                  <button
+                    onClick={() => toggleExpand(student)}
+                    className={`p-1.5 sm:p-2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition ${expandedStudentId === student.id ? "rotate-180 bg-slate-100 text-slate-700" : ""}`}
+                    title="Lihat Detail Kelas"
+                  >
+                    <ChevronDown size={18} className="transition-transform shrink-0" />
                   </button>
-                  <button onClick={() => openEditModal(student)}
-                    className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition">
-                    <Pencil size={16} />
+                  <button
+                    onClick={() => openEditModal(student)}
+                    className="p-1.5 sm:p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition"
+                    title="Edit Murid"
+                  >
+                    <Pencil size={16} className="shrink-0" />
                   </button>
-                  <button onClick={() => handleDeleteStudent(student.id)}
-                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition">
-                    <Trash2 size={16} />
+                  <button
+                    onClick={() => handleDeleteStudent(student.id)}
+                    className="p-1.5 sm:p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition"
+                    title="Hapus Murid"
+                  >
+                    <Trash2 size={16} className="shrink-0" />
                   </button>
                 </div>
               </div>

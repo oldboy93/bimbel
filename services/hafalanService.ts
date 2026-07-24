@@ -44,6 +44,7 @@ export const simpanHafalan = async (input: {
   sessionDate: string;
   notes?: string;
   juzNumber?: number;
+  status?: 'lulus' | 'ngulang';
 }): Promise<HafalanProgress> => {
   const db = getDb();
   const baseQuery = db.from('hafalan_progress').select('*').eq('enrollment_id', input.enrollmentId).order('session_date', { ascending: false }).limit(1);
@@ -66,6 +67,7 @@ export const simpanHafalan = async (input: {
         ayat_reached: input.ayatReached,
         session_date: input.sessionDate,
         notes: input.notes ?? '',
+        status: input.status ?? 'lulus',
       })
       .eq('id', existing.id)
       .select()
@@ -85,6 +87,7 @@ export const simpanHafalan = async (input: {
       ayat_reached: input.ayatReached,
       session_date: input.sessionDate,
       notes: input.notes ?? '',
+      status: input.status ?? 'lulus',
     })
     .select()
     .single();

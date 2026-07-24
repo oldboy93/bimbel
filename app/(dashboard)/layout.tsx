@@ -78,9 +78,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const menuItems = {
     owner: [
       { name: "Beranda", href: "/owner", icon: Home },
-      { name: "Manajemen Murid", href: "/owner/murid", icon: User },
-      { name: "Manajemen Guru", href: "/owner/guru", icon: Users },
-      { name: "Manajemen Kelas", href: "/owner/kelas", icon: BookOpen },
+      { name: "Murid", href: "/owner/murid", icon: User },
+      { name: "Guru", href: "/owner/guru", icon: Users },
+      { name: "Kelas", href: "/owner/kelas", icon: BookOpen },
       { name: "Keuangan", href: "/owner/keuangan", icon: Wallet },
       { name: "Pengaturan", href: "/owner/pengaturan", icon: Settings },
     ],

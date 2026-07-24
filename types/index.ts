@@ -84,6 +84,7 @@ export interface HafalanProgress {
   ayat_reached: number;
   session_date: string;
   notes?: string;
+  status?: 'lulus' | 'ngulang';
   created_at: string;
 }
 
