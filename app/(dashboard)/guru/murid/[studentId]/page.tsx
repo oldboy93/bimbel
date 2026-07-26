@@ -118,7 +118,7 @@ export default function StudentDetailPage() {
     { key: "jadwal", label: "Jadwal", icon: Calendar },
     ...(!isCalistung ? [{ key: "hafalan", label: "Hafalan", icon: BookOpen }] : []),
     ...(!isCalistung ? [{ key: "murajaah", label: "Murajaah", icon: RefreshCw }] : []),
-    { key: "iqro", label: "Iqro & Iksar", icon: BookMarked },
+    { key: "iqro", label: "Iqro & Aisar", icon: BookMarked },
     { key: "tajwid", label: isCalistung ? "Calistung" : "Tajwid", icon: Award },
     { key: "catatan", label: "Catatan", icon: MessageSquare },
     { key: "raport", label: "Raport", icon: FileText },
@@ -155,11 +155,10 @@ export default function StudentDetailPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 min-w-fit px-4 py-2.5 text-sm font-bold rounded-xl transition whitespace-nowrap ${
-                activeTab === tab.key
+              className={`flex-1 min-w-fit px-4 py-2.5 text-sm font-bold rounded-xl transition whitespace-nowrap ${activeTab === tab.key
                   ? "bg-white text-blue-600 shadow-sm border border-slate-100/30"
                   : "text-slate-500 hover:text-slate-700"
-              }`}
+                }`}
             >
               {tab.label}
             </button>
@@ -238,11 +237,10 @@ export default function StudentDetailPage() {
                 key={tab.key}
                 data-tab={tab.key}
                 onClick={() => handleMobileTabClick(tab.key)}
-                className={`flex items-center gap-1.5 flex-1 min-w-fit px-3.5 py-2 text-xs font-bold rounded-xl transition whitespace-nowrap ${
-                  isActive
+                className={`flex items-center gap-1.5 flex-1 min-w-fit px-3.5 py-2 text-xs font-bold rounded-xl transition whitespace-nowrap ${isActive
                     ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
                     : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                }`}
+                  }`}
               >
                 <Icon size={14} />
                 <span>{tab.label}</span>
@@ -304,14 +302,14 @@ export default function StudentDetailPage() {
               </section>
             )}
 
-            {/* Section 4: Iqro & Iksar */}
+            {/* Section 4: Iqro & Aisar */}
             <section id="section-iqro" data-section="iqro" className="scroll-mt-28 bg-white rounded-3xl border border-slate-100 p-5 shadow-sm space-y-4">
               <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
                 <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
                   <BookMarked size={18} />
                 </div>
                 <div>
-                  <h2 className="font-extrabold text-slate-900 text-base">Modul Iqro & Iksar</h2>
+                  <h2 className="font-extrabold text-slate-900 text-base">Modul Iqro & Aisar</h2>
                   <p className="text-[11px] text-slate-400">Perkembangan jilid dan kelancaran membaca</p>
                 </div>
               </div>

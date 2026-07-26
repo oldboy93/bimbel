@@ -10,9 +10,10 @@ import {
 import Link from "next/link";
 import { tampilEnrollmentMurid } from "@/services/studentService";
 import { tampilHafalanTerkini, tampilRiwayatHafalan } from "@/services/hafalanService";
+import { tampilRiwayatIqro } from "@/services/iqroService";
 import { tampilAbsensiMurid, hitungStatistikAbsensi } from "@/services/attendanceService";
 import { DAY_NAMES, Format, PROGRAM_TYPES, getProgressColor } from "@/lib/helpers";
-import type { EnrollmentWithDetails, HafalanProgress, Schedule } from "@/types";
+import type { EnrollmentWithDetails, HafalanProgress, IqroProgress, Schedule } from "@/types";
 
 const HADITHS = [
   { text: "Barang siapa yang menempuh jalan untuk mencari ilmu, Allah akan memudahkan baginya jalan ke surga.", narrator: "HR. Muslim" },
@@ -31,6 +32,7 @@ const HADITHS = [
 interface EnrollmentSummary {
   enrollment: EnrollmentWithDetails;
   hafalanTerkini: HafalanProgress | null;
+  iqroTerkini: IqroProgress | null;
   totalSesi: number;
   attendanceRate: number;
   jadwalHariIni: Schedule[];
@@ -67,16 +69,18 @@ export default function MuridDashboard() {
       // Ambil seluruh enrollment murid yang aktif
       const enrollments = await tampilEnrollmentMurid(prof.id);
 
-      // Untuk tiap enrollment, ambil data hafalan + absensi
+      // Untuk tiap enrollment, ambil data hafalan + iqro + absensi
       const results = await Promise.all(
         enrollments.map(async (enr) => {
-          const [hafalanTerkini, riwayatAbsensi, semuaHafalan] = await Promise.all([
+          const [hafalanTerkini, riwayatIqro, riwayatAbsensi, semuaHafalan] = await Promise.all([
             tampilHafalanTerkini(enr.id).catch(() => null),
+            tampilRiwayatIqro(enr.id).catch(() => []),
             tampilAbsensiMurid(enr.id).catch(() => []),
             tampilRiwayatHafalan(enr.id).catch(() => []),
           ]);
 
           const stats = hitungStatistikAbsensi(riwayatAbsensi);
+          const iqroTerkini = riwayatIqro[0] ?? null;
           
           const parseSession = (s: any) => {
             const rawNotes = s.material_notes || "";
@@ -109,6 +113,7 @@ export default function MuridDashboard() {
           return {
             enrollment: enr,
             hafalanTerkini,
+            iqroTerkini,
             totalSesi: semuaHafalan.length,
             attendanceRate: stats.persentase,
             jadwalHariIni,
@@ -278,6 +283,86 @@ export default function MuridDashboard() {
                   </div>
 
                   <div className="p-4 space-y-4">
+                    {/* Progress Iqro & Aisar */}
+                    {s.iqroTerkini && (
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                            Progress {s.iqroTerkini.type === 'iqro' ? 'Iqro' : 'Aisar'} Terkini
+                          </p>
+                          <span className="text-[10px] text-slate-400 font-medium">
+                            Setoran: {Format.tanggalPendek(s.iqroTerkini.session_date)}
+                          </span>
+                        </div>
+                        <div className="bg-gradient-to-br from-indigo-50/80 to-blue-50/50 rounded-2xl p-4 border border-indigo-100/60 shadow-sm space-y-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600 bg-indigo-100/80 px-2 py-0.5 rounded-md">
+                                {s.iqroTerkini.type === 'iqro' ? 'Buku Iqro' : 'Modul Aisar'}
+                              </span>
+                              <h4 className="text-base font-black text-slate-900 mt-1">
+                                {s.iqroTerkini.type === 'iqro' ? `Iqro Jilid ${s.iqroTerkini.jilid}` : `Aisar Modul ${s.iqroTerkini.jilid}`}
+                              </h4>
+                              <p className="text-xs font-bold text-slate-600 mt-0.5">
+                                Halaman {s.iqroTerkini.halaman} <span className="font-normal text-slate-400">/ {s.iqroTerkini.total_halaman} Hlm</span>
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              {(() => {
+                                const lvl = s.iqroTerkini.level;
+                                const badge = lvl === 'mahir' ? { label: '🌟 Mahir', bg: 'bg-indigo-600 text-white' }
+                                  : lvl === 'lancar' ? { label: '✨ Lancar', bg: 'bg-emerald-600 text-white' }
+                                  : lvl === 'cukup' ? { label: '👍 Cukup', bg: 'bg-amber-500 text-white' }
+                                  : { label: '💪 Perlu Latihan', bg: 'bg-rose-500 text-white' };
+                                return (
+                                  <span className={`inline-block text-xs font-extrabold px-3 py-1 rounded-xl shadow-sm ${badge.bg}`}>
+                                    {badge.label}
+                                  </span>
+                                );
+                              })()}
+                            </div>
+                          </div>
+
+                          {/* Interactive Jilid Step Tracker */}
+                          <div className="pt-1">
+                            <div className="flex justify-between text-[11px] font-bold text-slate-400 mb-1">
+                              <span>Tingkat {s.iqroTerkini.type === 'iqro' ? 'Jilid' : 'Modul'}</span>
+                              <span>{Math.round((s.iqroTerkini.halaman / s.iqroTerkini.total_halaman) * 100)}% Halaman Tuntas</span>
+                            </div>
+                            <div className="grid grid-cols-6 gap-1">
+                              {Array.from({ length: s.iqroTerkini.type === 'iqro' ? 6 : 3 }).map((_, idx) => {
+                                const stepNum = idx + 1;
+                                const currentJilid = s.iqroTerkini?.jilid ?? 0;
+                                const currentType = s.iqroTerkini?.type ?? 'iqro';
+                                const isCurrent = stepNum === currentJilid;
+                                const isPassed = stepNum < currentJilid;
+                                return (
+                                  <div
+                                    key={stepNum}
+                                    className={`py-1 text-center rounded-lg font-extrabold text-[11px] border transition ${
+                                      isCurrent
+                                        ? "bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-300 scale-105"
+                                        : isPassed
+                                        ? "bg-emerald-100 text-emerald-700 border-emerald-200"
+                                        : "bg-white text-slate-400 border-slate-200"
+                                    }`}
+                                  >
+                                    {currentType === 'iqro' ? `J${stepNum}` : `M${stepNum}`}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          {s.iqroTerkini.notes && (
+                            <p className="text-xs text-slate-600 bg-white/80 p-2.5 rounded-xl border border-indigo-100/50 italic">
+                              "{s.iqroTerkini.notes}"
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Hafalan Terkini */}
                     {kelas?.type === "tahfidz" && (
                       <div>

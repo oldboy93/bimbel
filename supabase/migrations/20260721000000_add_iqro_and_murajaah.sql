@@ -2,13 +2,13 @@
 -- MIGRATION: ADD IQRO & MURAJAAH TABLES
 -- ══════════════════════════════════════════════════════════════
 
--- 1. Tabel Progress Iqro & Iksar
+-- 1. Tabel Progress Iqro & Aisar
 CREATE TABLE IF NOT EXISTS iqro_progress (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid REFERENCES tenants(id) ON DELETE CASCADE,
   enrollment_id uuid REFERENCES enrollments(id) ON DELETE CASCADE,
   guru_id uuid REFERENCES profiles(id) ON DELETE CASCADE,
-  type text CHECK (type IN ('iqro', 'iksar')) NOT NULL DEFAULT 'iqro',
+  type text CHECK (type IN ('iqro', 'aisar')) NOT NULL DEFAULT 'iqro',
   jilid int NOT NULL DEFAULT 1,
   halaman int NOT NULL DEFAULT 1,
   total_halaman int NOT NULL DEFAULT 30,

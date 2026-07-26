@@ -17,7 +17,7 @@ export const tampilRiwayatIqro = async (enrollmentId: string): Promise<IqroProgr
 export const simpanIqro = async (input: {
   enrollmentId: string;
   guruId: string;
-  type: 'iqro' | 'iksar';
+  type: 'iqro' | 'aisar';
   jilid: number;
   halaman: number;
   totalHalaman: number;

@@ -93,7 +93,7 @@ export interface IqroProgress {
   tenant_id?: string;
   enrollment_id: string;
   guru_id: string;
-  type: 'iqro' | 'iksar';
+  type: 'iqro' | 'aisar';
   jilid: number;
   halaman: number;
   total_halaman: number;

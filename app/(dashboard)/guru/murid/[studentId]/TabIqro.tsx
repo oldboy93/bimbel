@@ -26,7 +26,7 @@ export default function TabIqro({ enrollmentId, guruId, studentPhone, studentNam
   const [showForm, setShowForm] = useState(false);
 
   // Form State
-  const [type, setType] = useState<'iqro' | 'iksar'>('iqro');
+  const [type, setType] = useState<'iqro' | 'aisar'>('iqro');
   const [jilid, setJilid] = useState(1);
   const [halaman, setHalaman] = useState(1);
   const [level, setLevel] = useState<'kurang' | 'cukup' | 'lancar' | 'mahir'>('lancar');
@@ -72,7 +72,7 @@ export default function TabIqro({ enrollmentId, guruId, studentPhone, studentNam
 
       if (studentPhone) {
         const customNote = notes ? `\n\nCatatan ustadz/ustadzah:\n"${notes}"` : "";
-        const title = type === 'iqro' ? `Iqro Jilid ${jilid}` : `Iksar Modul ${jilid}`;
+        const title = type === 'iqro' ? `Iqro Jilid ${jilid}` : `Aisar Modul ${jilid}`;
         const msg = `Assalamu'alaikum Wr. Wb.\n\nBapak/Ibu Orang Tua/Wali Murid,\n\nAlhamdulillah, hari ini ananda *${studentName}* telah menyelesaikan pembelajaran membaca:\n\n📖 *${title}*\n🎯 Pencapaian: *Halaman ${halaman}* (Kualitas: ${LEVEL_CONFIG[level].label}).${customNote}\n\nSemoga ananda semakin lancar dan bersemangat dalam membaca Al-Qur'an. Aamiin.\n\nJazakumullah khairan.\n— Bimbel Madani`;
 
         await fetch("/api/whatsapp", {
@@ -82,7 +82,7 @@ export default function TabIqro({ enrollmentId, guruId, studentPhone, studentNam
         });
       }
     } catch (err) {
-      console.error("Gagal menyimpan progress Iqro/Iksar:", err);
+      console.error("Gagal menyimpan progress Iqro/Aisar:", err);
     }
 
     setShowForm(false);
@@ -105,12 +105,12 @@ export default function TabIqro({ enrollmentId, guruId, studentPhone, studentNam
     <div className="space-y-4">
       <button onClick={() => setShowForm(!showForm)}
         className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition">
-        <Plus size={18} /> Input Sesi Iqro & Iksar
+        <Plus size={18} /> Input Sesi Iqro & Aisar
       </button>
 
       {showForm && (
         <form onSubmit={handleSimpan} className="bg-white rounded-2xl border border-blue-100 p-5 space-y-4 shadow-sm">
-          <h3 className="font-bold text-slate-900">Sesi Iqro / Iksar</h3>
+          <h3 className="font-bold text-slate-900">Sesi Iqro / Aisar</h3>
 
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-2">
@@ -118,9 +118,9 @@ export default function TabIqro({ enrollmentId, guruId, studentPhone, studentNam
                 className={`px-4 py-3 rounded-2xl border font-semibold transition ${type === 'iqro' ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>
                 Iqro (Jilid 1–6)
               </button>
-              <button type="button" onClick={() => { setType('iksar'); setJilid(1); setHalaman(1); }}
-                className={`px-4 py-3 rounded-2xl border font-semibold transition ${type === 'iksar' ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>
-                Iksar (Modul 1–3)
+              <button type="button" onClick={() => { setType('aisar'); setJilid(1); setHalaman(1); }}
+                className={`px-4 py-3 rounded-2xl border font-semibold transition ${type === 'aisar' ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>
+                Aisar (Modul 1–3)
               </button>
             </div>
 
@@ -203,7 +203,7 @@ export default function TabIqro({ enrollmentId, guruId, studentPhone, studentNam
         {riwayat.length === 0 ? (
           <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-slate-400">
             <BookOpen className="mx-auto mb-2 text-slate-300" size={32} />
-            <p>Belum ada catatan Iqro atau Iksar.</p>
+            <p>Belum ada catatan Iqro atau Aisar.</p>
           </div>
         ) : (
           riwayat.map(r => (
