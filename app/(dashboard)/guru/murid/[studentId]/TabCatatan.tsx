@@ -13,6 +13,8 @@ export default function TabCatatan({ enrollmentId, guruId }: Props) {
   const [content, setContent] = useState("");
   const [isVisible, setIsVisible] = useState(true);
   const [noteDate, setNoteDate] = useState(new Date().toISOString().split("T")[0]);
+  const [showAll, setShowAll] = useState(false);
+  const LIMIT = 2;
 
   const load = () => {
     tampilCatatan(enrollmentId).then(d => { setCatatan(d); setIsLoading(false); });
@@ -75,32 +77,46 @@ export default function TabCatatan({ enrollmentId, guruId }: Props) {
             <MessageSquare className="mx-auto mb-2 text-slate-300" size={32} />
             <p>Belum ada catatan untuk murid ini.</p>
           </div>
-        ) : catatan.map(c => (
-          <div key={c.id} className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
-            <div className="flex justify-between items-start gap-2 mb-2">
-              <p className="text-xs text-slate-400">
-                {new Date(c.note_date).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long" })}
-              </p>
-              <div className="flex items-center gap-1 shrink-0">
-                <button onClick={() => handleToggle(c.id, c.is_visible_to_wali)}
-                  title={c.is_visible_to_wali ? "Sembunyikan dari Wali" : "Tampilkan ke Wali"}
-                  className={`p-1.5 rounded-lg transition ${c.is_visible_to_wali ? "text-emerald-500 bg-emerald-50 hover:bg-emerald-100" : "text-slate-300 bg-slate-50 hover:bg-slate-100"}`}>
-                  {c.is_visible_to_wali ? <Eye size={14} /> : <EyeOff size={14} />}
-                </button>
-                <button onClick={() => handleHapus(c.id)}
-                  className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition">
-                  <Trash2 size={14} />
-                </button>
+        ) : (
+          <>
+            {(showAll ? catatan : catatan.slice(0, LIMIT)).map(c => (
+              <div key={c.id} className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+                <div className="flex justify-between items-start gap-2 mb-2">
+                  <p className="text-xs text-slate-400">
+                    {new Date(c.note_date).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long" })}
+                  </p>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button onClick={() => handleToggle(c.id, c.is_visible_to_wali)}
+                      title={c.is_visible_to_wali ? "Sembunyikan dari Wali" : "Tampilkan ke Wali"}
+                      className={`p-1.5 rounded-lg transition ${c.is_visible_to_wali ? "text-emerald-500 bg-emerald-50 hover:bg-emerald-100" : "text-slate-300 bg-slate-50 hover:bg-slate-100"}`}>
+                      {c.is_visible_to_wali ? <Eye size={14} /> : <EyeOff size={14} />}
+                    </button>
+                    <button onClick={() => handleHapus(c.id)}
+                      className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-700 leading-relaxed">{c.content}</p>
+                <div className="mt-2">
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${c.is_visible_to_wali ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"}`}>
+                    {c.is_visible_to_wali ? "👀 Terlihat Wali" : "🔒 Tersembunyi"}
+                  </span>
+                </div>
               </div>
-            </div>
-            <p className="text-sm text-slate-700 leading-relaxed">{c.content}</p>
-            <div className="mt-2">
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${c.is_visible_to_wali ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"}`}>
-                {c.is_visible_to_wali ? "👀 Terlihat Wali" : "🔒 Tersembunyi"}
-              </span>
-            </div>
-          </div>
-        ))}
+            ))}
+            {catatan.length > LIMIT && (
+              <button
+                onClick={() => setShowAll(!showAll)}
+                className="w-full py-2.5 rounded-2xl border border-slate-200 text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 transition flex items-center justify-center gap-2"
+              >
+                {showAll
+                  ? `↑ Sembunyikan (tampilkan ${LIMIT} terbaru)`
+                  : `↓ Lihat ${catatan.length - LIMIT} catatan lainnya`}
+              </button>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

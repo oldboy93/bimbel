@@ -48,6 +48,8 @@ export default function TabCalistung({ enrollmentId, guruId }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [showAll, setShowAll] = useState(false);
+  const LIMIT = 2;
 
   const [sessionDate, setSessionDate] = useState(new Date().toISOString().split("T")[0]);
   const [formState, setFormState] = useState<CalistungData>(DEFAULT_CALISTUNG);
@@ -218,17 +220,19 @@ export default function TabCalistung({ enrollmentId, guruId }: Props) {
             <p className="text-sm font-bold">Belum ada penilaian Calistung.</p>
             <p className="text-xs text-slate-400 mt-1">Gunakan tombol di atas untuk mengisi penilaian sesi murid.</p>
           </div>
-        ) : riwayat.map(r => {
-          let cData: CalistungData;
-          try {
-            cData = JSON.parse(r.tajwid_notes || "");
-          } catch {
-            return null;
-          }
-          if (!cData || !cData.isCalistung) return null;
+        ) : (
+          <>
+            {(showAll ? riwayat : riwayat.slice(0, LIMIT)).map(r => {
+              let cData: CalistungData;
+              try {
+                cData = JSON.parse(r.tajwid_notes || "");
+              } catch {
+                return null;
+              }
+              if (!cData || !cData.isCalistung) return null;
 
-          return (
-            <div key={r.id} className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm space-y-4">
+              return (
+                <div key={r.id} className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm space-y-4">
               <div className="flex justify-between items-start border-b border-slate-50 pb-3">
                 <p className="text-xs font-black text-slate-400">
                   {new Date(r.session_date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
@@ -302,8 +306,20 @@ export default function TabCalistung({ enrollmentId, guruId }: Props) {
                 </div>
               )}
             </div>
-          );
-        })}
+              );
+            })}
+            {riwayat.length > LIMIT && (
+              <button
+                onClick={() => setShowAll(!showAll)}
+                className="w-full py-2.5 rounded-2xl border border-slate-200 text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 transition flex items-center justify-center gap-2"
+              >
+                {showAll
+                  ? `↑ Sembunyikan (tampilkan ${LIMIT} terbaru)`
+                  : `↓ Lihat ${riwayat.length - LIMIT} riwayat lainnya`}
+              </button>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

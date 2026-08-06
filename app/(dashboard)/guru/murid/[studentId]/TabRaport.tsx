@@ -236,6 +236,8 @@ export default function TabRaport({ enrollmentId, guruId, classType }: TabRaport
   const [isPublishing, setIsPublishing] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  const LIMIT = 2;
   const [period, setPeriod] = useState("");
   const [formData, setFormData] = useState<RaportDataCalistung | RaportDataTahfidz>(
     classType === "tahfidz" ? defaultTahfidz() : defaultCalistung()
@@ -581,7 +583,7 @@ export default function TabRaport({ enrollmentId, guruId, classType }: TabRaport
         </div>
       ) : (
         <div className="space-y-3">
-          {raports.map(r => (
+          {(showAll ? raports : raports.slice(0, LIMIT)).map(r => (
             <div key={r.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
               <div
                 className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50/50 transition"
@@ -619,7 +621,7 @@ export default function TabRaport({ enrollmentId, guruId, classType }: TabRaport
                         onClick={e => { e.stopPropagation(); handleDeleteClick(r.id); }}
                         className="text-rose-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition"
                       >
-                        <Trash2 size={13} />
+                        <Trash2 size={14} />
                       </button>
                     </>
                   )}
@@ -645,6 +647,16 @@ export default function TabRaport({ enrollmentId, guruId, classType }: TabRaport
               )}
             </div>
           ))}
+          {raports.length > LIMIT && (
+            <button
+              onClick={() => setShowAll(!showAll)}
+              className="w-full py-2.5 rounded-2xl border border-slate-200 text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 transition flex items-center justify-center gap-2"
+            >
+              {showAll
+                ? `↑ Sembunyikan (tampilkan ${LIMIT} terbaru)`
+                : `↓ Lihat ${raports.length - LIMIT} raport lainnya`}
+            </button>
+          )}
         </div>
       )}
 

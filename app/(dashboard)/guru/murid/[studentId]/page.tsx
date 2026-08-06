@@ -4,12 +4,13 @@ import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { tampilEnrollmentMurid, tampilMurid } from "@/services/studentService";
-import { Loader2, ArrowLeft, Calendar, BookOpen, RefreshCw, BookMarked, Award, MessageSquare, FileText } from "lucide-react";
+import { Loader2, ArrowLeft, Calendar, UserCheck, BookOpen, RefreshCw, BookMarked, Award, MessageSquare, FileText, ArrowUp } from "lucide-react";
 import Link from "next/link";
 import type { Profile, EnrollmentWithDetails } from "@/types";
 
 // Tab Components
 import TabJadwal from "./TabJadwal";
+import TabKehadiran from "./TabKehadiran";
 import TabHafalan from "./TabHafalan";
 import TabMurajaah from "./TabMurajaah";
 import TabIqro from "./TabIqro";
@@ -31,6 +32,20 @@ export default function StudentDetailPage() {
   const isClickingTab = useRef(false);
   const mobileNavRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  // Scroll-to-top listener on main element
+  useEffect(() => {
+    const mainEl = document.querySelector("main");
+    if (!mainEl) return;
+    const onScroll = () => setShowScrollTop(mainEl.scrollTop > 300);
+    mainEl.addEventListener("scroll", onScroll);
+    return () => mainEl.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    document.querySelector("main")?.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -116,6 +131,7 @@ export default function StudentDetailPage() {
 
   const tabsList = [
     { key: "jadwal", label: "Jadwal", icon: Calendar },
+    { key: "kehadiran", label: "Kehadiran", icon: UserCheck },
     ...(!isCalistung ? [{ key: "hafalan", label: "Hafalan", icon: BookOpen }] : []),
     ...(!isCalistung ? [{ key: "murajaah", label: "Murajaah", icon: RefreshCw }] : []),
     { key: "iqro", label: "Iqro & Aisar", icon: BookMarked },
@@ -156,8 +172,8 @@ export default function StudentDetailPage() {
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`flex-1 min-w-fit px-4 py-2.5 text-sm font-bold rounded-xl transition whitespace-nowrap ${activeTab === tab.key
-                  ? "bg-white text-blue-600 shadow-sm border border-slate-100/30"
-                  : "text-slate-500 hover:text-slate-700"
+                ? "bg-white text-blue-600 shadow-sm border border-slate-100/30"
+                : "text-slate-500 hover:text-slate-700"
                 }`}
             >
               {tab.label}
@@ -174,6 +190,7 @@ export default function StudentDetailPage() {
           ) : (
             <>
               {activeTab === "jadwal" && <TabJadwal enrollmentId={enrollment.id} />}
+              {activeTab === "kehadiran" && <TabKehadiran enrollmentId={enrollment.id} guruId={guruId} tenantId={tenantId} studentPhone={student.phone || ""} studentName={student.full_name} />}
               {activeTab === "hafalan" && <TabHafalan enrollmentId={enrollment.id} guruId={guruId} studentPhone={student.phone || ""} studentName={student.full_name} />}
               {activeTab === "murajaah" && <TabMurajaah enrollmentId={enrollment.id} guruId={guruId} studentPhone={student.phone || ""} studentName={student.full_name} />}
               {activeTab === "iqro" && <TabIqro enrollmentId={enrollment.id} guruId={guruId} studentPhone={student.phone || ""} studentName={student.full_name} />}
@@ -198,7 +215,7 @@ export default function StudentDetailPage() {
       {/* ── MOBILE VIEW (md:hidden) — STICKY NAMA MURID + SCROLL NAVIGATION ── */}
       <div className="block md:hidden space-y-4">
         {/* 1. STICKY HEADER NAMA MURID */}
-        <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-sm p-3 flex items-center justify-between transition-all">
+        <div className="sticky top-10 z-40 bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-sm p-3 flex items-center justify-between transition-all">
           <div className="flex items-center gap-3 min-w-0">
             <Link
               href="/guru/murid"
@@ -227,7 +244,7 @@ export default function StudentDetailPage() {
         {/* 2. STICKY NAV BAR DI BAWAH NAMA MURID */}
         <div
           ref={mobileNavRef}
-          className="sticky top-[58px] z-30 bg-white/95 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 shadow-md shadow-slate-200/40 flex gap-1 overflow-x-auto scrollbar-hide"
+          className="sticky top-[103px] z-30 bg-white/95 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 shadow-md shadow-slate-200/40 flex gap-1 overflow-x-auto scrollbar-hide"
         >
           {tabsList.map((tab) => {
             const Icon = tab.icon;
@@ -238,8 +255,8 @@ export default function StudentDetailPage() {
                 data-tab={tab.key}
                 onClick={() => handleMobileTabClick(tab.key)}
                 className={`flex items-center gap-1.5 flex-1 min-w-fit px-3.5 py-2 text-xs font-bold rounded-xl transition whitespace-nowrap ${isActive
-                    ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                   }`}
               >
                 <Icon size={14} />
@@ -268,6 +285,26 @@ export default function StudentDetailPage() {
                 </div>
               </div>
               <TabJadwal enrollmentId={enrollment.id} />
+            </section>
+
+            {/* Section 1b: Kehadiran */}
+            <section id="section-kehadiran" data-section="kehadiran" className="scroll-mt-28 bg-white rounded-3xl border border-slate-100 p-5 shadow-sm space-y-4">
+              <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
+                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+                  <UserCheck size={18} />
+                </div>
+                <div>
+                  <h2 className="font-extrabold text-slate-900 text-base">Absensi Kehadiran Murid</h2>
+                  <p className="text-[11px] text-slate-400">Catatan kehadiran per pertemuan les/mengaji</p>
+                </div>
+              </div>
+              <TabKehadiran
+                enrollmentId={enrollment.id}
+                guruId={guruId}
+                tenantId={tenantId}
+                studentPhone={student.phone || ""}
+                studentName={student.full_name}
+              />
             </section>
 
             {/* Section 2: Hafalan (Non-calistung) */}
@@ -368,6 +405,16 @@ export default function StudentDetailPage() {
           </div>
         )}
       </div>
+      {/* Floating Scroll-to-Top — Mobile only */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="md:hidden fixed bottom-6 right-4 z-50 w-11 h-11 bg-blue-600 text-white rounded-full shadow-lg shadow-blue-600/40 flex items-center justify-center hover:bg-blue-700 active:scale-95 transition-all animate-fadeIn"
+          aria-label="Kembali ke atas"
+        >
+          <ArrowUp size={18} />
+        </button>
+      )}
     </div>
   );
 }

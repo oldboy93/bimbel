@@ -27,6 +27,8 @@ export default function TabKehadiran({ enrollmentId, guruId, tenantId, studentPh
   const [notes, setNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [savedToday, setSavedToday] = useState<Attendance | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  const LIMIT = 2;
 
   const load = async () => {
     const data = await tampilAbsensiMurid(enrollmentId);
@@ -157,8 +159,8 @@ export default function TabKehadiran({ enrollmentId, guruId, tenantId, studentPh
         {records.length === 0 ? (
           <p className="text-sm text-slate-400 text-center py-4">Belum ada riwayat kehadiran.</p>
         ) : (
-          <div className="space-y-2 max-h-60 overflow-y-auto">
-            {records.map(r => {
+          <div className="space-y-2">
+            {(showAll ? records : records.slice(0, LIMIT)).map(r => {
               const cfg = STATUS_CONFIG[r.status];
               return (
                 <div key={r.id} className={`flex items-center justify-between px-3 py-2 rounded-xl ${cfg.bg}`}>
@@ -169,6 +171,16 @@ export default function TabKehadiran({ enrollmentId, guruId, tenantId, studentPh
                 </div>
               );
             })}
+            {records.length > LIMIT && (
+              <button
+                onClick={() => setShowAll(!showAll)}
+                className="w-full py-2.5 rounded-2xl border border-slate-200 text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 transition flex items-center justify-center gap-2 mt-2"
+              >
+                {showAll
+                  ? `↑ Sembunyikan (tampilkan ${LIMIT} terbaru)`
+                  : `↓ Lihat ${records.length - LIMIT} riwayat lainnya`}
+              </button>
+            )}
           </div>
         )}
       </div>

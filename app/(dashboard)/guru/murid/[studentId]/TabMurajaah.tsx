@@ -26,6 +26,8 @@ export default function TabMurajaah({ enrollmentId, guruId, studentPhone, studen
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [showAll, setShowAll] = useState(false);
+  const LIMIT = 2;
 
   // Form state
   const [hafalanType, setHafalanType] = useState<'surat' | 'juz'>('surat');
@@ -271,36 +273,48 @@ export default function TabMurajaah({ enrollmentId, guruId, studentPhone, studen
             <p>Belum ada catatan murajaah.</p>
           </div>
         ) : (
-          riwayat.map(r => {
-            const Icon = QUALITY_CONFIG[r.quality]?.icon ?? CheckCircle2;
-            return (
-              <div key={r.id} className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <span className="inline-block px-2.5 py-0.5 text-[10px] font-extrabold uppercase rounded-md bg-purple-50 text-purple-700 mb-1">
-                      Murajaah
-                    </span>
-                    <p className="font-bold text-slate-900 text-base">
-                      {r.surah_name} {r.ayat_or_page_range ? `(${r.ayat_or_page_range})` : ""}
-                    </p>
-                    <p className="text-xs text-slate-400">
-                      {new Date(r.session_date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
-                    </p>
+          <>
+            {(showAll ? riwayat : riwayat.slice(0, LIMIT)).map(r => {
+              const Icon = QUALITY_CONFIG[r.quality]?.icon ?? CheckCircle2;
+              return (
+                <div key={r.id} className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <span className="inline-block px-2.5 py-0.5 text-[10px] font-extrabold uppercase rounded-md bg-purple-50 text-purple-700 mb-1">
+                        Murajaah
+                      </span>
+                      <p className="font-bold text-slate-900 text-base">
+                        {r.surah_name} {r.ayat_or_page_range ? `(${r.ayat_or_page_range})` : ""}
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        {new Date(r.session_date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`flex items-center gap-1 px-2.5 py-1 text-xs font-extrabold rounded-lg border ${QUALITY_CONFIG[r.quality]?.color ?? 'bg-slate-50'}`}>
+                        <Icon size={13} />
+                        {QUALITY_CONFIG[r.quality]?.label ?? r.quality}
+                      </span>
+                      <button onClick={() => handleHapus(r.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`flex items-center gap-1 px-2.5 py-1 text-xs font-extrabold rounded-lg border ${QUALITY_CONFIG[r.quality]?.color ?? 'bg-slate-50'}`}>
-                      <Icon size={13} />
-                      {QUALITY_CONFIG[r.quality]?.label ?? r.quality}
-                    </span>
-                    <button onClick={() => handleHapus(r.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition">
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
+                  {r.notes && <p className="text-xs text-slate-500 mt-2 italic">"{r.notes}"</p>}
                 </div>
-                {r.notes && <p className="text-xs text-slate-500 mt-2 italic">"{r.notes}"</p>}
-              </div>
-            );
-          })
+              );
+            })}
+            {riwayat.length > LIMIT && (
+              <button
+                onClick={() => setShowAll(!showAll)}
+                className="w-full py-2.5 rounded-2xl border border-slate-200 text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 transition flex items-center justify-center gap-2"
+              >
+                {showAll
+                  ? `↑ Sembunyikan (tampilkan ${LIMIT} terbaru)`
+                  : `↓ Lihat ${riwayat.length - LIMIT} riwayat lainnya`}
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>

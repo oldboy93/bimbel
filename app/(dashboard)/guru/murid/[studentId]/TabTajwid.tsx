@@ -22,6 +22,8 @@ export default function TabTajwid({ enrollmentId, guruId }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [showAll, setShowAll] = useState(false);
+  const LIMIT = 2;
 
   const [sessionDate, setSessionDate] = useState(new Date().toISOString().split("T")[0]);
   const [makhraj, setMakhraj] = useState<Level>("mulai");
@@ -137,34 +139,48 @@ export default function TabTajwid({ enrollmentId, guruId }: Props) {
             <Star className="mx-auto mb-2 text-slate-300" size={32} />
             <p>Belum ada penilaian tajwid.</p>
           </div>
-        ) : riwayat.map(r => (
-          <div key={r.id} className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm space-y-3">
-            <div className="flex justify-between items-start">
-              <p className="text-xs font-semibold text-slate-400">
-                {new Date(r.session_date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
-              </p>
-              <button onClick={() => handleHapus(r.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition -mt-1.5 -mr-1.5">
-                <Trash2 size={14} />
-              </button>
-            </div>
-            {[
-              { label: "Makhroj", level: r.makhraj_level, note: r.makhraj_notes },
-              { label: "Kelancaran", level: r.kelancaran_level, note: r.kelancaran_notes },
-              { label: "Tajwid", level: r.tajwid_level, note: r.tajwid_notes },
-            ].map(a => {
-              const cfg = TAJWID_LEVELS[a.level as Level];
-              return (
-                <div key={a.label} className="flex items-start justify-between gap-3">
-                  <span className="text-sm font-semibold text-slate-700 w-24 shrink-0">{a.label}</span>
-                  <div className="flex-1">
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${cfg.bg} ${cfg.color}`}>{cfg.label}</span>
-                    {a.note && <p className="text-xs text-slate-400 mt-1 italic">"{a.note}"</p>}
-                  </div>
+        ) : (
+          <>
+            {(showAll ? riwayat : riwayat.slice(0, LIMIT)).map(r => (
+              <div key={r.id} className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm space-y-3">
+                <div className="flex justify-between items-start">
+                  <p className="text-xs font-semibold text-slate-400">
+                    {new Date(r.session_date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                  </p>
+                  <button onClick={() => handleHapus(r.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition -mt-1.5 -mr-1.5">
+                    <Trash2 size={14} />
+                  </button>
                 </div>
-              );
-            })}
-          </div>
-        ))}
+                {[
+                  { label: "Makhroj", level: r.makhraj_level, note: r.makhraj_notes },
+                  { label: "Kelancaran", level: r.kelancaran_level, note: r.kelancaran_notes },
+                  { label: "Tajwid", level: r.tajwid_level, note: r.tajwid_notes },
+                ].map(a => {
+                  const cfg = TAJWID_LEVELS[a.level as Level];
+                  return (
+                    <div key={a.label} className="flex items-start justify-between gap-3">
+                      <span className="text-sm font-semibold text-slate-700 w-24 shrink-0">{a.label}</span>
+                      <div className="flex-1">
+                        <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${cfg.bg} ${cfg.color}`}>{cfg.label}</span>
+                        {a.note && <p className="text-xs text-slate-400 mt-1 italic">"{a.note}"</p>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+            {riwayat.length > LIMIT && (
+              <button
+                onClick={() => setShowAll(!showAll)}
+                className="w-full py-2.5 rounded-2xl border border-slate-200 text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 transition flex items-center justify-center gap-2"
+              >
+                {showAll
+                  ? `↑ Sembunyikan (tampilkan ${LIMIT} terbaru)`
+                  : `↓ Lihat ${riwayat.length - LIMIT} riwayat lainnya`}
+              </button>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

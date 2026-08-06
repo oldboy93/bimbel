@@ -21,6 +21,8 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
   const [isSaving, setIsSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [selectedDetail, setSelectedDetail] = useState<HafalanProgress | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  const LIMIT = 2;
 
   // Form state
   const [mode, setMode] = useState<'surat' | 'juz'>('juz');
@@ -456,48 +458,62 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
             <BookOpen className="mx-auto mb-2 text-slate-300" size={32} />
             <p>Belum ada sesi hafalan yang tercatat.</p>
           </div>
-        ) : riwayat.map(r => {
-          const p = hitungPersenHafalan(r.ayat_reached, r.total_ayat);
-          const statusLulus = (r.status ?? 'lulus') === 'lulus';
-          return (
-            <div
-              key={r.id}
-              onClick={() => setSelectedDetail(r)}
-              className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm hover:border-blue-300 hover:shadow-md transition cursor-pointer group"
-            >
-              <div className="flex justify-between items-start mb-2">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-bold text-slate-900 group-hover:text-blue-600 transition">
-                      {r.surah_name}
-                    </p>
-                    {/* ── STATUS BADGE ── */}
-                    <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
-                      statusLulus
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                        : 'bg-amber-50 text-amber-700 border-amber-200'
-                    }`}>
-                      {statusLulus ? '✅ Lulus' : '🔄 Ngulang'}
-                    </span>
+        ) : (
+          <>
+            {(showAll ? riwayat : riwayat.slice(0, LIMIT)).map(r => {
+              const p = hitungPersenHafalan(r.ayat_reached, r.total_ayat);
+              const statusLulus = (r.status ?? 'lulus') === 'lulus';
+              return (
+                <div
+                  key={r.id}
+                  onClick={() => setSelectedDetail(r)}
+                  className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm hover:border-blue-300 hover:shadow-md transition cursor-pointer group"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-bold text-slate-900 group-hover:text-blue-600 transition">
+                          {r.surah_name}
+                        </p>
+                        {/* ── STATUS BADGE ── */}
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
+                          statusLulus
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : 'bg-amber-50 text-amber-700 border-amber-200'
+                        }`}>
+                          {statusLulus ? '✅ Lulus' : '🔄 Ngulang'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        {new Date(r.session_date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 ml-2" onClick={(e) => e.stopPropagation()}>
+                      <span className="text-sm font-black text-blue-600">{r.ayat_reached}/{r.total_ayat}</span>
+                      <button onClick={() => handleHapus(r.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    {new Date(r.session_date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
-                  </p>
+                  <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full ${statusLulus ? getProgressColor(p) : 'bg-amber-400'}`} style={{ width: `${p}%` }} />
+                  </div>
+                  {r.notes && <p className="text-xs text-slate-500 mt-2 italic line-clamp-2">"{r.notes}"</p>}
                 </div>
-                <div className="flex items-center gap-2 ml-2" onClick={(e) => e.stopPropagation()}>
-                  <span className="text-sm font-black text-blue-600">{r.ayat_reached}/{r.total_ayat}</span>
-                  <button onClick={() => handleHapus(r.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition">
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              </div>
-              <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                <div className={`h-full rounded-full ${statusLulus ? getProgressColor(p) : 'bg-amber-400'}`} style={{ width: `${p}%` }} />
-              </div>
-              {r.notes && <p className="text-xs text-slate-500 mt-2 italic line-clamp-2">"{r.notes}"</p>}
-            </div>
-          );
-        })}
+              );
+            })}
+            {riwayat.length > LIMIT && (
+              <button
+                onClick={() => setShowAll(!showAll)}
+                className="w-full py-2.5 rounded-2xl border border-slate-200 text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 transition flex items-center justify-center gap-2"
+              >
+                {showAll
+                  ? `↑ Sembunyikan (tampilkan ${LIMIT} terbaru)`
+                  : `↓ Lihat ${riwayat.length - LIMIT} riwayat lainnya`}
+              </button>
+            )}
+          </>
+        )}
       </div>
 
       {/* MODAL DETAIL HAFALAN */}

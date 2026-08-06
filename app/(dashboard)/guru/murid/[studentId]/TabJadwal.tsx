@@ -12,6 +12,8 @@ export default function TabJadwal({ enrollmentId }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [showAll, setShowAll] = useState(false);
+  const LIMIT = 2;
 
   // Form states
   const [sessionDate, setSessionDate] = useState(new Date().toISOString().split("T")[0]);
@@ -163,7 +165,7 @@ export default function TabJadwal({ enrollmentId }: Props) {
           </div>
         ) : (
           <div className="space-y-2.5">
-            {customSessions.map((s) => {
+            {(showAll ? customSessions : customSessions.slice(0, LIMIT)).map((s) => {
               const formattedDate = Format.tanggalIndo(s.parsed.date!);
               const startStr = s.time_start ? s.time_start.slice(0, 5) : "";
               const endStr = s.time_end ? s.time_end.slice(0, 5) : "";
@@ -192,6 +194,16 @@ export default function TabJadwal({ enrollmentId }: Props) {
                 </div>
               );
             })}
+            {customSessions.length > LIMIT && (
+              <button
+                onClick={() => setShowAll(!showAll)}
+                className="w-full py-2.5 rounded-2xl border border-slate-200 text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 transition flex items-center justify-center gap-2"
+              >
+                {showAll
+                  ? `↑ Sembunyikan (tampilkan ${LIMIT} terbaru)`
+                  : `↓ Lihat ${customSessions.length - LIMIT} pertemuan lainnya`}
+              </button>
+            )}
           </div>
         )}
       </div>
