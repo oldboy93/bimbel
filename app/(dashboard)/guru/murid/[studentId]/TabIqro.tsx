@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { tampilRiwayatIqro, simpanIqro, hapusIqro } from "@/services/iqroService";
 import type { IqroProgress } from "@/types";
-import { Loader2, BookOpen, Plus, Trash2, Award } from "lucide-react";
+import { Loader2, BookOpen, Plus, Minus, Trash2, Award } from "lucide-react";
 
 interface Props {
   enrollmentId: string;
@@ -30,7 +30,7 @@ export default function TabIqro({ enrollmentId, guruId, studentPhone, studentNam
   // Form State
   const [type, setType] = useState<'iqro' | 'aisar'>('iqro');
   const [jilid, setJilid] = useState(1);
-  const [halaman, setHalaman] = useState(1);
+  const [halamanInput, setHalamanInput] = useState<string>("1");
   const [level, setLevel] = useState<'kurang' | 'cukup' | 'lancar' | 'mahir'>('lancar');
   const [sessionDate, setSessionDate] = useState(new Date().toISOString().split("T")[0]);
   const [notes, setNotes] = useState("");
@@ -48,7 +48,8 @@ export default function TabIqro({ enrollmentId, guruId, studentPhone, studentNam
         const latest = data[0];
         setType(latest.type);
         setJilid(latest.jilid);
-        setHalaman(Math.min(latest.halaman + 1, latest.total_halaman));
+        const nextHal = Math.min(latest.halaman + 1, latest.total_halaman);
+        setHalamanInput(String(nextHal));
       }
     });
   };
@@ -59,13 +60,14 @@ export default function TabIqro({ enrollmentId, guruId, studentPhone, studentNam
     e.preventDefault();
     setIsSaving(true);
 
+    const halNum = Math.min(maxHalaman, Math.max(1, parseInt(halamanInput, 10) || 1));
     try {
       await simpanIqro({
         enrollmentId,
         guruId,
         type,
         jilid,
-        halaman,
+        halaman: halNum,
         totalHalaman: maxHalaman,
         level,
         sessionDate,
@@ -75,7 +77,7 @@ export default function TabIqro({ enrollmentId, guruId, studentPhone, studentNam
       if (studentPhone) {
         const customNote = notes ? `\n\nCatatan ustadz/ustadzah:\n"${notes}"` : "";
         const title = type === 'iqro' ? `Iqro Jilid ${jilid}` : `Aisar Modul ${jilid}`;
-        const msg = `Assalamu'alaikum Wr. Wb.\n\nBapak/Ibu Orang Tua/Wali Murid,\n\nAlhamdulillah, hari ini ananda *${studentName}* telah menyelesaikan pembelajaran membaca:\n\n📖 *${title}*\n🎯 Pencapaian: *Halaman ${halaman}* (Kualitas: ${LEVEL_CONFIG[level].label}).${customNote}\n\nSemoga ananda semakin lancar dan bersemangat dalam membaca Al-Qur'an. Aamiin.\n\nJazakumullah khairan.\n— Bimbel Madani`;
+        const msg = `Assalamu'alaikum Wr. Wb.\n\nBapak/Ibu Orang Tua/Wali Murid,\n\nAlhamdulillah, hari ini ananda *${studentName}* telah menyelesaikan pembelajaran membaca:\n\n📖 *${title}*\n🎯 Pencapaian: *Halaman ${halNum}* (Kualitas: ${LEVEL_CONFIG[level].label}).${customNote}\n\nSemoga ananda semakin lancar dan bersemangat dalam membaca Al-Qur'an. Aamiin.\n\nJazakumullah khairan.\n— Bimbel Madani`;
 
         await fetch("/api/whatsapp", {
           method: "POST",
@@ -116,11 +118,11 @@ export default function TabIqro({ enrollmentId, guruId, studentPhone, studentNam
 
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => { setType('iqro'); setJilid(1); setHalaman(1); }}
+              <button type="button" onClick={() => { setType('iqro'); setJilid(1); setHalamanInput("1"); }}
                 className={`px-4 py-3 rounded-2xl border font-semibold transition ${type === 'iqro' ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>
                 Iqro (Jilid 1–6)
               </button>
-              <button type="button" onClick={() => { setType('aisar'); setJilid(1); setHalaman(1); }}
+              <button type="button" onClick={() => { setType('aisar'); setJilid(1); setHalamanInput("1"); }}
                 className={`px-4 py-3 rounded-2xl border font-semibold transition ${type === 'aisar' ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>
                 Aisar (Modul 1–3)
               </button>
@@ -142,15 +144,44 @@ export default function TabIqro({ enrollmentId, guruId, studentPhone, studentNam
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Halaman</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={maxHalaman}
-                  value={halaman}
-                  onChange={e => setHalaman(Math.min(maxHalaman, Math.max(1, +e.target.value)))}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white font-bold text-slate-800"
-                />
+                <label className="block text-sm font-semibold text-slate-700 mb-1">
+                  Halaman <span className="text-xs font-normal text-slate-400">(Maks. {maxHalaman})</span>
+                </label>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const cur = parseInt(halamanInput, 10) || 1;
+                      setHalamanInput(String(Math.max(1, cur - 1)));
+                    }}
+                    className="w-11 h-11 flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 font-bold shrink-0 transition active:scale-95"
+                  >
+                    <Minus size={16} />
+                  </button>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={halamanInput}
+                    onChange={e => setHalamanInput(e.target.value.replace(/[^0-9]/g, ""))}
+                    onBlur={() => {
+                      const num = parseInt(halamanInput, 10);
+                      if (isNaN(num) || num < 1) setHalamanInput("1");
+                      else if (num > maxHalaman) setHalamanInput(String(maxHalaman));
+                    }}
+                    className="w-full text-center py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white font-black text-slate-800 text-base"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const cur = parseInt(halamanInput, 10) || 1;
+                      setHalamanInput(String(Math.min(maxHalaman, cur + 1)));
+                    }}
+                    className="w-11 h-11 flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 font-bold shrink-0 transition active:scale-95"
+                  >
+                    <Plus size={16} />
+                  </button>
+                </div>
               </div>
             </div>
 

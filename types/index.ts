@@ -52,6 +52,15 @@ export interface Enrollment {
   classes?: Class;
 }
 
+export interface SppPayment {
+  id: string;
+  enrollment_id: string;
+  month_year: string;
+  status: 'paid' | 'unpaid';
+  paid_at?: string;
+  created_at: string;
+}
+
 export interface Schedule {
   id: string;
   enrollment_id: string;

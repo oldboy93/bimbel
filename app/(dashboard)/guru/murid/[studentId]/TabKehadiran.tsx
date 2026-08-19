@@ -28,6 +28,7 @@ export default function TabKehadiran({ enrollmentId, guruId, tenantId, studentPh
   const [isSaving, setIsSaving] = useState(false);
   const [savedToday, setSavedToday] = useState<Attendance | null>(null);
   const [showAll, setShowAll] = useState(false);
+  const [filterPeriode, setFilterPeriode] = useState<"bulan_ini" | "bulan_lalu" | "semua">("bulan_ini");
   const LIMIT = 2;
 
   const load = async () => {
@@ -78,12 +79,55 @@ export default function TabKehadiran({ enrollmentId, guruId, tenantId, studentPh
     setIsSaving(false);
   };
 
-  const stat = hitungStatistikAbsensi(records);
+  // Helper filter periode
+  const now = new Date();
+  const currentYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastYM = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth() + 1).padStart(2, "0")}`;
+
+  const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+  const currentMonthLabel = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+  const lastMonthLabel = `${monthNames[lastMonthDate.getMonth()]} ${lastMonthDate.getFullYear()}`;
+
+  const filteredRecords = records.filter(r => {
+    if (filterPeriode === "bulan_ini") return r.date.startsWith(currentYM);
+    if (filterPeriode === "bulan_lalu") return r.date.startsWith(lastYM);
+    return true;
+  });
+
+  const stat = hitungStatistikAbsensi(filteredRecords);
+
+  const periodeLabel =
+    filterPeriode === "bulan_ini"
+      ? `Bulan Ini (${currentMonthLabel})`
+      : filterPeriode === "bulan_lalu"
+      ? `Bulan Lalu (${lastMonthLabel})`
+      : "Semua Riwayat";
 
   if (isLoading) return <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-blue-600" /></div>;
 
   return (
     <div className="space-y-4">
+      {/* Header & Filter Periode */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+        <div>
+          <h3 className="font-extrabold text-slate-900 text-sm">Statistik & Akumulasi Kehadiran</h3>
+          <p className="text-xs text-slate-500">Melihat % kehadiran murid berdasarkan periode pilihan</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Periode:</span>
+          <select
+            value={filterPeriode}
+            onChange={(e) => setFilterPeriode(e.target.value as any)}
+            className="px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer"
+          >
+            <option value="bulan_ini">Bulan Ini ({currentMonthLabel})</option>
+            <option value="bulan_lalu">Bulan Lalu ({lastMonthLabel})</option>
+            <option value="semua">Semua Riwayat (Akumulasi Total)</option>
+          </select>
+        </div>
+      </div>
+
       {/* Statistik */}
       <div className="grid grid-cols-4 gap-2">
         {[
@@ -101,10 +145,18 @@ export default function TabKehadiran({ enrollmentId, guruId, tenantId, studentPh
 
       {/* Progress bar kehadiran */}
       <div className="bg-white rounded-2xl border border-slate-100 p-4">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-semibold text-slate-700">Tingkat Kehadiran</span>
-          <span className="text-sm font-black text-blue-600">{stat.persentase}%</span>
+        <div className="flex justify-between items-center mb-1">
+          <div>
+            <span className="text-sm font-bold text-slate-800">Tingkat Kehadiran</span>
+            <span className="ml-2 text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+              {periodeLabel}
+            </span>
+          </div>
+          <span className="text-base font-black text-blue-600">{stat.persentase}%</span>
         </div>
+        <p className="text-[11px] text-slate-400 mb-2 font-medium">
+          Dihitung dari {stat.hadir} hadir dari total {stat.total} pertemuan ({periodeLabel}).
+        </p>
         <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all ${stat.persentase >= 80 ? "bg-emerald-500" : stat.persentase >= 50 ? "bg-yellow-400" : "bg-red-400"}`}

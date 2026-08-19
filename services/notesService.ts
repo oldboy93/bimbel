@@ -14,6 +14,7 @@ export const tampilCatatan = async (enrollmentId: string): Promise<TeacherNote[]
     .from('teacher_notes')
     .select('*')
     .eq('enrollment_id', enrollmentId)
+    .not('content', 'like', '[SPP_PAYMENT]%')
     .order('note_date', { ascending: false });
   if (error) throw new Error(error.message);
   return data ?? [];
@@ -27,6 +28,7 @@ export const tampilCatatanUntukWali = async (enrollmentId: string): Promise<Teac
     .select('*')
     .eq('enrollment_id', enrollmentId)
     .eq('is_visible_to_wali', true)
+    .not('content', 'like', '[SPP_PAYMENT]%')
     .order('note_date', { ascending: false });
   if (error) throw new Error(error.message);
   return data ?? [];
