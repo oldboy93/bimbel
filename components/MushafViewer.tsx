@@ -35,6 +35,7 @@ export default function MushafViewer({
   const [surahNum, setSurahNum] = useState(initialSurahNumber);
   const [juzNum, setJuzNum] = useState(initialJuzNumber);
   const [fontSize, setFontSize] = useState<"sm" | "md" | "lg" | "xl">("lg");
+  const [scriptType, setScriptType] = useState<"imlaei" | "uthmani">("imlaei");
   const [verses, setVerses] = useState<QuranVerse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -203,30 +204,65 @@ export default function MushafViewer({
             </div>
           )}
 
-          {/* Font Size */}
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Ukuran Teks:</span>
-            <div className="flex gap-1 bg-slate-100 p-0.5 rounded-lg">
-              {(["sm", "md", "lg", "xl"] as const).map((s) => (
+          {/* Font Controls & Rasm */}
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+            {/* Rasm Selector */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Rasm:</span>
+              <div className="flex gap-1 bg-slate-100 p-0.5 rounded-lg">
                 <button
-                  key={s}
-                  onClick={() => setFontSize(s)}
-                  className={`px-2.5 py-1 rounded-md text-[10px] font-bold transition ${
-                    fontSize === s
+                  type="button"
+                  onClick={() => setScriptType("imlaei")}
+                  className={`px-2 py-1 rounded-md text-[10px] font-bold transition ${
+                    scriptType === "imlaei"
                       ? "bg-white text-emerald-700 shadow-sm"
-                      : "text-slate-400 hover:text-slate-600"
+                      : "text-slate-500 hover:text-slate-700"
                   }`}
+                  title="Mushaf Standar Indonesia / Kemenag RI (100% kompatibel di semua HP)"
                 >
-                  {s.toUpperCase()}
+                  Standar (Kemenag)
                 </button>
-              ))}
+                <button
+                  type="button"
+                  onClick={() => setScriptType("uthmani")}
+                  className={`px-2 py-1 rounded-md text-[10px] font-bold transition ${
+                    scriptType === "uthmani"
+                      ? "bg-white text-emerald-700 shadow-sm"
+                      : "text-slate-500 hover:text-slate-700"
+                  }`}
+                  title="Mushaf Rasm Utsmani (Madinah)"
+                >
+                  Utsmani
+                </button>
+              </div>
             </div>
 
-            {highlightFrom && highlightTo && mode === "surat" && (
-              <span className="ml-auto text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-lg font-bold whitespace-nowrap">
-                🎯 Ayat {highlightFrom}–{highlightTo}
-              </span>
-            )}
+            {/* Font Size */}
+            <div className="flex items-center gap-1.5 ml-auto">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Ukuran:</span>
+              <div className="flex gap-1 bg-slate-100 p-0.5 rounded-lg">
+                {(["sm", "md", "lg", "xl"] as const).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setFontSize(s)}
+                    className={`px-2 py-1 rounded-md text-[10px] font-bold transition ${
+                      fontSize === s
+                        ? "bg-white text-emerald-700 shadow-sm"
+                        : "text-slate-400 hover:text-slate-600"
+                    }`}
+                  >
+                    {s.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+
+              {highlightFrom && highlightTo && mode === "surat" && (
+                <span className="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-lg font-bold whitespace-nowrap">
+                  🎯 {highlightFrom}–{highlightTo}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -257,11 +293,16 @@ export default function MushafViewer({
               {/* Basmalah (kecuali At-Taubah surat 9) */}
               {mode === "surat" && surahNum !== 9 && surahNum !== 1 && (
                 <p
-                  className="text-center text-emerald-800 leading-loose text-3xl"
-                  style={{ fontFamily: "'Amiri Quran', 'Noto Naskh Arabic', 'Amiri', serif", lineHeight: "3" }}
+                  className="text-center text-emerald-800 text-3xl font-quran py-2"
+                  style={{
+                    fontFamily: "var(--font-amiri), 'Amiri Quran', 'Noto Naskh Arabic', 'Traditional Arabic', serif",
+                    lineHeight: "2.6",
+                  }}
                   dir="rtl"
                 >
-                  بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
+                  {scriptType === "imlaei"
+                    ? "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
+                    : "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ"}
                 </p>
               )}
 
@@ -275,12 +316,17 @@ export default function MushafViewer({
                   ayatNum >= highlightFrom &&
                   ayatNum <= highlightTo;
 
+                const arabicText =
+                  scriptType === "imlaei"
+                    ? verse.text_imlaei || verse.text_uthmani
+                    : verse.text_uthmani || verse.text_imlaei;
+
                 return (
                   <div
                     key={verse.id}
                     className={`rounded-2xl p-4 transition ${
                       isHighlighted
-                        ? "bg-amber-50 border-2 border-amber-300"
+                        ? "bg-amber-50 border-2 border-amber-300 shadow-sm"
                         : "bg-slate-50 border border-slate-100"
                     }`}
                   >
@@ -290,7 +336,7 @@ export default function MushafViewer({
                         className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-[11px] font-extrabold ${
                           isHighlighted
                             ? "bg-amber-500 text-white"
-                            : "bg-white border border-slate-200 text-slate-500"
+                            : "bg-white border border-slate-200 text-slate-500 shadow-xs"
                         }`}
                       >
                         {ayatNum}
@@ -300,13 +346,16 @@ export default function MushafViewer({
                       </span>
                     </div>
 
-                    {/* Teks Arab */}
+                    {/* Teks Arab Berharakat Lengkap */}
                     <p
                       dir="rtl"
-                      className={`${fontSizeClass} text-slate-900 leading-[2.2] text-right mb-3`}
-                      style={{ fontFamily: "'Amiri Quran', 'Noto Naskh Arabic', 'Amiri', serif", lineHeight: "3" }}
+                      className={`${fontSizeClass} font-quran text-slate-900 text-right mb-3 select-text`}
+                      style={{
+                        fontFamily: "var(--font-amiri), 'Amiri Quran', 'Noto Naskh Arabic', 'Traditional Arabic', serif",
+                        lineHeight: "2.6",
+                      }}
                     >
-                      {verse.text_uthmani}
+                      {arabicText}
                     </p>
 
                     {/* Terjemahan */}

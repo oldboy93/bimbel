@@ -13,6 +13,9 @@
   .text-balance {
     text-wrap: balance;
   }
+  .font-quran {
+    font-family: var(--font-amiri), 'Amiri Quran', 'Noto Naskh Arabic', 'Traditional Arabic', serif;
+  }
 }
 
 @layer base {
