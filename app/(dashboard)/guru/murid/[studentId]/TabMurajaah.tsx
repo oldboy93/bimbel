@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 import { tampilRiwayatMurajaah, simpanMurajaah, hapusMurajaah } from "@/services/murajaahService";
 import { tampilRiwayatHafalan } from "@/services/hafalanService";
+import { simpanAssessmentTajwid } from "@/services/gradeService";
 import type { MurajaahSession, HafalanProgress } from "@/types";
 import { QURAN_SURAHS } from "@/lib/quranData";
-import { Loader2, RefreshCw, Plus, Trash2, CheckCircle2, AlertTriangle, RotateCcw } from "lucide-react";
+import { TAJWID_LEVELS } from "@/lib/helpers";
+import { Loader2, RefreshCw, Plus, Trash2, CheckCircle2, AlertTriangle, RotateCcw, BookOpen, Star } from "lucide-react";
+import MushafViewer from "@/components/MushafViewer";
 
 interface Props {
   enrollmentId: string;
@@ -38,6 +41,16 @@ export default function TabMurajaah({ enrollmentId, guruId, studentPhone, studen
   const [quality, setQuality] = useState<'lancar' | 'perlu_perbaikan' | 'mengulang'>('lancar');
   const [sessionDate, setSessionDate] = useState(new Date().toISOString().split("T")[0]);
   const [notes, setNotes] = useState("");
+
+  // ── Mushaf Viewer state ──
+  const [showMushaf, setShowMushaf] = useState(false);
+
+  // ── Quick Tajwid state (opsional) ──
+  type TajwidLevel = 'mulai' | 'sedang' | 'lancar';
+  const [enableTajwid, setEnableTajwid] = useState(false);
+  const [tajwidMakhraj, setTajwidMakhraj] = useState<TajwidLevel>('sedang');
+  const [tajwidKelancaran, setTajwidKelancaran] = useState<TajwidLevel>('sedang');
+  const [tajwidNilai, setTajwidNilai] = useState<TajwidLevel>('sedang');
 
   const load = async () => {
     try {
@@ -105,6 +118,20 @@ export default function TabMurajaah({ enrollmentId, guruId, studentPhone, studen
         notes,
       });
 
+      // Simpan tajwid paralel jika diaktifkan (opsional)
+      if (enableTajwid) {
+        try {
+          await simpanAssessmentTajwid({
+            enrollmentId, guruId, sessionDate,
+            makhrajLevel: tajwidMakhraj, makhrajNotes: '',
+            kelancaranLevel: tajwidKelancaran, kelancaranNotes: '',
+            tajwidLevel: tajwidNilai, tajwidNotes: '',
+          });
+        } catch (tajwidErr) {
+          console.warn('[TabMurajaah] Gagal simpan tajwid (opsional):', tajwidErr);
+        }
+      }
+
       if (studentPhone) {
         const customNote = notes ? `\n\nCatatan evaluasi ustadz:\n"${notes}"` : "";
         const msg = `Assalamu'alaikum Wr. Wb.\n\nBapak/Ibu Orang Tua/Wali Murid,\n\nAlhamdulillah, hari ini ananda *${studentName}* telah menyelesaikan sesi pengulangan hafalan (Murajaah):\n\n🔄 *${finalSurahName}*\n🎯 Jangkauan: *${ayatOrPageRange || "Pengulangan"}*\n⭐ Kualitas: *${QUALITY_CONFIG[quality].label}*.${customNote}\n\nSemoga hafalan ananda semakin melekat kuat dan berkah. Aamiin.\n\nJazakumullah khairan.\n— Bimbel Madani`;
@@ -137,16 +164,34 @@ export default function TabMurajaah({ enrollmentId, guruId, studentPhone, studen
 
   return (
     <div className="space-y-4">
-      <button onClick={() => setShowForm(!showForm)}
-        className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition">
-        <Plus size={18} /> Input Sesi Murajaah Baru
-      </button>
+      <div className="flex gap-2">
+        <button onClick={() => setShowForm(!showForm)}
+          className="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition">
+          <Plus size={18} /> Input Sesi Murajaah Baru
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowMushaf(true)}
+          className="flex items-center gap-2 px-4 py-3 bg-emerald-50 text-emerald-700 font-bold rounded-xl border border-emerald-200 hover:bg-emerald-100 transition text-sm"
+        >
+          <BookOpen size={16} /> Mushaf
+        </button>
+      </div>
 
       {showForm && (
         <form onSubmit={handleSimpan} className="bg-white rounded-2xl border border-blue-100 p-5 space-y-4 shadow-sm">
-          <h3 className="font-bold text-slate-900 flex items-center gap-2">
-            <RefreshCw size={18} className="text-blue-600" /> Sesi Murajaah
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-slate-900 flex items-center gap-2">
+              <RefreshCw size={18} className="text-blue-600" /> Sesi Murajaah
+            </h3>
+            <button
+              type="button"
+              onClick={() => setShowMushaf(true)}
+              className="flex items-center gap-1.5 text-xs text-emerald-600 font-bold bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 hover:bg-emerald-100 transition"
+            >
+              <BookOpen size={13} /> Lihat Mushaf
+            </button>
+          </div>
 
           <div className="space-y-4">
             {/* Auto-fill Picker dari Hafalan yang Sudah Ada */}
@@ -251,6 +296,46 @@ export default function TabMurajaah({ enrollmentId, guruId, studentPhone, studen
               />
             </div>
 
+            {/* ── Quick Tajwid Assessment (Opsional) ── */}
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setEnableTajwid(!enableTajwid)}
+                className={`w-full flex items-center justify-between px-4 py-3 text-sm font-bold transition ${
+                  enableTajwid ? 'bg-violet-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                <span className="flex items-center gap-2"><Star size={15} /> Nilai Tajwid (Opsional)</span>
+                <span className="text-xs font-normal opacity-70">{enableTajwid ? 'Aktif — klik untuk nonaktifkan' : 'Klik untuk aktifkan'}</span>
+              </button>
+              {enableTajwid && (
+                <div className="p-4 space-y-3 bg-white border-t border-slate-100">
+                  {([
+                    { label: 'Makhroj Huruf', value: tajwidMakhraj, set: setTajwidMakhraj },
+                    { label: 'Kelancaran', value: tajwidKelancaran, set: setTajwidKelancaran },
+                    { label: 'Tajwid', value: tajwidNilai, set: setTajwidNilai },
+                  ] as const).map(({ label, value, set }) => (
+                    <div key={label}>
+                      <p className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1.5">{label}</p>
+                      <div className="flex gap-1.5">
+                        {(['mulai', 'sedang', 'lancar'] as const).map((lvl) => {
+                          const cfg = TAJWID_LEVELS[lvl];
+                          return (
+                            <button key={lvl} type="button" onClick={() => set(lvl)}
+                              className={`flex-1 py-2 rounded-xl text-xs font-bold border-2 transition ${
+                                value === lvl ? `${cfg.bg} ${cfg.color} border-current` : 'bg-white text-slate-400 border-slate-200 hover:border-slate-300'
+                              }`}>
+                              {cfg.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="flex gap-2 pt-2">
               <button type="button" onClick={() => setShowForm(false)}
                 className="flex-1 py-3 text-slate-500 hover:bg-slate-50 font-semibold rounded-xl transition border border-slate-200">
@@ -317,6 +402,14 @@ export default function TabMurajaah({ enrollmentId, guruId, studentPhone, studen
           </>
         )}
       </div>
+
+      {/* ── Mushaf Viewer Drawer ── */}
+      <MushafViewer
+        isOpen={showMushaf}
+        onClose={() => setShowMushaf(false)}
+        initialMode={hafalanType}
+        initialSurahNumber={surahNum}
+      />
     </div>
   );
 }

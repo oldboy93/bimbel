@@ -4,7 +4,8 @@ import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Book, Home, LogOut, Loader2, User, Users, Calendar, Award, BookOpen, Settings, Wallet } from "lucide-react";
+import { Book, Home, LogOut, Loader2, User, Users, Calendar, Award, BookOpen, Settings, Wallet, Trophy } from "lucide-react";
+import LeaderboardWidget from "@/components/LeaderboardWidget";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<string>("murid");
@@ -12,6 +13,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [siblings, setSiblings] = useState<{ id: string; full_name: string }[]>([]);
   const [activeStudentId, setActiveStudentId] = useState<string>("");
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const supabase = createClient();
@@ -142,6 +144,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
 
+        {/* Leaderboard widget — hanya murid, di sidebar desktop */}
+        {role === "murid" && activeStudentId && (
+          <LeaderboardWidget
+            studentId={activeStudentId}
+            variant="sidebar"
+          />
+        )}
+
         <nav className="flex-1 px-4 space-y-1.5 mt-4">
           {activeMenus.map((item) => {
             const isActive = pathname === item.href;
@@ -212,6 +222,16 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </Link>
           );
         })}
+        {/* Trophy button — hanya murid */}
+        {role === "murid" && activeStudentId && (
+          <button
+            onClick={() => setShowLeaderboard(true)}
+            className="flex flex-col items-center py-1 text-amber-500"
+          >
+            <Trophy size={22} />
+            <span className="text-[10px] mt-1 font-medium">Ranking</span>
+          </button>
+        )}
         <button
           onClick={handleLogout}
           className="flex flex-col items-center py-1 text-slate-400 hover:text-red-500 transition"
@@ -220,6 +240,16 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <span className="text-[10px] mt-1 font-medium">Keluar</span>
         </button>
       </nav>
+
+      {/* Leaderboard Drawer — Mobile */}
+      {role === "murid" && activeStudentId && (
+        <LeaderboardWidget
+          studentId={activeStudentId}
+          variant="drawer"
+          isOpen={showLeaderboard}
+          onClose={() => setShowLeaderboard(false)}
+        />
+      )}
     </div>
   );
 }
