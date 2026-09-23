@@ -257,8 +257,8 @@ export default function MushafViewer({
               {/* Basmalah (kecuali At-Taubah surat 9) */}
               {mode === "surat" && surahNum !== 9 && surahNum !== 1 && (
                 <p
-                  className="text-center font-arabic text-emerald-800 leading-loose"
-                  style={{ fontFamily: "serif" }}
+                  className="text-center text-emerald-800 leading-loose text-3xl"
+                  style={{ fontFamily: "'Amiri Quran', 'Noto Naskh Arabic', 'Amiri', serif", lineHeight: "3" }}
                   dir="rtl"
                 >
                   بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
@@ -304,7 +304,7 @@ export default function MushafViewer({
                     <p
                       dir="rtl"
                       className={`${fontSizeClass} text-slate-900 leading-[2.2] text-right mb-3`}
-                      style={{ fontFamily: "KFGQPC Uthmanic Script HAFS, Scheherazade New, Amiri, serif", lineHeight: "2.8" }}
+                      style={{ fontFamily: "'Amiri Quran', 'Noto Naskh Arabic', 'Amiri', serif", lineHeight: "3" }}
                     >
                       {verse.text_uthmani}
                     </p>
