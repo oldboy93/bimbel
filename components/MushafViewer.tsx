@@ -295,7 +295,7 @@ export default function MushafViewer({
                 <p
                   className="text-center text-emerald-800 text-3xl font-quran py-2"
                   style={{
-                    fontFamily: "var(--font-amiri), 'Amiri Quran', 'Noto Naskh Arabic', 'Traditional Arabic', serif",
+                    fontFamily: "var(--font-quran), 'Scheherazade New', 'Amiri', 'Traditional Arabic', serif",
                     lineHeight: "2.6",
                   }}
                   dir="rtl"
@@ -351,7 +351,7 @@ export default function MushafViewer({
                       dir="rtl"
                       className={`${fontSizeClass} font-quran text-slate-900 text-right mb-3 select-text`}
                       style={{
-                        fontFamily: "var(--font-amiri), 'Amiri Quran', 'Noto Naskh Arabic', 'Traditional Arabic', serif",
+                        fontFamily: "var(--font-quran), 'Scheherazade New', 'Amiri', 'Traditional Arabic', serif",
                         lineHeight: "2.6",
                       }}
                     >
