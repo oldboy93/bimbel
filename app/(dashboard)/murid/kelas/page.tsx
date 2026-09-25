@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import {
   BookOpen, Calendar, Clock, Loader2, FileText, Download,
   ExternalLink, MessageSquare, AlertCircle, Sparkles, BookMarked,
-  X, Play, Globe, Eye, ArrowRight, Lock, Unlock
+  X, Play, Globe, Eye, ArrowRight, Lock, Unlock, ChevronLeft, ChevronRight
 } from "lucide-react";
 import { tampilEnrollmentMurid, verifikasiPinWali } from "@/services/studentService";
 import { tampilCatatanUntukWali } from "@/services/notesService";
@@ -61,6 +61,9 @@ export default function MuridKelasPage() {
   const [notes, setNotes] = useState<TeacherNote[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [activeTab, setActiveTab] = useState<"jadwal" | "materi" | "catatan">("jadwal");
+  const [scheduleFilter, setScheduleFilter] = useState<"semua" | "mendatang" | "riwayat">("semua");
+  const [schedulePage, setSchedulePage] = useState(1);
+  const SCHEDULES_PER_PAGE = 6;
   const [isLoading, setIsLoading] = useState(true);
   const [isSubLoading, setIsSubLoading] = useState(false);
   
@@ -186,6 +189,7 @@ export default function MuridKelasPage() {
     setIsUnlocked(false);
     setPinDigits(["", "", "", "", "", ""]);
     setPinError("");
+    setSchedulePage(1);
 
     const loadSubData = async () => {
       setIsSubLoading(true);
@@ -331,39 +335,222 @@ export default function MuridKelasPage() {
             ) : (
               <div className="pt-2 min-h-[300px]">
                 {/* 1. JADWAL TAB */}
-                {activeTab === "jadwal" && (
-                  <div className="space-y-3">
-                    {(selectedEnr.schedules ?? []).length === 0 ? (
-                      <div className="text-center py-12 text-slate-400">
-                        <Calendar className="mx-auto h-12 w-12 text-slate-200 mb-3" />
-                        <p className="font-semibold text-sm">Belum ada jadwal belajar</p>
+                {activeTab === "jadwal" && (() => {
+                  const todayStr = new Date().toLocaleDateString("en-CA");
+                  const processedSchedules = (selectedEnr.schedules ?? [])
+                    .map((sch) => {
+                      const rawNotes = sch.material_notes || "";
+                      let isCustom = false;
+                      let dateStr = "";
+                      let cleanNotes = rawNotes;
+                      if (rawNotes.startsWith("DATE:")) {
+                        const parts = rawNotes.split("|NOTES:");
+                        dateStr = parts[0].replace("DATE:", "");
+                        cleanNotes = parts[1] || "";
+                        isCustom = true;
+                      }
+                      const isToday = isCustom && dateStr === todayStr;
+                      const isUpcoming = isCustom ? dateStr > todayStr : false;
+                      const isPast = isCustom ? dateStr < todayStr : false;
+                      return {
+                        ...sch,
+                        isCustom,
+                        dateStr,
+                        cleanNotes,
+                        isToday,
+                        isUpcoming,
+                        isPast,
+                      };
+                    })
+                    .sort((a, b) => {
+                      if (a.isCustom && b.isCustom) {
+                        return new Date(b.dateStr).getTime() - new Date(a.dateStr).getTime();
+                      }
+                      return a.day_of_week - b.day_of_week;
+                    });
+
+                  const upcomingCount = processedSchedules.filter((s) => s.isUpcoming || s.isToday).length;
+                  const pastCount = processedSchedules.filter((s) => s.isPast).length;
+
+                  const filteredSchedules = processedSchedules.filter((s) => {
+                    if (scheduleFilter === "mendatang") return s.isUpcoming || s.isToday;
+                    if (scheduleFilter === "riwayat") return s.isPast;
+                    return true;
+                  });
+
+                  const totalSchedulePages = Math.max(1, Math.ceil(filteredSchedules.length / SCHEDULES_PER_PAGE));
+                  const pagedSchedules = filteredSchedules.slice(
+                    (schedulePage - 1) * SCHEDULES_PER_PAGE,
+                    schedulePage * SCHEDULES_PER_PAGE
+                  );
+
+                  return (
+                    <div className="space-y-4">
+                      {/* Filter pill & counter */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
+                        <div className="flex items-center gap-1.5 overflow-x-auto py-1 no-scrollbar text-xs">
+                          <button
+                            onClick={() => { setScheduleFilter("semua"); setSchedulePage(1); }}
+                            className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
+                              scheduleFilter === "semua"
+                                ? "bg-blue-600 text-white shadow-xs"
+                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                            }`}
+                          >
+                            Semua ({processedSchedules.length})
+                          </button>
+                          <button
+                            onClick={() => { setScheduleFilter("mendatang"); setSchedulePage(1); }}
+                            className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
+                              scheduleFilter === "mendatang"
+                                ? "bg-blue-600 text-white shadow-xs"
+                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                            }`}
+                          >
+                            Mendatang ({upcomingCount})
+                          </button>
+                          <button
+                            onClick={() => { setScheduleFilter("riwayat"); setSchedulePage(1); }}
+                            className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
+                              scheduleFilter === "riwayat"
+                                ? "bg-blue-600 text-white shadow-xs"
+                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                            }`}
+                          >
+                            Riwayat Selesai ({pastCount})
+                          </button>
+                        </div>
+                        <span className="text-[11px] text-slate-400 font-medium">
+                          Total {filteredSchedules.length} pertemuan
+                        </span>
                       </div>
-                    ) : (
-                      (selectedEnr.schedules ?? []).map((sch, i) => (
-                        <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between animate-fade-in">
-                          <div className="flex items-center gap-4">
-                            <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl font-black text-sm w-12 h-12 flex items-center justify-center">
-                              {DAY_NAMES[sch.day_of_week].slice(0, 3)}
-                            </div>
-                            <div>
-                              <h4 className="font-extrabold text-slate-900 text-sm">{sch.activity}</h4>
-                              <p className="text-xs text-slate-500 mt-0.5">{sch.material_notes || "Murajaah & Tahsin"}</p>
-                            </div>
-                          </div>
-                          {sch.time_start && (
-                            <div className="flex items-center gap-1.5 bg-blue-50/50 px-3 py-1.5 rounded-xl">
-                              <Clock size={14} className="text-blue-600" />
-                              <span className="text-xs font-black text-blue-600">
-                                {sch.time_start.slice(0, 5)}
-                                {sch.time_end ? ` – ${sch.time_end.slice(0, 5)}` : ""}
+
+                      {filteredSchedules.length === 0 ? (
+                        <div className="text-center py-12 text-slate-400 bg-white rounded-3xl border border-slate-100 p-8 shadow-xs">
+                          <Calendar className="mx-auto h-12 w-12 text-slate-200 mb-3" />
+                          <p className="font-semibold text-sm">
+                            {scheduleFilter === "mendatang"
+                              ? "Belum ada jadwal sesi belajar mendatang"
+                              : scheduleFilter === "riwayat"
+                              ? "Belum ada riwayat sesi belajar yang selesai"
+                              : "Belum ada jadwal belajar"}
+                          </p>
+                          <p className="text-xs text-slate-400 mt-1">
+                            Ustadz/Ustadzah akan menjadwalkan sesi belajar berikutnya.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2.5">
+                          {pagedSchedules.map((sch, i) => {
+                            const formattedDate = sch.isCustom && sch.dateStr ? Format.tanggalIndo(sch.dateStr) : "";
+                            return (
+                              <div
+                                key={sch.id || i}
+                                className={`bg-white p-4 sm:p-5 rounded-2xl border transition shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in ${
+                                  sch.isToday
+                                    ? "border-emerald-200 bg-emerald-50/20 ring-1 ring-emerald-300/40"
+                                    : sch.isUpcoming
+                                    ? "border-blue-100"
+                                    : "border-slate-100 opacity-90"
+                                }`}
+                              >
+                                <div className="flex items-start sm:items-center gap-3.5">
+                                  <div
+                                    className={`p-2.5 rounded-2xl font-black text-center w-12 h-12 shrink-0 flex flex-col items-center justify-center ${
+                                      sch.isToday
+                                        ? "bg-emerald-100 text-emerald-700"
+                                        : sch.isUpcoming
+                                        ? "bg-blue-50 text-blue-600"
+                                        : "bg-slate-100 text-slate-500"
+                                    }`}
+                                  >
+                                    {sch.isCustom && sch.dateStr ? (
+                                      <>
+                                        <span className="text-sm font-black leading-none">
+                                          {new Date(sch.dateStr).getDate()}
+                                        </span>
+                                        <span className="text-[9px] uppercase font-bold mt-0.5 leading-none">
+                                          {DAY_NAMES[sch.day_of_week].slice(0, 3)}
+                                        </span>
+                                      </>
+                                    ) : (
+                                      <span className="text-xs font-black">
+                                        {DAY_NAMES[sch.day_of_week].slice(0, 3)}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <h4 className="font-extrabold text-slate-900 text-sm">{sch.activity}</h4>
+                                      {sch.isToday && (
+                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-700">
+                                          Hari Ini
+                                        </span>
+                                      )}
+                                      {sch.isUpcoming && (
+                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700">
+                                          Akan Datang
+                                        </span>
+                                      )}
+                                      {sch.isPast && (
+                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">
+                                          Selesai
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-1 text-xs text-slate-500 flex-wrap">
+                                      {formattedDate && (
+                                        <span className="font-medium text-slate-600">📅 {formattedDate}</span>
+                                      )}
+                                      {sch.cleanNotes && (
+                                        <span className="text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">
+                                          {sch.cleanNotes}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {sch.time_start && (
+                                  <div className="flex items-center gap-1.5 self-start sm:self-center bg-blue-50/60 px-3 py-1.5 rounded-xl shrink-0">
+                                    <Clock size={13} className="text-blue-600" />
+                                    <span className="text-xs font-bold text-blue-600">
+                                      {sch.time_start.slice(0, 5)}
+                                      {sch.time_end ? ` – ${sch.time_end.slice(0, 5)}` : ""} WIB
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+
+                          {/* Pagination controls */}
+                          {totalSchedulePages > 1 && (
+                            <div className="pt-3 flex items-center justify-between border-t border-slate-100">
+                              <button
+                                onClick={() => setSchedulePage((p) => Math.max(1, p - 1))}
+                                disabled={schedulePage === 1}
+                                className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+                              >
+                                <ChevronLeft size={14} /> Sebelumnya
+                              </button>
+                              <span className="text-xs font-semibold text-slate-400">
+                                Halaman {schedulePage} dari {totalSchedulePages}
                               </span>
+                              <button
+                                onClick={() => setSchedulePage((p) => Math.min(totalSchedulePages, p + 1))}
+                                disabled={schedulePage === totalSchedulePages}
+                                className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+                              >
+                                Selanjutnya <ChevronRight size={14} />
+                              </button>
                             </div>
                           )}
                         </div>
-                      ))
-                    )}
-                  </div>
-                )}
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* 2. MATERI TAB — Premium Immersive Learning LMS */}
                 {activeTab === "materi" && (
