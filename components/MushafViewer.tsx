@@ -35,7 +35,7 @@ export default function MushafViewer({
   const [surahNum, setSurahNum] = useState(initialSurahNumber);
   const [juzNum, setJuzNum] = useState(initialJuzNumber);
   const [fontSize, setFontSize] = useState<"sm" | "md" | "lg" | "xl">("lg");
-  const [scriptType, setScriptType] = useState<"imlaei" | "uthmani">("imlaei");
+  const [scriptType, setScriptType] = useState<"imlaei" | "uthmani">("uthmani");
   const [verses, setVerses] = useState<QuranVerse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -134,11 +134,10 @@ export default function MushafViewer({
               <button
                 key={m}
                 onClick={() => setMode(m)}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition ${
-                  mode === m
+                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition ${mode === m
                     ? "bg-white text-emerald-700 shadow-sm"
                     : "text-slate-500 hover:text-slate-700"
-                }`}
+                  }`}
               >
                 {m === "surat" ? "Per Surat" : "Per Juz"}
               </button>
@@ -213,11 +212,10 @@ export default function MushafViewer({
                 <button
                   type="button"
                   onClick={() => setScriptType("imlaei")}
-                  className={`px-2 py-1 rounded-md text-[10px] font-bold transition ${
-                    scriptType === "imlaei"
+                  className={`px-2 py-1 rounded-md text-[10px] font-bold transition ${scriptType === "imlaei"
                       ? "bg-white text-emerald-700 shadow-sm"
                       : "text-slate-500 hover:text-slate-700"
-                  }`}
+                    }`}
                   title="Mushaf Standar Indonesia / Kemenag RI (100% kompatibel di semua HP)"
                 >
                   Standar (Kemenag)
@@ -225,11 +223,10 @@ export default function MushafViewer({
                 <button
                   type="button"
                   onClick={() => setScriptType("uthmani")}
-                  className={`px-2 py-1 rounded-md text-[10px] font-bold transition ${
-                    scriptType === "uthmani"
+                  className={`px-2 py-1 rounded-md text-[10px] font-bold transition ${scriptType === "uthmani"
                       ? "bg-white text-emerald-700 shadow-sm"
                       : "text-slate-500 hover:text-slate-700"
-                  }`}
+                    }`}
                   title="Mushaf Rasm Utsmani (Madinah)"
                 >
                   Utsmani
@@ -246,11 +243,10 @@ export default function MushafViewer({
                     key={s}
                     type="button"
                     onClick={() => setFontSize(s)}
-                    className={`px-2 py-1 rounded-md text-[10px] font-bold transition ${
-                      fontSize === s
+                    className={`px-2 py-1 rounded-md text-[10px] font-bold transition ${fontSize === s
                         ? "bg-white text-emerald-700 shadow-sm"
                         : "text-slate-400 hover:text-slate-600"
-                    }`}
+                      }`}
                   >
                     {s.toUpperCase()}
                   </button>
@@ -324,20 +320,18 @@ export default function MushafViewer({
                 return (
                   <div
                     key={verse.id}
-                    className={`rounded-2xl p-4 transition ${
-                      isHighlighted
+                    className={`rounded-2xl p-4 transition ${isHighlighted
                         ? "bg-amber-50 border-2 border-amber-300 shadow-sm"
                         : "bg-slate-50 border border-slate-100"
-                    }`}
+                      }`}
                   >
                     {/* Nomor ayat */}
                     <div className="flex items-center justify-between mb-3">
                       <span
-                        className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-[11px] font-extrabold ${
-                          isHighlighted
+                        className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-[11px] font-extrabold ${isHighlighted
                             ? "bg-amber-500 text-white"
                             : "bg-white border border-slate-200 text-slate-500 shadow-xs"
-                        }`}
+                          }`}
                       >
                         {ayatNum}
                       </span>
