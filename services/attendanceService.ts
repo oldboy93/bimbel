@@ -74,9 +74,9 @@ export const simpanAbsensi = async (
 // ── STATISTIK KEHADIRAN ────────────────────────────────────
 export const hitungStatistikAbsensi = (records: Attendance[]) => {
   const total = records.length;
-  const hadir = records.filter((r) => r.status === 'H').length;
-  const ijin = records.filter((r) => r.status === 'I').length;
-  const alpha = records.filter((r) => r.status === 'A').length;
+  const hadir = records.filter((r) => r.status?.toUpperCase() === 'H').length;
+  const ijin = records.filter((r) => r.status?.toUpperCase() === 'I').length;
+  const alpha = records.filter((r) => r.status?.toUpperCase() === 'A').length;
   const persentase = total > 0 ? Math.round((hadir / total) * 100) : 0;
 
   return { total, hadir, ijin, alpha, persentase };

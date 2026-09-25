@@ -48,39 +48,46 @@ export async function getClassLeaderboard(
     // 3. Hitung setoran hafalan+murajaah per enrollment dalam 30 hari
     const enrollmentIds = classEnrollments.map((e) => e.id);
 
-    const [{ data: hafalanData }, { data: murajaahData }, { data: attendanceData }] =
-      await Promise.all([
-        db
-          .from("hafalan_progress")
-          .select("enrollment_id, session_date")
-          .in("enrollment_id", enrollmentIds)
-          .gte("session_date", sinceDate),
-        db
-          .from("murajaah_sessions")
-          .select("enrollment_id, session_date")
-          .in("enrollment_id", enrollmentIds)
-          .gte("session_date", sinceDate),
-        db
-          .from("attendance")
-          .select("enrollment_id, status")
-          .in("enrollment_id", enrollmentIds)
-          .gte("date", sinceDate),
-      ]);
+    const [hafalanRes, murajaahRes, iqroRes, attendanceRes] = await Promise.all([
+      db
+        .from("hafalan_progress")
+        .select("enrollment_id, session_date")
+        .in("enrollment_id", enrollmentIds)
+        .gte("session_date", sinceDate),
+      db
+        .from("murajaah_sessions")
+        .select("enrollment_id, session_date")
+        .in("enrollment_id", enrollmentIds)
+        .gte("session_date", sinceDate),
+      db
+        .from("iqro_progress")
+        .select("enrollment_id, session_date")
+        .in("enrollment_id", enrollmentIds)
+        .gte("session_date", sinceDate),
+      db
+        .from("attendances")
+        .select("enrollment_id, status")
+        .in("enrollment_id", enrollmentIds)
+        .gte("date", sinceDate),
+    ]);
 
     // 4. Aggregate per enrollment
     const setoranMap: Record<string, number> = {};
     const hasilMap: Record<string, { hadir: number; total: number }> = {};
 
-    (hafalanData ?? []).forEach((h) => {
+    ((hafalanRes.data ?? []) as Array<{ enrollment_id: string }>).forEach((h) => {
       setoranMap[h.enrollment_id] = (setoranMap[h.enrollment_id] ?? 0) + 1;
     });
-    (murajaahData ?? []).forEach((m) => {
+    ((murajaahRes.data ?? []) as Array<{ enrollment_id: string }>).forEach((m) => {
       setoranMap[m.enrollment_id] = (setoranMap[m.enrollment_id] ?? 0) + 1;
     });
-    (attendanceData ?? []).forEach((a) => {
+    ((iqroRes.data ?? []) as Array<{ enrollment_id: string }>).forEach((iq) => {
+      setoranMap[iq.enrollment_id] = (setoranMap[iq.enrollment_id] ?? 0) + 1;
+    });
+    ((attendanceRes.data ?? []) as Array<{ enrollment_id: string; status: string }>).forEach((a) => {
       if (!hasilMap[a.enrollment_id]) hasilMap[a.enrollment_id] = { hadir: 0, total: 0 };
       hasilMap[a.enrollment_id].total += 1;
-      if (a.status === "H") hasilMap[a.enrollment_id].hadir += 1;
+      if (a.status?.toUpperCase() === "H") hasilMap[a.enrollment_id].hadir += 1;
     });
 
     // 5. Build leaderboard entries
