@@ -41,6 +41,8 @@ export default function TabMurajaah({ enrollmentId, guruId, studentPhone, studen
   const [quality, setQuality] = useState<'lancar' | 'perlu_perbaikan' | 'mengulang'>('lancar');
   const [sessionDate, setSessionDate] = useState(new Date().toISOString().split("T")[0]);
   const [notes, setNotes] = useState("");
+  const [isPr, setIsPr] = useState(false);
+  const [prNotesGuru, setPrNotesGuru] = useState("");
 
   // ── Mushaf Viewer state ──
   const [showMushaf, setShowMushaf] = useState(false);
@@ -116,6 +118,8 @@ export default function TabMurajaah({ enrollmentId, guruId, studentPhone, studen
         quality,
         sessionDate,
         notes,
+        is_pr: isPr,
+        pr_notes_guru: isPr ? prNotesGuru : undefined,
       });
 
       // Simpan tajwid paralel jika diaktifkan (opsional)
@@ -148,6 +152,8 @@ export default function TabMurajaah({ enrollmentId, guruId, studentPhone, studen
 
     setShowForm(false);
     setNotes("");
+    setIsPr(false);
+    setPrNotesGuru("");
     load();
     setIsSaving(false);
   };
@@ -336,6 +342,45 @@ export default function TabMurajaah({ enrollmentId, guruId, studentPhone, studen
               )}
             </div>
 
+            {/* ── Tugaskan untuk Disimak di Rumah (PR) ── */}
+            <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl">🏠</span>
+                  <div>
+                    <label htmlFor="toggle-pr-murajaah" className="text-sm font-bold text-amber-900 cursor-pointer">
+                      Tugaskan untuk Disimak di Rumah (PR)
+                    </label>
+                    <p className="text-xs text-amber-700">
+                      Orang tua akan menyimak murajaah di rumah dengan bantuan mushaf & audio
+                    </p>
+                  </div>
+                </div>
+                <input
+                  id="toggle-pr-murajaah"
+                  type="checkbox"
+                  checked={isPr}
+                  onChange={(e) => setIsPr(e.target.checked)}
+                  className="w-5 h-5 accent-amber-600 rounded cursor-pointer"
+                />
+              </div>
+
+              {isPr && (
+                <div className="pt-2 border-t border-amber-200/70">
+                  <label className="block text-xs font-bold text-amber-900 mb-1">
+                    Pesan / Instruksi Khusus untuk Orang Tua (Opsional)
+                  </label>
+                  <input
+                    type="text"
+                    value={prNotesGuru}
+                    onChange={(e) => setPrNotesGuru(e.target.value)}
+                    placeholder="Contoh: Mohon disimak pengulangan ayat 1-15 dengan seksama..."
+                    className="w-full px-3.5 py-2.5 text-xs bg-white border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none text-slate-800"
+                  />
+                </div>
+              )}
+            </div>
+
             <div className="flex gap-2 pt-2">
               <button type="button" onClick={() => setShowForm(false)}
                 className="flex-1 py-3 text-slate-500 hover:bg-slate-50 font-semibold rounded-xl transition border border-slate-200">
@@ -365,9 +410,24 @@ export default function TabMurajaah({ enrollmentId, guruId, studentPhone, studen
                 <div key={r.id} className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <span className="inline-block px-2.5 py-0.5 text-[10px] font-extrabold uppercase rounded-md bg-purple-50 text-purple-700 mb-1">
-                        Murajaah
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                        <span className="inline-block px-2.5 py-0.5 text-[10px] font-extrabold uppercase rounded-md bg-purple-50 text-purple-700">
+                          Murajaah
+                        </span>
+                        {r.is_pr && (
+                          <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
+                            r.parent_simak_at
+                              ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                              : 'bg-amber-100 text-amber-800 border-amber-300'
+                          }`}>
+                            {r.parent_simak_at ? (
+                              <>🏠 Disimak Ortu: ⭐ {r.parent_rating}/5 · {r.parent_status}</>
+                            ) : (
+                              <>🏠 Tugas Rumah (PR)</>
+                            )}
+                          </span>
+                        )}
+                      </div>
                       <p className="font-bold text-slate-900 text-base">
                         {r.surah_name} {r.ayat_or_page_range ? `(${r.ayat_or_page_range})` : ""}
                       </p>
@@ -385,7 +445,12 @@ export default function TabMurajaah({ enrollmentId, guruId, studentPhone, studen
                       </button>
                     </div>
                   </div>
-                  {r.notes && <p className="text-xs text-slate-500 mt-2 italic">"{r.notes}"</p>}
+                  {r.notes && <p className="text-xs text-slate-500 mt-2 italic">"Guru: {r.notes}"</p>}
+                  {r.is_pr && r.parent_notes && (
+                    <p className="text-xs text-amber-700 mt-1 italic line-clamp-2 bg-amber-50/70 p-1.5 rounded-lg border border-amber-100">
+                      "Wali: {r.parent_notes}"
+                    </p>
+                  )}
                 </div>
               );
             })}

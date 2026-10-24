@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import {
   BookOpen, Loader2, Plus, Trash, Globe, FileText, Video, Link as LinkIcon,
   CheckCircle, AlertCircle, Save, Sparkles, Megaphone,
-  Bold, Italic, Heading2, Quote, List, Image, Edit3, Layout, Eye, X, Play, Download, ExternalLink
+  Bold, Italic, Heading2, Quote, List, Image, Edit3, Layout, Eye, X, Play, Download, ExternalLink, Volume2
 } from "lucide-react";
 
 export default function GuruMateriPage() {
@@ -21,7 +21,7 @@ export default function GuruMateriPage() {
   const [description, setDescription] = useState("");
   const [fileUrl, setFileUrl] = useState("");
   const [classId, setClassId] = useState("");
-  const [type, setType] = useState<"pdf" | "video" | "link" | "text" | "artikel">("pdf");
+  const [type, setType] = useState<"pdf" | "video" | "link" | "text" | "artikel" | "audio">("pdf");
   const [isPublished, setIsPublished] = useState(true);
 
   // Custom Artikel States
@@ -300,6 +300,7 @@ export default function GuruMateriPage() {
               >
                 <option value="pdf">📄 Modul / PDF</option>
                 <option value="video">🎥 Video Edukasi (YouTube)</option>
+                <option value="audio">🎵 Audio Bacaan / Murottal (MP3/Link)</option>
                 <option value="link">🔗 Link Tautan Luar</option>
                 <option value="text">✏️ Teks / Catatan Pembelajaran</option>
                 <option value="artikel">📖 Artikel Pembelajaran Baru</option>
@@ -308,11 +309,13 @@ export default function GuruMateriPage() {
 
             {type !== "text" && type !== "artikel" && (
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold text-slate-400 uppercase tracking-wider block">Tautan / File URL</label>
+                <label className="text-xs font-extrabold text-slate-400 uppercase tracking-wider block">
+                  {type === "audio" ? "Tautan File Audio / Rekaman MP3" : "Tautan / File URL"}
+                </label>
                 <input
                   type="url"
                   required
-                  placeholder="Contoh: https://drive.google.com/..."
+                  placeholder={type === "audio" ? "Contoh: https://.../murottal.mp3 atau direct audio URL" : "Contoh: https://drive.google.com/..."}
                   value={fileUrl}
                   onChange={(e) => setFileUrl(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-800 font-medium"
@@ -524,6 +527,7 @@ export default function GuruMateriPage() {
             const isVideo = m.type === "video";
             const isPdf = m.type === "pdf";
             const isArtikel = m.type === "artikel";
+            const isAudio = m.type === "audio";
             return (
               <div key={m.id} className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition animate-fade-in">
                 <div className="space-y-3">
@@ -531,10 +535,12 @@ export default function GuruMateriPage() {
                     <span className={`p-3 rounded-2xl ${
                       isPdf ? "bg-emerald-50 text-emerald-600" :
                       isVideo ? "bg-rose-50 text-rose-600" :
+                      isAudio ? "bg-amber-50 text-amber-600" :
                       isArtikel ? "bg-indigo-50 text-indigo-600" : "bg-blue-50 text-blue-600"
                     }`}>
                       {isPdf ? <FileText size={20} /> :
                        isVideo ? <Video size={20} /> :
+                       isAudio ? <Volume2 size={20} /> :
                        isArtikel ? <BookOpen size={20} /> : <Globe size={20} />}
                     </span>
                     <button
@@ -640,6 +646,24 @@ export default function GuruMateriPage() {
                       </a>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* AUDIO LESSON EMBED */}
+              {selectedMaterial.type === "audio" && (
+                <div className="p-6 bg-amber-50/50 rounded-2xl border border-amber-200/80 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-amber-600 text-white rounded-2xl shadow-xs">
+                      <Volume2 size={24} />
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-slate-900 text-base">Pemutar Audio Materi</h4>
+                      <p className="text-xs text-slate-500">Materi audio murottal / bacaan untuk didengar di rumah</p>
+                    </div>
+                  </div>
+                  <audio controls className="w-full" src={selectedMaterial.file_url}>
+                    Browser Anda tidak mendukung elemen audio.
+                  </audio>
                 </div>
               )}
 

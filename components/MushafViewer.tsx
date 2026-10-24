@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { X, BookOpen, ChevronLeft, ChevronRight, Loader2, Search } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { X, BookOpen, ChevronLeft, ChevronRight, Loader2, Search, Play, Pause, Volume2, Square } from "lucide-react";
 import {
   getVersesBySurah,
   getVersesByJuz,
@@ -22,6 +22,20 @@ interface MushafViewerProps {
   highlightTo?: number;
 }
 
+// Daftar 3 Qari Pilihan
+export const QURAN_RECITERS = [
+  { id: "Hudhaify_128kbps", name: "Ali Al-Hudhaify (Tartil Jelas)" },
+  // { id: "Alafasy_128kbps", name: "Misyari Rasyid Al-Afasy" },
+  // { id: "Husary_128kbps", name: "Mahmud Khalil Al-Husary (Tajwid)" },
+];
+
+function getAyahAudioUrl(verseKey: string, reciter: string = "Hudhaify_128kbps"): string {
+  const [sStr, aStr] = verseKey.split(":");
+  const sPad = String(sStr).padStart(3, "0");
+  const aPad = String(aStr).padStart(3, "0");
+  return `https://everyayah.com/data/${reciter}/${sPad}${aPad}.mp3`;
+}
+
 export default function MushafViewer({
   isOpen,
   onClose,
@@ -40,6 +54,21 @@ export default function MushafViewer({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Audio state
+  const [selectedReciter, setSelectedReciter] = useState<string>("Hudhaify_128kbps");
+  const [playingVerseKey, setPlayingVerseKey] = useState<string | null>(null);
+  const [isAutoPlayNext, setIsAutoPlayNext] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Stop audio on close or unmount
+  useEffect(() => {
+    if (!isOpen && audioRef.current) {
+      audioRef.current.pause();
+      setPlayingVerseKey(null);
+      setIsAutoPlayNext(false);
+    }
+  }, [isOpen]);
+
   // Sync prop changes ke state (saat form setoran berubah)
   useEffect(() => {
     if (isOpen) {
@@ -53,6 +82,13 @@ export default function MushafViewer({
     setIsLoading(true);
     setError(null);
     setVerses([]);
+    // Stop audio on change
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    setPlayingVerseKey(null);
+    setIsAutoPlayNext(false);
+
     try {
       let result: QuranVerse[] = [];
       if (mode === "surat") {
@@ -71,6 +107,73 @@ export default function MushafViewer({
   useEffect(() => {
     if (isOpen) load();
   }, [isOpen, load]);
+
+  const stopAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    setPlayingVerseKey(null);
+    setIsAutoPlayNext(false);
+  };
+
+  const playVerse = (verseKey: string, autoNext: boolean = false) => {
+    if (playingVerseKey === verseKey && !autoNext) {
+      stopAudio();
+      return;
+    }
+
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+    }
+
+    const audio = audioRef.current;
+    audio.src = getAyahAudioUrl(verseKey, selectedReciter);
+    setPlayingVerseKey(verseKey);
+    setIsAutoPlayNext(autoNext);
+
+    audio.onended = () => {
+      if (autoNext) {
+        const currentIdx = verses.findIndex((v) => v.verse_key === verseKey);
+        if (currentIdx !== -1 && currentIdx + 1 < verses.length) {
+          const nextVerse = verses[currentIdx + 1];
+          playVerse(nextVerse.verse_key, true);
+          return;
+        }
+      }
+      setPlayingVerseKey(null);
+      setIsAutoPlayNext(false);
+    };
+
+    audio.onerror = () => {
+      setPlayingVerseKey(null);
+      setIsAutoPlayNext(false);
+    };
+
+    audio.play().catch((err) => {
+      console.warn("Audio play prevented:", err);
+      setPlayingVerseKey(null);
+    });
+  };
+
+  const handleToggleSequence = () => {
+    if (playingVerseKey && isAutoPlayNext) {
+      stopAudio();
+      return;
+    }
+    let startIndex = 0;
+    if (highlightFrom !== undefined && mode === "surat") {
+      const foundIdx = verses.findIndex((v) => {
+        const [, a] = v.verse_key.split(":");
+        return parseInt(a, 10) === highlightFrom;
+      });
+      if (foundIdx !== -1) startIndex = foundIdx;
+    }
+
+    if (verses[startIndex]) {
+      playVerse(verses[startIndex].verse_key, true);
+    }
+  };
 
   const fontSizeClass = {
     sm: "text-xl",
@@ -135,8 +238,8 @@ export default function MushafViewer({
                 key={m}
                 onClick={() => setMode(m)}
                 className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition ${mode === m
-                    ? "bg-white text-emerald-700 shadow-sm"
-                    : "text-slate-500 hover:text-slate-700"
+                  ? "bg-white text-emerald-700 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700"
                   }`}
               >
                 {m === "surat" ? "Per Surat" : "Per Juz"}
@@ -213,8 +316,8 @@ export default function MushafViewer({
                   type="button"
                   onClick={() => setScriptType("imlaei")}
                   className={`px-2 py-1 rounded-md text-[10px] font-bold transition ${scriptType === "imlaei"
-                      ? "bg-white text-emerald-700 shadow-sm"
-                      : "text-slate-500 hover:text-slate-700"
+                    ? "bg-white text-emerald-700 shadow-sm"
+                    : "text-slate-500 hover:text-slate-700"
                     }`}
                   title="Mushaf Standar Indonesia / Kemenag RI (100% kompatibel di semua HP)"
                 >
@@ -224,8 +327,8 @@ export default function MushafViewer({
                   type="button"
                   onClick={() => setScriptType("uthmani")}
                   className={`px-2 py-1 rounded-md text-[10px] font-bold transition ${scriptType === "uthmani"
-                      ? "bg-white text-emerald-700 shadow-sm"
-                      : "text-slate-500 hover:text-slate-700"
+                    ? "bg-white text-emerald-700 shadow-sm"
+                    : "text-slate-500 hover:text-slate-700"
                     }`}
                   title="Mushaf Rasm Utsmani (Madinah)"
                 >
@@ -244,8 +347,8 @@ export default function MushafViewer({
                     type="button"
                     onClick={() => setFontSize(s)}
                     className={`px-2 py-1 rounded-md text-[10px] font-bold transition ${fontSize === s
-                        ? "bg-white text-emerald-700 shadow-sm"
-                        : "text-slate-400 hover:text-slate-600"
+                      ? "bg-white text-emerald-700 shadow-sm"
+                      : "text-slate-400 hover:text-slate-600"
                       }`}
                   >
                     {s.toUpperCase()}
@@ -259,6 +362,60 @@ export default function MushafViewer({
                 </span>
               )}
             </div>
+          </div>
+
+          {/* Audio Murottal Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={handleToggleSequence}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-xs ${playingVerseKey && isAutoPlayNext
+                  ? "bg-rose-600 text-white hover:bg-rose-700"
+                  : "bg-emerald-600 text-white hover:bg-emerald-700"
+                  }`}
+              >
+                {playingVerseKey && isAutoPlayNext ? (
+                  <>
+                    <Square size={12} fill="currentColor" /> Hentikan
+                  </>
+                ) : (
+                  <>
+                    <Volume2 size={13} /> Putar Surat
+                  </>
+                )}
+              </button>
+
+              {/* Pilihan Qari */}
+              <div className="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-xl border border-slate-200">
+                <span className="text-[11px] font-bold text-slate-500 shrink-0">Qari:</span>
+                <select
+                  value={selectedReciter}
+                  onChange={(e) => {
+                    stopAudio();
+                    setSelectedReciter(e.target.value);
+                  }}
+                  className="text-xs bg-white text-slate-800 font-semibold px-2 py-0.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer"
+                >
+                  {QURAN_RECITERS.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {playingVerseKey ? (
+              <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Ayat {playingVerseKey}
+              </div>
+            ) : (
+              <span className="text-[10px] text-slate-400">
+                Bisa putar per-ayat atau otomatis
+              </span>
+            )}
           </div>
         </div>
 
@@ -311,6 +468,7 @@ export default function MushafViewer({
                   highlightTo !== undefined &&
                   ayatNum >= highlightFrom &&
                   ayatNum <= highlightTo;
+                const isPlayingThis = playingVerseKey === verse.verse_key;
 
                 const arabicText =
                   scriptType === "imlaei"
@@ -320,21 +478,43 @@ export default function MushafViewer({
                 return (
                   <div
                     key={verse.id}
-                    className={`rounded-2xl p-4 transition ${isHighlighted
+                    className={`rounded-2xl p-4 transition ${isPlayingThis
+                      ? "bg-emerald-50 border-2 border-emerald-400 shadow-sm"
+                      : isHighlighted
                         ? "bg-amber-50 border-2 border-amber-300 shadow-sm"
                         : "bg-slate-50 border border-slate-100"
                       }`}
                   >
-                    {/* Nomor ayat */}
+                    {/* Nomor ayat & Audio Button */}
                     <div className="flex items-center justify-between mb-3">
-                      <span
-                        className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-[11px] font-extrabold ${isHighlighted
-                            ? "bg-amber-500 text-white"
-                            : "bg-white border border-slate-200 text-slate-500 shadow-xs"
-                          }`}
-                      >
-                        {ayatNum}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-[11px] font-extrabold ${isPlayingThis
+                            ? "bg-emerald-600 text-white"
+                            : isHighlighted
+                              ? "bg-amber-500 text-white"
+                              : "bg-white border border-slate-200 text-slate-500 shadow-xs"
+                            }`}
+                        >
+                          {ayatNum}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => playVerse(verse.verse_key)}
+                          className={`px-2 py-1 rounded-lg border transition text-[11px] flex items-center gap-1 font-bold ${isPlayingThis
+                            ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                            : "bg-white text-slate-600 border-slate-200 hover:text-emerald-700 hover:border-emerald-300 hover:bg-emerald-50/50"
+                            }`}
+                          title={`Dengarkan bacaan qari ayat ${ayatNum}`}
+                        >
+                          {isPlayingThis ? (
+                            <Pause size={11} fill="currentColor" />
+                          ) : (
+                            <Play size={11} fill="currentColor" />
+                          )}
+                          <span>Audio</span>
+                        </button>
+                      </div>
                       <span className="text-[9px] text-slate-400 font-mono">
                         {verse.verse_key}
                       </span>

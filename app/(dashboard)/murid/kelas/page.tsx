@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import {
   BookOpen, Calendar, Clock, Loader2, FileText, Download,
   ExternalLink, MessageSquare, AlertCircle, Sparkles, BookMarked,
-  X, Play, Globe, Eye, ArrowRight, Lock, Unlock, ChevronLeft, ChevronRight
+  X, Play, Globe, Eye, ArrowRight, Lock, Unlock, ChevronLeft, ChevronRight, Volume2
 } from "lucide-react";
 import { tampilEnrollmentMurid, verifikasiPinWali } from "@/services/studentService";
 import { tampilCatatanUntukWali } from "@/services/notesService";
@@ -565,6 +565,7 @@ export default function MuridKelasPage() {
                         const isVideo = m.type === "video";
                         const isPdf = m.type === "pdf";
                         const isArtikel = m.type === "artikel";
+                        const isAudio = m.type === "audio";
                         return (
                           <div
                             key={m.id}
@@ -576,14 +577,16 @@ export default function MuridKelasPage() {
                                 <span className={`p-3 rounded-2xl inline-block ${
                                   isVideo ? "bg-rose-50 text-rose-600" :
                                   isPdf ? "bg-emerald-50 text-emerald-600" :
+                                  isAudio ? "bg-amber-50 text-amber-600" :
                                   isArtikel ? "bg-indigo-50 text-indigo-600" : "bg-blue-50 text-blue-600"
                                 }`}>
                                   {isVideo ? <Play size={20} /> :
                                    isPdf ? <FileText size={20} /> :
+                                   isAudio ? <Volume2 size={20} /> :
                                    isArtikel ? <BookOpen size={20} /> : <Globe size={20} />}
                                 </span>
                                 <span className="text-[10px] uppercase font-extrabold tracking-wider text-slate-400 bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100">
-                                  {m.type === "artikel" ? "Artikel" : m.type}
+                                  {m.type === "artikel" ? "Artikel" : m.type === "audio" ? "Audio" : m.type}
                                 </span>
                               </div>
                               <div>
@@ -749,6 +752,43 @@ export default function MuridKelasPage() {
                         className="inline-flex items-center gap-2 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-sm transition"
                       >
                         <ExternalLink size={14} /> Buka Pemutar Eksternal
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* AUDIO LESSON PLAYER */}
+              {selectedMaterial.type === "audio" && (
+                <div className="p-6 bg-amber-50/50 rounded-2xl border border-amber-200/80 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-amber-600 text-white rounded-2xl shadow-xs">
+                      <Volume2 size={24} />
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-slate-900 text-base">Pemutar Audio Murottal / Bacaan</h4>
+                      <p className="text-xs text-slate-500">Dengarkan audio untuk membandingkan dan membimbing bacaan ananda di rumah</p>
+                    </div>
+                  </div>
+                  <audio controls className="w-full" src={selectedMaterial.file_url}>
+                    Browser Anda tidak mendukung pemutar audio langsung.
+                  </audio>
+                  {selectedMaterial.description && (
+                    <div className="bg-white p-4 rounded-xl border border-amber-100 text-xs text-slate-700 leading-relaxed">
+                      <strong className="text-amber-900 block mb-1">Catatan Guru:</strong>
+                      {selectedMaterial.description}
+                    </div>
+                  )}
+                  {selectedMaterial.file_url && (
+                    <div className="text-right">
+                      <a
+                        href={selectedMaterial.file_url}
+                        download
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50"
+                      >
+                        <Download size={13} /> Unduh Audio
                       </a>
                     </div>
                   )}

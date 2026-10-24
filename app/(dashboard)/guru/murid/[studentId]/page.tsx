@@ -18,6 +18,7 @@ import TabTajwid from "./TabTajwid";
 import TabCalistung from "./TabCalistung";
 import TabCatatan from "./TabCatatan";
 import TabRaport from "./TabRaport";
+import StudentSummaryCard from "./StudentSummaryCard";
 
 export default function StudentDetailPage() {
   const params = useParams();
@@ -119,6 +120,11 @@ export default function StudentDetailPage() {
     setTimeout(() => { isClickingTab.current = false; }, 200);
   };
 
+  const handleSummaryNavigate = (sectionKey: string) => {
+    setActiveTab(sectionKey);
+    handleMobileTabClick(sectionKey);
+  };
+
   if (isLoading) {
     return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-blue-600" /></div>;
   }
@@ -164,6 +170,16 @@ export default function StudentDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* Executive Summary Card (Desktop) */}
+        {enrollment && (
+          <StudentSummaryCard
+            enrollmentId={enrollment.id}
+            classType={(enrollment?.classes?.type as "calistung" | "tahfidz" | "umum") ?? "umum"}
+            studentName={student.full_name}
+            onNavigateToSection={handleSummaryNavigate}
+          />
+        )}
 
         {/* Desktop Tab Buttons */}
         <div className="flex gap-1 bg-slate-100/60 p-1 rounded-2xl border border-slate-200/20 overflow-x-auto scrollbar-hide">
@@ -240,6 +256,16 @@ export default function StudentDetailPage() {
             Detail Murid
           </span>
         </div>
+
+        {/* Executive Summary Card (Mobile First) */}
+        {enrollment && (
+          <StudentSummaryCard
+            enrollmentId={enrollment.id}
+            classType={(enrollment?.classes?.type as "calistung" | "tahfidz" | "umum") ?? "umum"}
+            studentName={student.full_name}
+            onNavigateToSection={handleSummaryNavigate}
+          />
+        )}
 
         {/* 2. STICKY NAV BAR DI BAWAH NAMA MURID */}
         <div

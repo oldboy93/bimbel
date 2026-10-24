@@ -1,0 +1,1897 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UAY Studio — Company Showcase &amp; Master Product Catalog</title>
+  <meta name="description"
+    content="Katalog produk resmi dan portfolio solusi digital UAY Studio: ekosistem Rumah Sakit (Medigate, .Ujian, HRIS), Manajemen Pendidikan (LMS), dan POS Ritel modern." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;1,400&display=swap"
+    rel="stylesheet" />
+  <style>
+    /* ─── Reset & Base Setup ─── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+
+    :root {
+      --primary: #0f766e;
+      --primary-dark: #115e59;
+      --primary-light: #f0fdfa;
+      --primary-subtle: #ccfbf1;
+      --accent: #b45309;
+      --accent-light: #fffbeb;
+      --dark: #0f172a;
+      --slate-800: #1e293b;
+      --slate-700: #334155;
+      --slate-600: #475569;
+      --slate-500: #64748b;
+      --slate-400: #94a3b8;
+      --slate-200: #e2e8f0;
+      --slate-100: #f1f5f9;
+      --slate-50: #f8fafc;
+      --border: #cbd5e1;
+      --border-light: #e2e8f0;
+      --white: #ffffff;
+      /* Medigate specific accents */
+      --medigate-navy: #1e3a8a;
+      --medigate-red: #dc2626;
+      --medigate-gold: #d97706;
+    }
+
+    html {
+      font-size: 11pt;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      color: var(--slate-700);
+      background-color: #dde3ea;
+      line-height: 1.55;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ─── Layout A4 Presisi (210mm x 297mm) ─── */
+    .page {
+      width: 210mm;
+      height: 297mm;
+      max-height: 297mm;
+      margin: 20px auto;
+      background: var(--white);
+      padding: 13mm 16mm 11mm 16mm;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    @media print {
+      body {
+        background: transparent;
+      }
+
+      .page {
+        width: 210mm;
+        height: 297mm;
+        margin: 0;
+        padding: 13mm 16mm 11mm 16mm;
+        box-shadow: none;
+        page-break-after: always;
+        break-after: page;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+    }
+
+    /* ─── Header & Footer Standar ─── */
+    .doc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 7px;
+      margin-bottom: 12px;
+      border-bottom: 1.5px solid var(--border-light);
+      flex-shrink: 0;
+    }
+
+    .doc-header .logo-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 0.88rem;
+      color: var(--primary);
+      letter-spacing: 0.03em;
+    }
+
+    .logo-icon {
+      width: 24px;
+      height: 24px;
+      background: var(--primary);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 900;
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+    }
+
+    .doc-header .page-info {
+      font-size: 0.7rem;
+      color: var(--slate-500);
+      font-weight: 600;
+    }
+
+    .doc-footer {
+      margin-top: auto;
+      padding-top: 7px;
+      border-top: 1px solid var(--border-light);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.68rem;
+      color: var(--slate-500);
+      flex-shrink: 0;
+    }
+
+    .doc-footer .page-num {
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* ─── Typography & Shared Elements ─── */
+    .section-label {
+      font-size: 0.62rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--primary);
+      margin-bottom: 3px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section-title {
+      font-family: 'Lora', Georgia, serif;
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--dark);
+      line-height: 1.25;
+      margin-bottom: 4px;
+    }
+
+    .section-subtitle {
+      font-size: 0.78rem;
+      color: var(--slate-600);
+      line-height: 1.45;
+      margin-bottom: 10px;
+    }
+
+    /* ─── Placeholder Marker (.todo) ─── */
+    .todo {
+      background-color: #fef08a !important;
+      color: #854d0e !important;
+      font-weight: 700 !important;
+      padding: 1px 5px !important;
+      border-radius: 4px !important;
+      display: inline-block;
+      border: 1px dashed #ca8a04;
+    }
+
+    /* ─── Product Header Row ─── */
+    .product-hero {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .product-icon-box {
+      width: 40px;
+      height: 40px;
+      border-radius: 9px;
+      background: var(--primary-light);
+      border: 1.5px solid var(--primary-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+
+    .product-tag-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 99px;
+      font-size: 0.62rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .badge-primary {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      border: 1px solid var(--primary-subtle);
+    }
+
+    .badge-accent {
+      background: var(--accent-light);
+      color: var(--accent);
+      border: 1px solid #fde68a;
+    }
+
+    .badge-dark {
+      background: var(--slate-800);
+      color: var(--white);
+    }
+
+    .badge-pilot {
+      background: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+    }
+
+    /* ─── Split Grid: Content + Device Mockup ─── */
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 12px;
+      margin-bottom: 9px;
+      align-items: start;
+    }
+
+    .device-browser {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--white);
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .browser-header {
+      background: var(--slate-100);
+      padding: 5px 8px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .browser-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #cbd5e1;
+    }
+
+    .browser-dot:nth-child(1) { background: #f87171; }
+    .browser-dot:nth-child(2) { background: #fbbf24; }
+    .browser-dot:nth-child(3) { background: #34d399; }
+
+    .browser-url {
+      font-size: 0.58rem;
+      color: var(--slate-500);
+      background: var(--white);
+      padding: 1px 6px;
+      border-radius: 4px;
+      flex: 1;
+      margin-left: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      border: 1px solid var(--border-light);
+    }
+
+    .device-browser img {
+      width: 100%;
+      height: 145px;
+      object-fit: cover;
+      object-position: top;
+      display: block;
+    }
+
+    .device-phone {
+      width: 180px;
+      margin: 0 auto;
+      border: 4px solid var(--slate-800);
+      border-radius: 20px;
+      background: var(--white);
+      overflow: hidden;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+      position: relative;
+    }
+
+    .phone-notch {
+      width: 60px;
+      height: 10px;
+      background: var(--slate-800);
+      border-bottom-left-radius: 6px;
+      border-bottom-right-radius: 6px;
+      margin: 0 auto 2px;
+    }
+
+    .device-phone img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      object-position: top;
+      display: block;
+    }
+
+    /* ─── Feature Box Lists ─── */
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      background: var(--slate-50);
+      border: 1px solid var(--border-light);
+    }
+
+    .feature-icon-wrap {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .feature-desc {
+      font-size: 0.72rem;
+      color: var(--slate-600);
+      line-height: 1.35;
+    }
+
+    .feature-desc strong {
+      display: block;
+      font-size: 0.74rem;
+      color: var(--dark);
+      margin-bottom: 1px;
+    }
+
+    /* ─── Evidence Block: Masalah -> Solusi -> Hasil ─── */
+    .evidence-block {
+      background: var(--primary-light);
+      border: 1px solid var(--primary-subtle);
+      border-radius: 8px;
+      padding: 8px 11px;
+      margin-bottom: 9px;
+    }
+
+    .evidence-title {
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--primary-dark);
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .evidence-flow {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 7px;
+    }
+
+    .evidence-col {
+      background: var(--white);
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid #ccfbf1;
+    }
+
+    .evidence-label {
+      font-size: 0.6rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--slate-500);
+      margin-bottom: 2px;
+      display: block;
+    }
+
+    .evidence-text {
+      font-size: 0.68rem;
+      color: var(--slate-700);
+      line-height: 1.35;
+    }
+
+    /* ─── Pricing Bottom Banner ─── */
+    .pricing-banner {
+      background: var(--slate-50);
+      border: 1px solid var(--border-light);
+      border-radius: 7px;
+      padding: 7px 11px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .pricing-main {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pricing-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--slate-500);
+      text-transform: uppercase;
+    }
+
+    .pricing-value {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .pricing-note {
+      font-size: 0.65rem;
+      color: var(--slate-500);
+      text-align: right;
+      max-width: 58%;
+      line-height: 1.3;
+    }
+
+    /* ─── Testimonial Row ─── */
+    .testimonial-box {
+      border-left: 3px solid var(--primary);
+      background: #fafaf9;
+      padding: 6px 10px;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.7rem;
+      color: var(--slate-600);
+      font-style: italic;
+      line-height: 1.4;
+    }
+
+    .testimonial-author {
+      font-style: normal;
+      font-weight: 700;
+      color: var(--dark);
+      font-size: 0.65rem;
+      margin-top: 3px;
+      display: block;
+    }
+
+    /* ─── Callout Standar ─── */
+    .callout {
+      border-left: 3px solid var(--primary);
+      background: var(--primary-light);
+      padding: 7px 10px;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 9px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .callout p {
+      font-size: 0.72rem;
+      color: var(--slate-700);
+      line-height: 1.45;
+    }
+
+    /* ─── Table ─── */
+    .table-clean {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.74rem;
+      margin-bottom: 10px;
+    }
+
+    .table-clean th {
+      background: var(--slate-800);
+      color: var(--white);
+      padding: 7px 9px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 0.7rem;
+    }
+
+    .table-clean td {
+      padding: 7px 9px;
+      border-bottom: 1px solid var(--border-light);
+      vertical-align: top;
+      line-height: 1.35;
+    }
+
+    .table-clean tbody tr:nth-child(even) {
+      background: var(--slate-50);
+    }
+
+    /* ─── Joint Custom App Offering Banner ─── */
+    .custom-offer-banner {
+      background: linear-gradient(135deg, #042f2e, #0f766e);
+      color: white;
+      border-radius: 8px;
+      padding: 9px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      gap: 10px;
+    }
+
+    .custom-offer-title {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #ccfbf1;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .custom-offer-text {
+      font-size: 0.68rem;
+      color: #e2e8f0;
+      line-height: 1.35;
+      max-width: 480px;
+    }
+
+    .custom-offer-btn {
+      background: #f59e0b;
+      color: #78350f;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 5px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    /* ─── SVG Icon Styling Helper ─── */
+    .svg-icon {
+      width: 16px;
+      height: 16px;
+      stroke-width: 1.5;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+
+    .svg-icon-lg {
+      width: 20px;
+      height: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════ HALAMAN 1 — COVER ═══════════════════════════════ -->
+  <!--
+    ALTERNATIF HEADLINE COVER (B2B BENEFIT-ORIENTED):
+    Alternatif 1: "Dari Operasional Manual ke Sistem Digital Terintegrasi yang Bekerja Presisi."
+    Alternatif 2: "Mengubah Beban Administrasi Menjadi Keunggulan Kompetitif Lembaga Anda."
+  -->
+  <div class="page" style="background: linear-gradient(155deg, #07191e 0%, #0f172a 45%, #0d2826 100%); color: white; padding: 0; justify-content: space-between;">
+    <div style="height: 5px; background: linear-gradient(90deg, #0f766e, #14b8a6, #f59e0b);"></div>
+
+    <div style="padding: 18mm 20mm; flex: 1; display: flex; flex-direction: column; justify-content: center; position: relative;">
+      
+      <!-- Top Tagline -->
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 22px;">
+        <span style="display: block; width: 26px; height: 2px; background: #2dd4bf; border-radius: 1px;"></span>
+        <span style="font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.16em; color: #2dd4bf;">
+          UAY Studio · Solusi Digital Rumah Sakit, Pendidikan &amp; Ritel
+        </span>
+      </div>
+
+      <!-- Main Result-Based Headline -->
+      <h1 style="font-family: 'Lora', Georgia, serif; font-size: 2.85rem; font-weight: 600; color: #ffffff; line-height: 1.18; margin-bottom: 18px;">
+        Dari Pencatatan Manual<br />
+        ke Sistem yang Berjalan<br />
+        <span style="color: #2dd4bf; font-style: italic;">Otomatis &amp; Terukur.</span>
+      </h1>
+
+      <p style="font-size: 0.86rem; color: #94a3b8; line-height: 1.7; max-width: 440px; margin-bottom: 26px;">
+        Kami merancang ekosistem perangkat lunak B2B berkualitas produksi: menghubungkan portal pasien langsung ke SIMRS Khanza, mengotomasi pelaporan akademik via WhatsApp, serta mengamankan asesmen staf tanpa celah operasional.
+      </p>
+
+      <!-- Focus Verticals Tag -->
+      <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 28px;">
+        <span style="padding: 5px 12px; border: 1px solid rgba(45, 212, 191, 0.35); border-radius: 99px; font-size: 0.66rem; font-weight: 700; color: #2dd4bf; background: rgba(15, 118, 110, 0.15);">
+          Vertikal Kesehatan: Medigate · .Ujian · HRIS
+        </span>
+        <span style="padding: 5px 12px; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 99px; font-size: 0.66rem; font-weight: 700; color: #cbd5e1;">
+          Pendidikan: LMS &amp; Academic
+        </span>
+        <span style="padding: 5px 12px; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 99px; font-size: 0.66rem; font-weight: 700; color: #cbd5e1;">
+          Ritel &amp; POS: Jajanden Multi-Outlet
+        </span>
+      </div>
+
+      <div style="width: 44px; height: 3px; background: #0f766e; border-radius: 2px; margin-bottom: 22px;"></div>
+
+      <!-- 3 Key Number Proofs (Rule: Use Placeholders with .todo) -->
+      <div style="display: flex; gap: 24px; align-items: flex-start;">
+        <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 9px 14px; border-radius: 8px;">
+          <div style="font-size: 1.3rem; font-weight: 800; color: #ffffff; line-height: 1; margin-bottom: 3px;">
+            <span class="todo">[ISI: jumlah proyek selesai]</span>
+          </div>
+          <div style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; font-weight: 700;">
+            Proyek Selesai
+          </div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 9px 14px; border-radius: 8px;">
+          <div style="font-size: 1.3rem; font-weight: 800; color: #2dd4bf; line-height: 1; margin-bottom: 3px;">
+            <span class="todo">[ISI: jumlah institusi aktif]</span>
+          </div>
+          <div style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; font-weight: 700;">
+            Institusi Mitra Aktif
+          </div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 9px 14px; border-radius: 8px;">
+          <div style="font-size: 1.3rem; font-weight: 800; color: #f59e0b; line-height: 1; margin-bottom: 3px;">
+            <span class="todo">[ISI: pengalaman, tahun]</span>
+          </div>
+          <div style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; font-weight: 700;">
+            Tahun Rekayasa Digital
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Contact Bar -->
+    <div style="padding: 10mm 20mm; border-top: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2);">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 32px; height: 32px; background: var(--primary); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.82rem; color: #fff;">
+          UAY
+        </div>
+        <div>
+          <strong style="font-size: 0.95rem; font-weight: 800; color: #fff; letter-spacing: 0.05em; display: block;">UAY STUDIO</strong>
+          <span style="font-size: 0.65rem; color: #94a3b8;">B2B Software Engineering &amp; Solutions</span>
+        </div>
+      </div>
+
+      <div style="font-size: 0.72rem; color: #cbd5e1; text-align: right; line-height: 1.6;">
+        <div style="display: flex; align-items: center; gap: 6px; justify-content: flex-end;">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <a href="https://wa.me/6285364932661?text=Halo%20UAY%20Studio%2C%20saya%20tertarik%20dengan%20produk%20di%20katalog" style="color: #2dd4bf; text-decoration: none; font-weight: 700;">0853-6493-2661</a>
+        </div>
+        <div>Email: <span style="color: #ffffff; font-weight: 600;">hello@uay.com</span> &nbsp;·&nbsp; IG: @uay.studio</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════ HALAMAN 2 — TENTANG KAMI & PETA PRODUK ═══════════════════════════════ -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-badge"><div class="logo-icon">UAY</div> UAY Studio</div>
+      <span class="page-info">Tentang Kami &amp; Peta Produk</span>
+    </div>
+
+    <div style="margin-bottom: 10px;">
+      <div class="section-label">
+        <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        Tentang Perusahaan
+      </div>
+      <h2 class="section-title">Rekayasa Perangkat Lunak Spesifik Sektor</h2>
+      <p class="section-subtitle">
+        UAY Studio membangun sistem digital yang disesuaikan dengan alur kerja spesifik industri—terutama fasilitas kesehatan rumah sakit, lembaga pendidikan, dan ritel terdistribusi. Kami berfokus pada keandalan sistem, integrasi backend yang mulus, dan kemudahan adopsi pengguna akhir.
+      </p>
+    </div>
+
+    <!-- 4 Number Metrics (No generic labels) -->
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px;">
+      <div style="border-radius: 8px; padding: 8px 10px; border: 1px solid var(--border-light); background: var(--slate-50); text-align: center;">
+        <div style="font-size: 1.15rem; font-weight: 800; color: var(--primary); line-height: 1.1; margin-bottom: 2px;">
+          <span class="todo">[ISI: metrik 1, mis. 99.8%]</span>
+        </div>
+        <div style="font-size: 0.6rem; color: var(--slate-500); font-weight: 700; text-transform: uppercase;">Uptime SLA Target</div>
+      </div>
+      <div style="border-radius: 8px; padding: 8px 10px; border: 1px solid var(--border-light); background: var(--slate-50); text-align: center;">
+        <div style="font-size: 1.15rem; font-weight: 800; color: var(--primary); line-height: 1.1; margin-bottom: 2px;">
+          <span class="todo">[ISI: metrik 2, mis. &lt;24 Jam]</span>
+        </div>
+        <div style="font-size: 0.6rem; color: var(--slate-500); font-weight: 700; text-transform: uppercase;">Proposal Teknis</div>
+      </div>
+      <div style="border-radius: 8px; padding: 8px 10px; border: 1px solid var(--border-light); background: var(--slate-50); text-align: center;">
+        <div style="font-size: 1.15rem; font-weight: 800; color: var(--primary); line-height: 1.1; margin-bottom: 2px;">
+          <span class="todo">[ISI: metrik 3, mis. 100%]</span>
+        </div>
+        <div style="font-size: 0.6rem; color: var(--slate-500); font-weight: 700; text-transform: uppercase;">Hak Milik Kode / Lisensi</div>
+      </div>
+      <div style="border-radius: 8px; padding: 8px 10px; border: 1px solid var(--border-light); background: var(--slate-50); text-align: center;">
+        <div style="font-size: 1.15rem; font-weight: 800; color: var(--primary); line-height: 1.1; margin-bottom: 2px;">
+          <span class="todo">[ISI: metrik 4, mis. 4-8 Mgg]</span>
+        </div>
+        <div style="font-size: 0.6rem; color: var(--slate-500); font-weight: 700; text-transform: uppercase;">Rata-rata Siklus Rilis</div>
+      </div>
+    </div>
+
+    <!-- Peta Produk Berdasarkan Vertikal (Tabel Perbandingan) -->
+    <div class="section-label" style="margin-bottom: 4px;">
+      <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+      Peta Portofolio Produk per Vertikal Industri
+    </div>
+
+    <table class="table-clean">
+      <thead>
+        <tr>
+          <th style="width: 22%;">Vertikal &amp; Produk</th>
+          <th style="width: 22%;">Cocok Untuk</th>
+          <th style="width: 32%;">Masalah yang Diselesaikan</th>
+          <th style="width: 11%;">Status</th>
+          <th style="width: 13%;">Mulai Dari</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <strong style="color: var(--dark); font-size: 0.76rem;">Medigate</strong><br />
+            <span style="font-size: 0.64rem; color: var(--primary); font-weight: 700;">Vertikal Kesehatan</span>
+          </td>
+          <td>Rumah sakit umum &amp; RSIA pengguna SIMRS Khanza</td>
+          <td>Antrean pendaftaran fisik menumpuk; pasien sulit cek jadwal dokter &amp; riwayat kunjungan.</td>
+          <td><span class="badge badge-pilot">Pilot</span></td>
+          <td><span class="todo">[ISI: harga]</span></td>
+        </tr>
+        <tr>
+          <td>
+            <strong style="color: var(--dark); font-size: 0.76rem;">.Ujian Platform</strong><br />
+            <span style="font-size: 0.64rem; color: var(--primary); font-weight: 700;">Vertikal Kesehatan / Edu</span>
+          </td>
+          <td>RS (kredensial staf/nakes), universitas, bimbel</td>
+          <td>Kecurangan ujian online via perpindahan tab/layar eksternal; rekap nilai makan waktu berhari-hari.</td>
+          <td><span class="badge badge-primary">Digunakan</span></td>
+          <td><span class="todo">[ISI: harga]</span></td>
+        </tr>
+        <tr>
+          <td>
+            <strong style="color: var(--dark); font-size: 0.76rem;">HRIS Enterprise</strong><br />
+            <span style="font-size: 0.64rem; color: var(--primary); font-weight: 700;">Vertikal Kesehatan &amp; Korporat</span>
+          </td>
+          <td>Klinik, RS, sekolah swasta, institusi kerja</td>
+          <td>Presensi tidak valid, rekap cuti bertabrakan, dan proses hitung gaji memakan waktu.</td>
+          <td><span class="todo">[ISI: status]</span></td>
+          <td><span class="todo">[ISI: harga]</span></td>
+        </tr>
+        <tr>
+          <td>
+            <strong style="color: var(--dark); font-size: 0.76rem;">LMS &amp; Academic</strong><br />
+            <span style="font-size: 0.64rem; color: var(--primary); font-weight: 700;">Vertikal Pendidikan</span>
+          </td>
+          <td>Lembaga bimbel, madrasah, tahfidz, kursus</td>
+          <td>Pencatatan capaian harian tercecer; orang tua cemas karena tidak ada laporan langsung ke WhatsApp.</td>
+          <td><span class="badge badge-primary">Digunakan</span></td>
+          <td><span class="todo">[ISI: harga]</span></td>
+        </tr>
+        <tr>
+          <td>
+            <strong style="color: var(--dark); font-size: 0.76rem;">Jajanden POS</strong><br />
+            <span style="font-size: 0.64rem; color: var(--slate-600); font-weight: 700;">Vertikal Ritel / F&amp;B</span>
+          </td>
+          <td>Franchise kuliner, kafe, multi-outlet UMKM</td>
+          <td>Kebocoran transaksi kasir manual, stok bahan tidak termonitor, dan laporan multi-cabang terpecah.</td>
+          <td><span class="todo">[ISI: status]</span></td>
+          <td><span class="todo">[ISI: harga]</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 3 Diferensiator Konkret -->
+    <div style="margin-bottom: 10px;">
+      <div class="section-label">Mengapa Bermitra dengan UAY Studio</div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+        <div style="background: var(--slate-50); border: 1px solid var(--border-light); border-radius: 7px; padding: 7px 9px;">
+          <div style="font-weight: 700; color: var(--dark); font-size: 0.72rem; margin-bottom: 2px;">
+            1. Integrasi Langsung ke SIMRS Khanza
+          </div>
+          <p style="font-size: 0.66rem; color: var(--slate-600); line-height: 1.35;">
+            Kami memahami struktur database SIMRS Khanza, memungkinkan bridging data pasien, dokter, dan registrasi secara langsung tanpa perantara vendor lain.
+          </p>
+        </div>
+        <div style="background: var(--slate-50); border: 1px solid var(--border-light); border-radius: 7px; padding: 7px 9px;">
+          <div style="font-weight: 700; color: var(--dark); font-size: 0.72rem; margin-bottom: 2px;">
+            2. White-Label &amp; Kustomisasi Penuh
+          </div>
+          <p style="font-size: 0.66rem; color: var(--slate-600); line-height: 1.35;">
+            Sistem dapat mengadopsi identitas merek Anda seutuhnya (logo, domain RS/bimbel, seragam visual UI). <span class="todo">[ISI: konfirmasi opsi source code]</span>.
+          </p>
+        </div>
+        <div style="background: var(--slate-50); border: 1px solid var(--border-light); border-radius: 7px; padding: 7px 9px;">
+          <div style="font-weight: 700; color: var(--dark); font-size: 0.72rem; margin-bottom: 2px;">
+            3. Otomasi WhatsApp Gateway
+          </div>
+          <p style="font-size: 0.66rem; color: var(--slate-600); line-height: 1.35;">
+            Notifikasi jadwal, hasil asesmen, dan invoice SPP dikirim langsung ke WhatsApp penerima tanpa mewajibkan pengguna mengunduh aplikasi tambahan.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Badan Usaha & Tim -->
+    <div style="background: var(--primary-light); border: 1px solid var(--primary-subtle); border-radius: 7px; padding: 7px 11px; display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <span style="font-size: 0.62rem; font-weight: 800; text-transform: uppercase; color: var(--primary-dark); display: block;">Legalitas &amp; Tim Inti</span>
+        <span style="font-size: 0.7rem; color: var(--slate-700);">Entitas: <span class="todo">[ISI: nama PT/CV/perorangan]</span> &nbsp;·&nbsp; Penanggung Jawab Teknis: <span class="todo">[ISI: nama, peran founder]</span></span>
+      </div>
+      <div style="font-size: 0.65rem; color: var(--primary); font-weight: 700;">
+        Pekanbaru, Riau — Indonesia
+      </div>
+    </div>
+
+    <!-- Tawaran Bangun Aplikasi Bersama -->
+    <div class="custom-offer-banner">
+      <div>
+        <div class="custom-offer-title">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          Punya Kebutuhan Sistem Khusus? Bangun Bersama UAY Studio
+        </div>
+        <p class="custom-offer-text">
+          Selain produk siap pakai di atas, kami menerima pengembangan custom software dari tahap blueprint arsitektur hingga deployment di cloud/on-premise server Anda.
+        </p>
+      </div>
+      <a href="https://wa.me/6285364932661?text=Halo%20UAY%20Studio%2C%20saya%20tertarik%20konsultasi%20aplikasi%20custom" class="custom-offer-btn">
+        Konsultasi Kebutuhan
+      </a>
+    </div>
+
+    <div class="doc-footer">
+      <span>UAY Studio — Master Product Catalog</span>
+      <span class="page-num">Halaman 2 / 9</span>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════ HALAMAN 3 — LMS & ACADEMIC MANAGEMENT ═══════════════════════════════ -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-badge"><div class="logo-icon">UAY</div> UAY Studio</div>
+      <span class="page-info">Produk 1 dari 5 · Vertikal Pendidikan</span>
+    </div>
+
+    <div class="product-hero">
+      <div class="product-icon-box">
+        <svg class="svg-icon svg-icon-lg" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      </div>
+      <div style="flex: 1;">
+        <div class="product-tag-wrap">
+          <span class="badge badge-primary">Pendidikan &amp; Bimbel</span>
+          <span class="badge badge-dark">Status: Digunakan</span>
+        </div>
+        <h2 class="section-title">LMS &amp; Academic Management</h2>
+        <p class="section-subtitle" style="margin-bottom: 0;">
+          Platform digital komprehensif untuk pengelola bimbingan belajar, kursus, dan madrasah tahfidz. Mengotomasi rekap capaian belajar serta menghubungkan guru dengan wali murid secara real-time.
+        </p>
+      </div>
+    </div>
+
+    <!-- Showcase Grid: Features & Screenshot Frame Browser -->
+    <div class="showcase-grid">
+      <div>
+        <div class="section-label">Fitur Fungsional Utama</div>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-icon-wrap">
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="feature-desc">
+              <strong>Manajemen Siswa, Guru &amp; Jadwal</strong>
+              Pengelompokan kelas otomatis, riwayat pendaftaran, pembagian sesi les, dan mutasi kelas secara rapi tanpa risiko data tercecer.
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-wrap">
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            </div>
+            <div class="feature-desc">
+              <strong>Notifikasi Otomatis WhatsApp Gateway</strong>
+              Setiap kali guru menyimpan presensi atau capaian harian, laporan langsung terkirim ke WhatsApp wali murid tanpa membuka aplikasi lain.
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-wrap">
+              <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+            <div class="feature-desc">
+              <strong>Pelacak Capaian Belajar &amp; Hafalan</strong>
+              Merekam perkembangan hafalan surat, ayat, materi calistung, dan catatan perilaku harian secara visual dan terstruktur.
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-wrap">
+              <svg class="svg-icon" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            </div>
+            <div class="feature-desc">
+              <strong>Billing SPP &amp; Rekap Keuangan</strong>
+              Pencatatan tagihan bulanan siswa, kwitansi pembayaran digital, dan laporan arus kas masuk bulanan otomatis untuk pemilik lembaga.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screenshot Browser Mockup -->
+      <div>
+        <div class="device-browser">
+          <div class="browser-header">
+            <div class="browser-dot"></div><div class="browser-dot"></div><div class="browser-dot"></div>
+            <div class="browser-url">app.bimbel.uay.io/dashboard</div>
+          </div>
+          <img src="assets/ss-lms.png" alt="Screenshot Antarmuka LMS Academic Management UAY Studio" />
+        </div>
+        <div style="font-size: 0.62rem; color: var(--slate-500); text-align: center; margin-top: 4px;">
+          Tampilan Dashboard Manajemen Akademik &amp; Presensi Siswa
+        </div>
+      </div>
+    </div>
+
+    <!-- Blok Bukti Nyata: Masalah -> Solusi -> Hasil -->
+    <div class="evidence-block">
+      <div class="evidence-title">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Studi Implementasi Nyata di Bimbingan Belajar
+      </div>
+      <div class="evidence-flow">
+        <div class="evidence-col">
+          <span class="evidence-label">Kondisi Awal (Masalah)</span>
+          <p class="evidence-text">
+            Guru merekap presensi &amp; hafalan manual di buku tulis. Orang tua sering menanyakan perkembangan anak via chat pribadi, dan rekap SPP bulanan rawan selisih.
+          </p>
+        </div>
+        <div class="evidence-col">
+          <span class="evidence-label">Solusi yang Diterapkan</span>
+          <p class="evidence-text">
+            Implementasi LMS UAY dengan WhatsApp Gateway otomatis di <span class="todo">[ISI: nama bimbel atau 'salah satu bimbel di kota/provinsi']</span> untuk <span class="todo">[ISI: jumlah siswa/guru]</span>.
+          </p>
+        </div>
+        <div class="evidence-col">
+          <span class="evidence-label">Hasil Terukur</span>
+          <p class="evidence-text">
+            Waktu rekapitulasi capaian berkurang dari <span class="todo">[ISI: waktu rekap sebelum → sesudah]</span>, transparansi SPP 100% tercatat, dan kepuasan wali murid meningkat signifikan.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pricing Box -->
+    <div class="pricing-banner">
+      <div class="pricing-main">
+        <div class="pricing-label">Paket Dasar</div>
+        <div class="pricing-value">Mulai dari Rp <span class="todo">[ISI: harga paket dasar LMS]</span></div>
+      </div>
+      <div class="pricing-note">
+        Mencakup setup sistem, database, modul akademik, dan kuota awal gateway. Harga final menyesuaikan kebutuhan fitur dan integrasi. Hubungi kami untuk penawaran terbaik.
+      </div>
+    </div>
+
+    <!-- Testimonial Slot -->
+    <div class="testimonial-box">
+      "<span class="todo">[ISI: kutipan testimoni pemilik/pengelola bimbel pengguna LMS]</span>"
+      <span class="testimonial-author">— <span class="todo">[ISI: nama pemberi testimoni, jabatan di bimbel mitra]</span></span>
+    </div>
+
+    <div class="doc-footer">
+      <span>UAY Studio — Master Product Catalog</span>
+      <span class="page-num">Halaman 3 / 9</span>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════ HALAMAN 4 — MEDIGATE PATIENT PORTAL ═══════════════════════════════ -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-badge"><div class="logo-icon">UAY</div> UAY Studio</div>
+      <span class="page-info">Produk 2 dari 5 · Vertikal Kesehatan</span>
+    </div>
+
+    <div class="product-hero">
+      <div style="width: 48px; height: 48px; border-radius: 9px; background: #eff6ff; border: 1.5px solid #bfdbfe; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg class="svg-icon svg-icon-lg" style="color: var(--medigate-navy);" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
+      </div>
+      <div style="flex: 1;">
+        <div class="product-tag-wrap">
+          <span class="badge badge-pilot">Program Pilot Rumah Sakit</span>
+          <span class="badge" style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca;">Integrasi SIMRS Khanza</span>
+        </div>
+        <h2 class="section-title" style="color: var(--medigate-navy);">Medigate — Patient Portal Mobile</h2>
+        <p class="section-subtitle" style="margin-bottom: 0;">
+          Aplikasi mobile portal pasien yang menghubungkan masyarakat langsung ke sistem operasional rumah sakit. Mengurai antrean admisi dan mempermudah akses layanan tanpa mengganti sistem inti SIMRS Khanza.
+        </p>
+      </div>
+    </div>
+
+    <!-- Logo Medigate Showcase Bar -->
+    <div style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: 7px; padding: 5px 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <img src="assets/logo-medigate.svg" alt="Logo Resmi Medigate Patient Portal" style="height: 24px; display: block;" />
+        <span style="font-size: 0.65rem; color: var(--slate-500); font-weight: 600;">Ekosistem Khusus Rumah Sakit Pengguna SIMRS Khanza</span>
+      </div>
+      <span class="badge" style="background: #fffbeb; color: #b45309; border: 1px solid #fde68a;">Tahap Uji Coba Pilot Terkendali</span>
+    </div>
+
+    <!-- Split Grid: Feature + Mobile Device Mockup -->
+    <div class="showcase-grid" style="grid-template-columns: 1.25fr 0.75fr; margin-bottom: 8px;">
+      <div>
+        <div class="section-label">Manfaat Strategis Bagi Manajemen Rumah Sakit</div>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-icon-wrap" style="background: #eff6ff; color: var(--medigate-navy);">
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+            </div>
+            <div class="feature-desc">
+              <strong>Pendaftaran Rawat Jalan Mandiri</strong>
+              Pasien mengambil nomor antrean poli dari rumah. Beban petugas admisi loket berkurang drastis saat jam sibuk pagi hari.
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-wrap" style="background: #eff6ff; color: var(--medigate-navy);">
+              <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div class="feature-desc">
+              <strong>Sinkronisasi Jadwal Praktik Dokter Real-Time</strong>
+              Jadwal cuti dokter atau perubahan jam praktik terhubung langsung ke basis data SIMRS Khanza tanpa input ulang secara manual.
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-wrap" style="background: #eff6ff; color: var(--medigate-navy);">
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div class="feature-desc">
+              <strong>Riwayat Pemeriksaan &amp; Kunjungan Pasien</strong>
+              Pasien dapat melihat riwayat kunjungan terdahulu, nomor rekam medis, dan informasi rujukan secara aman dalam genggaman.
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-wrap" style="background: #eff6ff; color: var(--medigate-navy);">
+              <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div class="feature-desc">
+              <strong>Fitur yang Teruji Saat Ini:</strong>
+              <span class="todo">[ISI: fitur nyata Medigate yang sudah berfungsi, mis. pendaftaran online, jadwal dokter, riwayat kunjungan, notifikasi; konfirmasi hanya yang sudah ada]</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phone Frame Mockup -->
+      <div style="display: flex; flex-direction: column; align-items: center;">
+        <div class="device-phone">
+          <div class="phone-notch"></div>
+          <img src="assets/ss-medigate.png" alt="Antarmuka Aplikasi Mobile Medigate Portal Pasien" />
+        </div>
+        <div style="font-size: 0.6rem; color: var(--slate-500); text-align: center; margin-top: 4px;">
+          Antarmuka Mobile Pasien (Android &amp; iOS Ready)
+        </div>
+      </div>
+    </div>
+
+    <!-- Status & Peta Jalan Pilot (Aturan Keras: Tidak mengklaim hasil sebelum terbukti) -->
+    <div style="background: #f8fafc; border: 1.5px solid #bfdbfe; border-radius: 8px; padding: 8px 11px; margin-bottom: 8px;">
+      <div style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--medigate-navy); margin-bottom: 5px; display: flex; align-items: center; gap: 6px;">
+        <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+        Status Pengembangan &amp; Peta Jalan Program Pilot
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <div style="background: var(--white); padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border-light);">
+          <div style="font-size: 0.62rem; font-weight: 700; color: #1e3a8a; margin-bottom: 2px;">
+            (a) Status Saat Ini: TAHAP PILOT
+          </div>
+          <p style="font-size: 0.66rem; color: var(--slate-600); line-height: 1.3;">
+            Telah terintegrasi langsung dengan skema database SIMRS Khanza melalui REST API / query langsung. Saat ini sedang <span class="todo">[ISI: 'diuji di salah satu RS di kota/provinsi' atau nama RS dengan izin jika ada]</span>.
+          </p>
+        </div>
+        <div style="background: var(--white); padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border-light);">
+          <div style="font-size: 0.62rem; font-weight: 700; color: #b45309; margin-bottom: 2px;">
+            (b) Sedang Dikembangkan (Roadmap)
+          </div>
+          <p style="font-size: 0.66rem; color: var(--slate-600); line-height: 1.3;">
+            <span class="todo">[ISI: fitur berikutnya, mis. integrasi pembayaran bridging BPJS Mobile JKN, telekonsultasi dokter, atau hasil lab digital]</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tawaran Program Pilot untuk Rumah Sakit Mitra -->
+    <div style="background: linear-gradient(135deg, #eff6ff, #f0fdfa); border: 1.5px dashed #3b82f6; border-radius: 7px; padding: 7px 11px; margin-bottom: 8px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span style="font-size: 0.65rem; font-weight: 800; color: #1e40af; text-transform: uppercase;">
+            Tawaran Program Pilot Rumah Sakit Mitra
+          </span>
+          <p style="font-size: 0.67rem; color: var(--slate-700); line-height: 1.35;">
+            Implementasi bertahap berisiko rendah. Rumah sakit mitra mendapatkan skema pendampingan teknis intensif dan masukan langsung Anda akan ikut membentuk fitur sistem.
+            Skema pilot: <span class="todo">[ISI: durasi program pilot, skema harga khusus/free dengan komitmen]</span>.
+          </p>
+        </div>
+        <div style="text-align: right; flex-shrink: 0; margin-left: 10px;">
+          <span style="font-size: 0.62rem; color: var(--slate-500); display: block;">Mulai dari</span>
+          <strong style="font-size: 0.82rem; color: var(--medigate-navy);">Rp <span class="todo">[ISI: harga implementasi pilot]</span></strong>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size: 0.61rem; color: var(--slate-500); line-height: 1.3; font-style: italic;">
+      Catatan Kemitraan: SIMRS Khanza adalah sistem informasi manajemen rumah sakit sumber terbuka (open-source). Medigate dikembangkan secara independen oleh UAY Studio sebagai platform bridging antarmuka pasien dan bukan produk resmi dari pengembang inti SIMRS Khanza.
+    </div>
+
+    <div class="doc-footer">
+      <span>UAY Studio — Master Product Catalog</span>
+      <span class="page-num">Halaman 4 / 9</span>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════ HALAMAN 5 — .UJIAN PLATFORM ═══════════════════════════════ -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-badge"><div class="logo-icon">UAY</div> UAY Studio</div>
+      <span class="page-info">Produk 3 dari 5 · Vertikal Kesehatan &amp; Institusi</span>
+    </div>
+
+    <div class="product-hero">
+      <div class="product-icon-box" style="background: #f5f3ff; border-color: #ddd6fe; color: #6d28d9;">
+        <svg class="svg-icon svg-icon-lg" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div style="flex: 1;">
+        <div class="product-tag-wrap">
+          <span class="badge" style="background: #ede9fe; color: #5b21b6;">Anti-Cheat Engine</span>
+          <span class="badge badge-dark">Status: Digunakan di Rumah Sakit</span>
+        </div>
+        <h2 class="section-title">.Ujian — Secure Exam Platform</h2>
+        <p class="section-subtitle" style="margin-bottom: 0;">
+          Platform ujian berbasis komputer (CBT) berkemampuan pengawasan aktif untuk kredensial tenaga medis rumah sakit, rekrutmen pegawai, dan evaluasi berkala institusi.
+        </p>
+      </div>
+    </div>
+
+    <!-- Showcase Grid -->
+    <div class="showcase-grid">
+      <div>
+        <div class="section-label">Mekanisme Nyata Pengendalian Kecurangan</div>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-icon-wrap" style="color: #6d28d9; background: #f5f3ff;">
+              <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <div class="feature-desc">
+              <strong>Browser Lockdown Otomatis</strong>
+              Membatasi peserta dari membuka tab peramban baru, meminimalkan jendela ujian, atau menyalin (copy-paste) soal ke aplikasi luar.
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-wrap" style="color: #6d28d9; background: #f5f3ff;">
+              <svg class="svg-icon" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <div class="feature-desc">
+              <strong>Deteksi Tab &amp; Layar Eksternal</strong>
+              Sistem mendeteksi saat layar kehilangan fokus (blur event) atau terhubung ke proyektor/monitor kedua dan langsung mencatat insiden.
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-wrap" style="color: #6d28d9; background: #f5f3ff;">
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </div>
+            <div class="feature-desc">
+              <strong>Log Pelanggaran Rinci (Audit Trail)</strong>
+              Setiap kali peserta mencoba berpindah jendela atau keluar dari mode layar penuh, log tersimpan lengkap dengan cap waktu detik.
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-wrap" style="color: #6d28d9; background: #f5f3ff;">
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <div class="feature-desc">
+              <strong>Dashboard Pengawasan (Live Proctoring)</strong>
+              Panitia ujian dapat memantau status pengerjaan seluruh peserta dari satu konsol terpusat secara real-time.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screenshot Mockup Frame Browser -->
+      <div>
+        <div class="device-browser">
+          <div class="browser-header">
+            <div class="browser-dot"></div><div class="browser-dot"></div><div class="browser-dot"></div>
+            <div class="browser-url">ujian.annisapekanbaru.com/exam-session</div>
+          </div>
+          <img src="assets/ss-ujian.png" alt="Platform Ujian Online Terawasi .Ujian UAY Studio" />
+        </div>
+        <div style="font-size: 0.62rem; color: var(--slate-500); text-align: center; margin-top: 4px;">
+          Antarmuka Pengerjaan Soal dengan Sistem Timer &amp; Pelacak Status
+        </div>
+      </div>
+    </div>
+
+    <!-- Blok Bukti Nyata: Masalah -> Solusi -> Hasil -->
+    <div class="evidence-block">
+      <div class="evidence-title">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Studi Implementasi Nyata di Rumah Sakit Mitra
+      </div>
+      <div class="evidence-flow">
+        <div class="evidence-col">
+          <span class="evidence-label">Kondisi Awal (Masalah)</span>
+          <p class="evidence-text">
+            Ujian sertifikasi nakes internal dilakukan manual berbasis kertas: rentan kebocoran kunci jawaban, pengawasan sulit, dan koreksi menyita waktu berhari-hari.
+          </p>
+        </div>
+        <div class="evidence-col">
+          <span class="evidence-label">Solusi yang Diterapkan</span>
+          <p class="evidence-text">
+            Implementasi .Ujian di <span class="todo">[ISI: nama rumah sakit atau 'salah satu rumah sakit di kota/provinsi']</span> dengan browser lockdown dan randomisasi soal untuk <span class="todo">[ISI: jumlah peserta ujian]</span> peserta.
+          </p>
+        </div>
+        <div class="evidence-col">
+          <span class="evidence-label">Hasil Terukur</span>
+          <p class="evidence-text">
+            Waktu rekapitulasi penilaian terpangkas dari <span class="todo">[ISI: waktu rekap sebelum → sesudah]</span>, zero kebocoran soal, dan nilai langsung terbit dalam bentuk berita acara resmi.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pricing Box -->
+    <div class="pricing-banner">
+      <div class="pricing-main">
+        <div class="pricing-label">Paket Dasar</div>
+        <div class="pricing-value">Mulai dari Rp <span class="todo">[ISI: harga paket dasar .Ujian]</span></div>
+      </div>
+      <div class="pricing-note">
+        Mencakup instalasi cloud/server lokal, bank soal, dan lisensi sesi ujian. Harga final menyesuaikan kebutuhan fitur dan integrasi. Hubungi kami untuk penawaran terbaik.
+      </div>
+    </div>
+
+    <!-- Testimonial Slot -->
+    <div class="testimonial-box">
+      "<span class="todo">[ISI: kutipan testimoni bagian diklat/SDM rumah sakit mitra .Ujian]</span>"
+      <span class="testimonial-author">— <span class="todo">[ISI: nama penanggung jawab diklat, institusi rumah sakit]</span></span>
+    </div>
+
+    <div class="doc-footer">
+      <span>UAY Studio — Master Product Catalog</span>
+      <span class="page-num">Halaman 5 / 9</span>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════ HALAMAN 6 — HRIS ENTERPRISE ═══════════════════════════════ -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-badge"><div class="logo-icon">UAY</div> UAY Studio</div>
+      <span class="page-info">Produk 4 dari 5 · Vertikal Kesehatan &amp; Korporasi</span>
+    </div>
+
+    <div class="product-hero">
+      <div class="product-icon-box" style="background: #f0f9ff; border-color: #bae6fd; color: #0369a1;">
+        <svg class="svg-icon svg-icon-lg" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div style="flex: 1;">
+        <div class="product-tag-wrap">
+          <span class="badge" style="background: #e0f2fe; color: #0369a1;">Human Resource &amp; Payroll</span>
+          <span class="badge badge-dark">Satu Halaman Penuh</span>
+        </div>
+        <h2 class="section-title">HRIS — Human Resource Information System</h2>
+        <p class="section-subtitle" style="margin-bottom: 0;">
+          Sistem tata kelola kepegawaian modern untuk institusi kesehatan, sekolah, dan perusahaan berkembang. Menyatukan data karyawan, kehadiran berbasis GPS/QR, dan penggajian tanpa spreadsheet berulang.
+        </p>
+      </div>
+    </div>
+
+    <!-- Showcase Grid -->
+    <div class="showcase-grid">
+      <div>
+        <div class="section-label">Modul Fungsional SDM Terpadu</div>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-icon-wrap" style="color: #0369a1; background: #e0f2fe;">
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="feature-desc">
+              <strong>Database Profil Karyawan Terpusat</strong>
+              Arsip digital data personal, surat perjanjian kerja (PKWT/PKWTT), masa berlaku STR/SIP bagi tenaga medis, dan histori promosi.
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-wrap" style="color: #0369a1; background: #e0f2fe;">
+              <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="feature-desc">
+              <strong>Presensi &amp; Manajemen Shift Kerja</strong>
+              Pencatatan jam masuk berbasis radius geofencing atau QR scanner. Fleksibel untuk pengaturan rotasi shift tenaga kesehatan atau staf kantor.
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-wrap" style="color: #0369a1; background: #e0f2fe;">
+              <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div class="feature-desc">
+              <strong>Pengajuan Cuti &amp; Izin Berjenjang</strong>
+              Alur persetujuan cuti online langsung ke atasan unit kerja, memotong birokrasi formulir cetak dan meminimalkan tabrakan jadwal staf.
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-wrap" style="color: #0369a1; background: #e0f2fe;">
+              <svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="feature-desc">
+              <strong>Kalkulator Penggajian &amp; Slip Gaji Digital</strong>
+              Otomasi perhitungan gaji pokok, tunjangan kehadiran, dan potongan presensi. Slip gaji diterbitkan langsung secara privat.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screenshot Mockup Frame Browser -->
+      <div>
+        <div class="device-browser">
+          <div class="browser-header">
+            <div class="browser-dot"></div><div class="browser-dot"></div><div class="browser-dot"></div>
+            <div class="browser-url">hris.uay.io/employees/overview</div>
+          </div>
+          <img src="assets/ss-hris.png" alt="Antarmuka Sistem Manajemen SDM dan Penggajian HRIS UAY Studio" />
+        </div>
+        <div style="font-size: 0.62rem; color: var(--slate-500); text-align: center; margin-top: 4px;">
+          Tampilan Manajemen Direktori Karyawan &amp; Rekapitulasi Presensi
+        </div>
+      </div>
+    </div>
+
+    <!-- Modul Kepatuhan Regulasi Indonesia (Rule: Pakai [ISI] Placeholder) -->
+    <div style="background: var(--slate-50); border: 1px solid var(--border-light); border-radius: 8px; padding: 7px 11px; margin-bottom: 9px;">
+      <div style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--dark); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Kesiapan Kepatuhan Regulasi Ketenagakerjaan Indonesia
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px;">
+        <div style="background: var(--white); border: 1px solid var(--border-light); padding: 5px 8px; border-radius: 5px;">
+          <strong style="font-size: 0.68rem; color: var(--dark); display: block;">Perhitungan PPh 21 TER</strong>
+          <span style="font-size: 0.63rem; color: var(--slate-600);"><span class="todo">[ISI: konfirmasi fitur ini sudah ada atau belum]</span></span>
+        </div>
+        <div style="background: var(--white); border: 1px solid var(--border-light); padding: 5px 8px; border-radius: 5px;">
+          <strong style="font-size: 0.68rem; color: var(--dark); display: block;">BPJS Kes &amp; Ketenagakerjaan</strong>
+          <span style="font-size: 0.63rem; color: var(--slate-600);"><span class="todo">[ISI: konfirmasi fitur ini sudah ada atau belum]</span></span>
+        </div>
+        <div style="background: var(--white); border: 1px solid var(--border-light); padding: 5px 8px; border-radius: 5px;">
+          <strong style="font-size: 0.68rem; color: var(--dark); display: block;">Kebijakan Cuti &amp; Lembur</strong>
+          <span style="font-size: 0.63rem; color: var(--slate-600);"><span class="todo">[ISI: konfirmasi fitur ini sudah ada atau belum]</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blok Bukti Nyata / Placeholder Hasil -->
+    <div class="evidence-block">
+      <div class="evidence-title">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Studi Kasus &amp; Efisiensi Pengelolaan SDM
+      </div>
+      <div class="evidence-flow">
+        <div class="evidence-col">
+          <span class="evidence-label">Masalah Umum Operasional</span>
+          <p class="evidence-text">
+            Pencatatan shift kerja perawat dan staf administrasi masih terpecah di grup chat dan form kertas, menyulitkan rekap tunjangan bulanan.
+          </p>
+        </div>
+        <div class="evidence-col">
+          <span class="evidence-label">Solusi yang Diterapkan</span>
+          <p class="evidence-text">
+            Integrasi absensi mobile HRIS dengan penguncian lokasi dan persetujuan lembur terpusat bagi <span class="todo">[ISI: jumlah karyawan/staf]</span>.
+          </p>
+        </div>
+        <div class="evidence-col">
+          <span class="evidence-label">Hasil Implementasi</span>
+          <p class="evidence-text">
+            <span class="todo">[ISI: hasil proyek efisiensi HRIS, mis. waktu payroll berkurang dari X hari ke Y jam]</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pricing Box -->
+    <div class="pricing-banner">
+      <div class="pricing-main">
+        <div class="pricing-label">Paket Dasar</div>
+        <div class="pricing-value">Mulai dari Rp <span class="todo">[ISI: harga paket dasar HRIS]</span></div>
+      </div>
+      <div class="pricing-note">
+        Mencakup modul database karyawan, absensi, dan payroll dasar. Harga final menyesuaikan kebutuhan fitur dan integrasi. Hubungi kami untuk penawaran terbaik.
+      </div>
+    </div>
+
+    <!-- Testimonial Slot -->
+    <div class="testimonial-box">
+      "<span class="todo">[ISI: kutipan testimoni manajer HRD / operasional klien pengguna HRIS]</span>"
+      <span class="testimonial-author">— <span class="todo">[ISI: nama penanggung jawab HRD, institusi mitra]</span></span>
+    </div>
+
+    <div class="doc-footer">
+      <span>UAY Studio — Master Product Catalog</span>
+      <span class="page-num">Halaman 6 / 9</span>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════ HALAMAN 7 — JAJANDEN POS ═══════════════════════════════ -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-badge"><div class="logo-icon">UAY</div> UAY Studio</div>
+      <span class="page-info">Produk 5 dari 5 · Vertikal Ritel &amp; F&amp;B</span>
+    </div>
+
+    <div class="product-hero">
+      <div class="product-icon-box" style="background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8;">
+        <svg class="svg-icon svg-icon-lg" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      </div>
+      <div style="flex: 1;">
+        <div class="product-tag-wrap">
+          <span class="badge" style="background: #dbeafe; color: #1e40af;">Point of Sale SaaS</span>
+          <span class="badge badge-dark">Multi-Tenant Architecture</span>
+        </div>
+        <h2 class="section-title">Jajanden — Multi-Outlet POS System</h2>
+        <p class="section-subtitle" style="margin-bottom: 0;">
+          Aplikasi kasir digital berbasis cloud yang dirancang untuk multi-outlet bisnis kuliner, franchise, dan ritel. Mengamankan pendapatan harian serta mengontrol inventori secara terpusat.
+        </p>
+      </div>
+    </div>
+
+    <!-- Showcase Grid -->
+    <div class="showcase-grid">
+      <div>
+        <div class="section-label">Fitur Operasional Kasir &amp; Multi-Outlet</div>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-icon-wrap" style="color: #1d4ed8; background: #eff6ff;">
+              <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            </div>
+            <div class="feature-desc">
+              <strong>Arsitektur Multi-Tenant Terisolasi</strong>
+              Setiap outlet atau mitra waralaba memiliki partisi data transaksi, inventori, dan hak akses kasir terpisah yang sepenuhnya aman.
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-wrap" style="color: #1d4ed8; background: #eff6ff;">
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+            </div>
+            <div class="feature-desc">
+              <strong>Dashboard Penjualan Konsolidasi</strong>
+              Pemilik bisnis memantau omzet harian lintas outlet dari ponsel, lengkap dengan analisis menu terlaris dan jam puncak kunjungan.
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-wrap" style="color: #1d4ed8; background: #eff6ff;">
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            </div>
+            <div class="feature-desc">
+              <strong>Kontrol Stok &amp; Peringatan Bahan Baku</strong>
+              Pengurangan stok otomatis saat transaksi terjadi dan notifikasi ketika kuantiti mendekati batas minimum pemesanan ulang.
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-wrap" style="color: #1d4ed8; background: #eff6ff;">
+              <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            </div>
+            <div class="feature-desc">
+              <strong>Pencetakan Struk Cepat &amp; QRIS Dinamis</strong>
+              Koneksi langsung ke printer thermal bluetooth/USB tanpa aplikasi tambahan, serta dukungan pembayaran digital non-tunai.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screenshot Mockup Frame Browser -->
+      <div>
+        <div class="device-browser">
+          <div class="browser-header">
+            <div class="browser-dot"></div><div class="browser-dot"></div><div class="browser-dot"></div>
+            <div class="browser-url">dimsum-in.vercel.app/pos</div>
+          </div>
+          <img src="assets/ss-jajanden.png" alt="Aplikasi Kasir Digital Multi-Outlet Jajanden POS UAY Studio" />
+        </div>
+        <div style="font-size: 0.62rem; color: var(--slate-500); text-align: center; margin-top: 4px;">
+          Antarmuka Kasir Touchscreen Cepat untuk Pesanan Meja &amp; Takeaway
+        </div>
+      </div>
+    </div>
+
+    <!-- Blok "Kenapa Bukan POS Lain" (3 Poin Diferensiasi tanpa Sebut Kompetitor) -->
+    <div style="background: var(--slate-50); border: 1px solid var(--border-light); border-radius: 8px; padding: 7px 11px; margin-bottom: 9px;">
+      <div style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--dark); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+        <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+        Kenapa Bukan Sistem POS Konvensional Lain?
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px;">
+        <div style="background: var(--white); border: 1px solid var(--border-light); padding: 5px 8px; border-radius: 5px;">
+          <strong style="font-size: 0.68rem; color: var(--dark); display: block;">1. Tanpa Biaya Tersembunyi per Transaksi</strong>
+          <span style="font-size: 0.63rem; color: var(--slate-600); line-height: 1.3; display: block;">Skema lisensi transparan tanpa pemotongan margin persentase dari setiap struk penjualan Anda.</span>
+        </div>
+        <div style="background: var(--white); border: 1px solid var(--border-light); padding: 5px 8px; border-radius: 5px;">
+          <strong style="font-size: 0.68rem; color: var(--dark); display: block;">2. Dirancang untuk Multi-Outlet</strong>
+          <span style="font-size: 0.63rem; color: var(--slate-600); line-height: 1.3; display: block;">Mendukung ekspansi puluhan cabang baru dengan sinkronisasi menu dan pelaporan omzet real-time.</span>
+        </div>
+        <div style="background: var(--white); border: 1px solid var(--border-light); padding: 5px 8px; border-radius: 5px;">
+          <strong style="font-size: 0.68rem; color: var(--dark); display: block;">3. Bisa Kustomisasi Sesuai Alur F&amp;B</strong>
+          <span style="font-size: 0.63rem; color: var(--slate-600); line-height: 1.3; display: block;">Dapat dihubungkan ke sistem kitchen display khusus atau integrasi inventori gudang pusat Anda.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blok Bukti Nyata: Masalah -> Solusi -> Hasil -->
+    <div class="evidence-block">
+      <div class="evidence-title">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Studi Implementasi Operasional Merchant
+      </div>
+      <div class="evidence-flow">
+        <div class="evidence-col">
+          <span class="evidence-label">Kondisi Awal (Masalah)</span>
+          <p class="evidence-text">
+            Pencatatan nota manual rawan selisih kas saat pergantian shift kasir dan stok bahan baku sering habis mendadak di jam sibuk.
+          </p>
+        </div>
+        <div class="evidence-col">
+          <span class="evidence-label">Solusi yang Diterapkan</span>
+          <p class="evidence-text">
+            Implementasi Jajanden POS dengan auto-cut stok bahan per menu dan rekap shift kasir di <span class="todo">[ISI: nama merchant / gerai mitra]</span>.
+          </p>
+        </div>
+        <div class="evidence-col">
+          <span class="evidence-label">Hasil Terukur</span>
+          <p class="evidence-text">
+            Meminimalkan potensi kecurangan kasir melalui rekapitulasi tutup buku otomatis harian dan efisiensi waktu pemesanan hingga <span class="todo">[ISI: persen efisiensi]</span>.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pricing Box -->
+    <div class="pricing-banner">
+      <div class="pricing-main">
+        <div class="pricing-label">Paket Dasar</div>
+        <div class="pricing-value">Mulai dari Rp <span class="todo">[ISI: harga paket dasar Jajanden]</span></div>
+      </div>
+      <div class="pricing-note">
+        Mencakup modul kasir, laporan penjualan, dan manajemen menu dasar. Harga final menyesuaikan kebutuhan outlet dan fitur. Hubungi kami untuk penawaran terbaik.
+      </div>
+    </div>
+
+    <!-- Testimonial Slot -->
+    <div class="testimonial-box">
+      "<span class="todo">[ISI: kutipan testimoni pemilik gerai kuliner pengguna Jajanden POS]</span>"
+      <span class="testimonial-author">— <span class="todo">[ISI: nama owner/manajer gerai kuliner]</span></span>
+    </div>
+
+    <div class="doc-footer">
+      <span>UAY Studio — Master Product Catalog</span>
+      <span class="page-num">Halaman 7 / 9</span>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════ HALAMAN 8 — PORTOFOLIO & PROYEK CUSTOM ═══════════════════════════════ -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-badge"><div class="logo-icon">UAY</div> UAY Studio</div>
+      <span class="page-info">Portofolio &amp; Proyek Rekayasa Custom</span>
+    </div>
+
+    <div style="margin-bottom: 10px;">
+      <div class="section-label">
+        <svg class="svg-icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        Studi Kasus &amp; Custom Engineering
+      </div>
+      <h2 class="section-title">Portofolio Sistem Khusus &amp; Proyek Kustom</h2>
+      <p class="section-subtitle">
+        Di luar lini produk utama, UAY Studio berpengalaman merekayasa solusi perangkat lunak khusus dengan tingkat kerumitan tinggi—mulai dari platform direct-to-consumer premium hingga sistem integrasi internal.
+      </p>
+    </div>
+
+    <!-- Case Study Utama: Kopiden Luxury E-Commerce -->
+    <div style="background: var(--white); border: 1.5px solid var(--border-light); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+            <span class="badge" style="background: #fffbeb; color: #92400e; border: 1px solid #fde68a;">Case Study Portofolio</span>
+            <span style="font-size: 0.65rem; color: var(--slate-500); font-weight: 600;">E-Commerce Direct-to-Consumer</span>
+          </div>
+          <h3 style="font-family: 'Lora', Georgia, serif; font-size: 1.15rem; color: var(--dark); font-weight: 600;">
+            Kopiden — Luxury Coffee Experience &amp; Smart Brew Platform
+          </h3>
+        </div>
+        <div style="text-align: right;">
+          <span style="font-size: 0.62rem; color: var(--slate-500); display: block;">Peran UAY Studio</span>
+          <span style="font-size: 0.68rem; font-weight: 700; color: var(--primary);">End-to-End Design &amp; Development</span>
+        </div>
+      </div>
+
+      <div class="showcase-grid" style="grid-template-columns: 1.1fr 0.9fr; margin-bottom: 8px;">
+        <div>
+          <p style="font-size: 0.72rem; color: var(--slate-600); line-height: 1.45; margin-bottom: 8px;">
+            Kopiden adalah etalase digital bagi penikmat kopi spesialti Indonesia. Dibangun untuk memberikan pengalaman visual mewah setara merek global, dilengkapi fitur utilitas yang memperkuat loyalitas pelanggan.
+          </p>
+          <div class="feature-list">
+            <div class="feature-item">
+              <div class="feature-icon-wrap">
+                <svg class="svg-icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              </div>
+              <div class="feature-desc">
+                <strong>Integrasi Pembayaran Otomatis Midtrans Snap</strong>
+                Mendukung QRIS instan, Virtual Account bank nasional, dan kartu kredit dengan verifikasi pembayaran otomatis tanpa upload bukti transfer.
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon-wrap">
+                <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div class="feature-desc">
+                <strong>Smart Interactive Brew Timer</strong>
+                Kalkulator rasio air dan kopi interaktif dengan panduan waktu penuangan real-time sesuai profil sangrai biji kopi yang dibeli.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="device-browser">
+            <div class="browser-header">
+              <div class="browser-dot"></div><div class="browser-dot"></div><div class="browser-dot"></div>
+              <div class="browser-url">kopiden.vercel.app/store</div>
+            </div>
+            <img src="assets/ss-kopiden.png" alt="Etalase Digital E-Commerce Kopi Premium Kopiden" />
+          </div>
+          <div style="font-size: 0.6rem; color: var(--slate-500); text-align: center; margin-top: 3px;">
+            Desain Visual Berkelas dengan Micro-Interactions Presisi
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slot Proyek Custom Lain + Hasil (Rule 4 & 5) -->
+    <div class="section-label">Slot Proyek Rekayasa Kustom Lainnya</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+      <div style="background: var(--slate-50); border: 1px dashed var(--border); border-radius: 7px; padding: 9px 11px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <strong style="font-size: 0.76rem; color: var(--dark);">Proyek Kustom 1: <span class="todo">[ISI: nama proyek / sektor]</span></strong>
+          <span class="badge badge-primary">Selesai</span>
+        </div>
+        <p style="font-size: 0.68rem; color: var(--slate-600); line-height: 1.35; margin-bottom: 4px;">
+          Ringkasan arsitektur: <span class="todo">[ISI: deskripsi singkat arsitektur &amp; tantangan yang diselesaikan]</span>.
+        </p>
+        <div style="font-size: 0.65rem; color: var(--primary); font-weight: 700;">
+          Hasil Terukur: <span class="todo">[ISI: hasil proyek custom 1]</span>
+        </div>
+      </div>
+
+      <div style="background: var(--slate-50); border: 1px dashed var(--border); border-radius: 7px; padding: 9px 11px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <strong style="font-size: 0.76rem; color: var(--dark);">Proyek Kustom 2: <span class="todo">[ISI: nama proyek / sektor]</span></strong>
+          <span class="badge badge-primary">Selesai</span>
+        </div>
+        <p style="font-size: 0.68rem; color: var(--slate-600); line-height: 1.35; margin-bottom: 4px;">
+          Ringkasan arsitektur: <span class="todo">[ISI: deskripsi singkat arsitektur &amp; tantangan yang diselesaikan]</span>.
+        </p>
+        <div style="font-size: 0.65rem; color: var(--primary); font-weight: 700;">
+          Hasil Terukur: <span class="todo">[ISI: hasil proyek custom 2]</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tawaran Kolaborasi Bangun Bersama -->
+    <div class="custom-offer-banner" style="margin-top: 0;">
+      <div>
+        <div class="custom-offer-title">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          Ingin Membangun Solusi Digital Kustom Bersama UAY Studio?
+        </div>
+        <p class="custom-offer-text">
+          Jika organisasi Anda memiliki alur kerja unik yang tidak dapat diakomodasi oleh aplikasi massal di pasaran, kami siap menjadi mitra teknologi jangka panjang Anda.
+        </p>
+      </div>
+      <a href="https://wa.me/6285364932661?text=Halo%20UAY%20Studio%2C%20saya%20tertarik%20membangun%20aplikasi%20custom%20bersama" class="custom-offer-btn">
+        Ajukan Diskusi Proyek
+      </a>
+    </div>
+
+    <div class="doc-footer">
+      <span>UAY Studio — Master Product Catalog</span>
+      <span class="page-num">Halaman 8 / 9</span>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════ HALAMAN 9 — PROSES, GARANSI, FAQ, CTA ═══════════════════════════════ -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-badge"><div class="logo-icon">UAY</div> UAY Studio</div>
+      <span class="page-info">Proses Kerja, Jaminan &amp; FAQ</span>
+    </div>
+
+    <!-- Timeline Horizontal Alur Kerja -->
+    <div style="margin-bottom: 10px;">
+      <div class="section-label">Alur Kerja Standar Produksi</div>
+      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; position: relative;">
+        <div style="background: var(--slate-50); border: 1px solid var(--border-light); border-radius: 6px; padding: 6px 8px; text-align: center;">
+          <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--primary); color: white; font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 3px;">01</div>
+          <strong style="font-size: 0.68rem; color: var(--dark); display: block;">1. Brief &amp; Scope</strong>
+          <span style="font-size: 0.58rem; color: var(--slate-500); line-height: 1.25; display: block;">Proposal teknis siap dalam 24 jam.</span>
+        </div>
+        <div style="background: var(--slate-50); border: 1px solid var(--border-light); border-radius: 6px; padding: 6px 8px; text-align: center;">
+          <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--primary); color: white; font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 3px;">02</div>
+          <strong style="font-size: 0.68rem; color: var(--dark); display: block;">2. Desain UX/UI</strong>
+          <span style="font-size: 0.58rem; color: var(--slate-500); line-height: 1.25; display: block;">Wireframe &amp; prototipe interaktif.</span>
+        </div>
+        <div style="background: var(--slate-50); border: 1px solid var(--border-light); border-radius: 6px; padding: 6px 8px; text-align: center;">
+          <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--primary); color: white; font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 3px;">03</div>
+          <strong style="font-size: 0.68rem; color: var(--dark); display: block;">3. Development</strong>
+          <span style="font-size: 0.58rem; color: var(--slate-500); line-height: 1.25; display: block;">4-8 minggu sedang, 2-4 bulan kompleks.</span>
+        </div>
+        <div style="background: var(--slate-50); border: 1px solid var(--border-light); border-radius: 6px; padding: 6px 8px; text-align: center;">
+          <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--primary); color: white; font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 3px;">04</div>
+          <strong style="font-size: 0.68rem; color: var(--dark); display: block;">4. QA &amp; Uji Coba</strong>
+          <span style="font-size: 0.58rem; color: var(--slate-500); line-height: 1.25; display: block;">Uji beban dan keamanan data.</span>
+        </div>
+        <div style="background: var(--slate-50); border: 1px solid var(--border-light); border-radius: 6px; padding: 6px 8px; text-align: center;">
+          <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--primary); color: white; font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 3px;">05</div>
+          <strong style="font-size: 0.68rem; color: var(--dark); display: block;">5. Launch &amp; Support</strong>
+          <span style="font-size: 0.58rem; color: var(--slate-500); line-height: 1.25; display: block;">Deploy live dan transfer pengetahuan.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Garansi & Dukungan Teknis -->
+    <div style="background: var(--primary-light); border: 1px solid var(--primary-subtle); border-radius: 7px; padding: 6px 10px; margin-bottom: 9px; font-size: 0.68rem; color: var(--slate-700); line-height: 1.35;">
+      <strong>Komitmen Garansi &amp; SLA:</strong>
+      Setiap rilis dilindungi garansi bug selama <span class="todo">[ISI: durasi garansi bug]</span>, SLA respon tiket <span class="todo">[ISI: SLA respon]</span>, frekuensi backup otomatis <span class="todo">[ISI: frekuensi backup]</span>, dengan infrastruktur server di <span class="todo">[ISI: lokasi server]</span>.
+    </div>
+
+    <!-- FAQ Dipangkas 6 Pertanyaan (Maks 2 Kalimat per Jawaban) -->
+    <div class="section-label" style="margin-bottom: 4px;">Pertanyaan Kunci Calon Klien (FAQ)</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px;">
+      
+      <div style="background: var(--slate-50); border: 1px solid var(--border-light); border-radius: 6px; padding: 6px 8px;">
+        <div style="font-size: 0.68rem; font-weight: 700; color: var(--dark); margin-bottom: 2px;">
+          1. Bisakah membuat sistem custom dari nol?
+        </div>
+        <p style="font-size: 0.64rem; color: var(--slate-600); line-height: 1.3;">
+          Bisa. Selain produk katalog, kami merekayasa sistem custom dari rancangan proses bisnis unik lembaga Anda.
+        </p>
+      </div>
+
+      <div style="background: var(--slate-50); border: 1px solid var(--border-light); border-radius: 6px; padding: 6px 8px;">
+        <div style="font-size: 0.68rem; font-weight: 700; color: var(--dark); margin-bottom: 2px;">
+          2. Berapa estimasi durasi pengerjaan proyek?
+        </div>
+        <p style="font-size: 0.64rem; color: var(--slate-600); line-height: 1.3;">
+          Kebutuhan skala sedang membutuhkan 4–8 minggu, sedangkan sistem enterprise kompleks memerlukan waktu 2–4 bulan.
+        </p>
+      </div>
+
+      <div style="background: var(--slate-50); border: 1px solid var(--border-light); border-radius: 6px; padding: 6px 8px;">
+        <div style="font-size: 0.68rem; font-weight: 700; color: var(--dark); margin-bottom: 2px;">
+          3. Bagaimana jaminan garansi pasca-launch?
+        </div>
+        <p style="font-size: 0.64rem; color: var(--slate-600); line-height: 1.3;">
+          Kami memberikan garansi penanganan bug gratis pasca peluncuran serta paket pemeliharaan berkelanjutan.
+        </p>
+      </div>
+
+      <div style="background: var(--slate-50); border: 1px solid var(--border-light); border-radius: 6px; padding: 6px 8px;">
+        <div style="font-size: 0.68rem; font-weight: 700; color: var(--dark); margin-bottom: 2px;">
+          4. Bagaimana pengelolaan server &amp; hosting?
+        </div>
+        <p style="font-size: 0.64rem; color: var(--slate-600); line-height: 1.3;">
+          Sistem dapat kami kelola di cloud aman UAY Studio, atau dipasang pada server lokal mandiri milik lembaga Anda.
+        </p>
+      </div>
+
+      <div style="background: var(--slate-50); border: 1px solid var(--border-light); border-radius: 6px; padding: 6px 8px;">
+        <div style="font-size: 0.68rem; font-weight: 700; color: var(--dark); margin-bottom: 2px;">
+          5. Bagaimana skema penetapan harga proyek?
+        </div>
+        <p style="font-size: 0.64rem; color: var(--slate-600); line-height: 1.3;">
+          Biaya berbasis ruang lingkup fitur (fixed-scope) transparan dengan termin pembayaran per fase pencapaian milestone.
+        </p>
+      </div>
+
+      <div style="background: var(--slate-50); border: 1px solid var(--border-light); border-radius: 6px; padding: 6px 8px;">
+        <div style="font-size: 0.68rem; font-weight: 700; color: var(--dark); margin-bottom: 2px;">
+          6. Apakah kami bisa menguji coba demo sistem?
+        </div>
+        <p style="font-size: 0.64rem; color: var(--slate-600); line-height: 1.3;">
+          Tersedia demo langsung untuk setiap produk, dan tim kami siap memandu sesi walkthrough teknis secara daring.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Satu Baris Standar Teknologi -->
+    <div style="font-size: 0.63rem; color: var(--slate-500); text-align: center; margin-bottom: 10px; padding: 4px; border-top: 1px dashed var(--border-light);">
+      Dibangun dengan teknologi modern, aman, dan terukur. Detail arsitektur tersedia sesuai permintaan.
+    </div>
+
+    <!-- Call to Action Banner -->
+    <div style="background: linear-gradient(145deg, #092c28, #0f766e); color: white; border-radius: 8px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center;">
+      <div style="max-width: 62%;">
+        <div style="font-size: 0.62rem; font-weight: 800; text-transform: uppercase; color: #5eead4; letter-spacing: 0.1em; margin-bottom: 2px;">
+          Langkah Selanjutnya
+        </div>
+        <h3 style="font-family: 'Lora', Georgia, serif; font-size: 1.15rem; color: white; font-weight: 600; line-height: 1.2; margin-bottom: 3px;">
+          Diskusikan Kebutuhan Digital Lembaga Anda
+        </h3>
+        <p style="font-size: 0.68rem; color: #ccfbf1; line-height: 1.35;">
+          Dapatkan proposal teknis dan estimasi skema implementasi terperinci dalam 24 jam kerja tanpa kewajiban komitmen awal.
+        </p>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">
+        <a href="https://wa.me/6285364932661?text=Halo%20UAY%20Studio%2C%20saya%20tertarik%20dengan%20produk%20di%20katalog" style="background: #25d366; color: white; text-decoration: none; padding: 6px 12px; border-radius: 6px; font-weight: 800; font-size: 0.7rem; display: flex; align-items: center; gap: 6px;">
+          <svg class="svg-icon" style="stroke: white;" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          Chat WhatsApp: 0853-6493-2661
+        </a>
+        <div style="font-size: 0.64rem; color: #e2e8f0;">
+          Email Resmi: <span style="font-weight: 700; color: white;">hello@uay.com</span>
+        </div>
+        <div style="font-size: 0.6rem; color: #99f6e4;">
+          QR Akses Demo: <span class="todo">[ISI: tautan QR demo produk]</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span>UAY Studio — Master Product Catalog</span>
+      <span class="page-num">Halaman 9 / 9</span>
+    </div>
+  </div>
+
+</body>
+</html>

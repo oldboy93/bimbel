@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UAY Studio — Company Showcase &amp; Product Catalog</title>
+  <meta name="description"
+    content="Katalog produk dan company showcase UAY Studio untuk calon klien. Menampilkan seluruh lini produk digital unggulan." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;1,400&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    @page{size:A4 portrait;margin:0;}
+    :root{
+      --primary:#0f766e;--primary-dark:#115e59;--primary-light:#f0fdfa;--primary-subtle:#ccfbf1;
+      --accent:#b45309;--accent-light:#fffbeb;
+      --jajanden:#2563eb;--jajanden-light:#eff6ff;
+      --ujian:#7c3aed;--ujian-light:#f5f3ff;
+      --kopiden:#92400e;--kopiden-light:#fffbeb;
+      --hris:#0369a1;--hris-light:#f0f9ff;
+      --khanza:#be185d;--khanza-light:#fdf2f8;
+      --dark:#0f172a;--slate-800:#1e293b;--slate-700:#334155;--slate-600:#475569;
+      --slate-500:#64748b;--slate-400:#94a3b8;--slate-200:#e2e8f0;
+      --slate-100:#f1f5f9;--slate-50:#f8fafc;
+      --border:#cbd5e1;--border-light:#e2e8f0;--white:#ffffff;
+    }
+    html{font-size:11pt;-webkit-text-size-adjust:100%;}
+    body{font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;color:var(--slate-700);background-color:#dde3ea;line-height:1.6;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .page{width:210mm;height:297mm;max-height:297mm;margin:24px auto;background:var(--white);padding:14mm 18mm 12mm 18mm;box-shadow:0 8px 30px rgba(0,0,0,.12);position:relative;display:flex;flex-direction:column;box-sizing:border-box;overflow:hidden;}
+    @media print{body{background:transparent;}.page{width:210mm;height:297mm;margin:0;padding:14mm 18mm 12mm 18mm;box-shadow:none;page-break-after:always;break-after:page;}.no-print{display:none!important;}}
+    .doc-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:9px;margin-bottom:16px;border-bottom:1.5px solid var(--border-light);}
+    .doc-header .logo-badge{display:flex;align-items:center;gap:8px;font-weight:800;font-size:.9rem;color:var(--primary);letter-spacing:.04em;}
+    .logo-icon{width:28px;height:28px;background:linear-gradient(135deg,#0f766e,#0369a1);border-radius:7px;display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:.75rem;letter-spacing:.05em;}
+    .doc-header .page-info{font-size:.7rem;color:var(--slate-400);font-weight:500;}
+    .doc-footer{margin-top:auto;padding-top:8px;border-top:1px solid var(--border-light);display:flex;justify-content:space-between;align-items:center;}
+    .doc-footer span{font-size:.68rem;color:var(--slate-400);}
+    .doc-footer .page-num{font-weight:700;color:var(--primary);}
+    .section-label{font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:var(--primary);margin-bottom:6px;}
+    .section-title{font-family:'Lora',Georgia,serif;font-size:1.55rem;font-weight:600;color:var(--dark);line-height:1.25;margin-bottom:10px;}
+    .section-subtitle{font-size:.82rem;color:var(--slate-500);line-height:1.65;max-width:88%;}
+    /* COVER */
+    .cover-page{background:linear-gradient(150deg,#0b1f2e 0%,#0f172a 45%,#112031 100%);display:flex;flex-direction:column;justify-content:space-between;padding:0;overflow:hidden;}
+    .cover-accent-bar{height:5px;background:linear-gradient(90deg,#0f766e,#0369a1,#7c3aed);}
+    .cover-body{flex:1;display:flex;flex-direction:column;justify-content:center;padding:14mm 18mm;position:relative;}
+    .cover-watermark{position:absolute;right:-30px;top:50%;transform:translateY(-50%);font-size:13rem;font-weight:900;color:rgba(255,255,255,.025);letter-spacing:-.05em;user-select:none;pointer-events:none;font-family:'Plus Jakarta Sans',sans-serif;}
+    .cover-eyebrow{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:#5eead4;margin-bottom:20px;display:flex;align-items:center;gap:8px;}
+    .cover-eyebrow::before{content:'';display:block;width:30px;height:2px;background:#5eead4;border-radius:1px;}
+    .cover-title{font-family:'Lora',Georgia,serif;font-size:2.9rem;font-weight:600;color:#ffffff;line-height:1.15;margin-bottom:18px;}
+    .cover-title span{color:#5eead4;font-style:italic;}
+    .cover-desc{font-size:.85rem;color:#94a3b8;line-height:1.7;max-width:380px;margin-bottom:28px;}
+    .cover-tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:30px;}
+    .cover-tag{padding:5px 12px;border:1px solid rgba(255,255,255,.12);border-radius:99px;font-size:.65rem;font-weight:700;color:#cbd5e1;letter-spacing:.06em;text-transform:uppercase;}
+    .cover-divider{width:40px;height:3px;background:linear-gradient(90deg,#0f766e,#0369a1);border-radius:2px;margin-bottom:20px;}
+    .cover-meta-row{display:flex;gap:28px;}
+    .cover-meta-item{display:flex;flex-direction:column;gap:2px;}
+    .cover-meta-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:#64748b;font-weight:700;}
+    .cover-meta-value{font-size:.82rem;color:#e2e8f0;font-weight:600;}
+    .cover-bottom{padding:10mm 18mm;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center;}
+    .cover-logo{display:flex;align-items:center;gap:10px;}
+    .cover-logo-icon{width:36px;height:36px;background:linear-gradient(135deg,#0f766e,#0369a1);border-radius:9px;display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:.8rem;}
+    .cover-logo-name strong{font-size:1rem;font-weight:800;color:#ffffff;letter-spacing:.06em;display:block;}
+    .cover-logo-name span{font-size:.65rem;color:#64748b;letter-spacing:.06em;}
+    .cover-contact{font-size:.72rem;color:#64748b;text-align:right;line-height:1.7;}
+    /* Product */
+    .product-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;}
+    .product-header{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;}
+    .product-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
+    .product-title{font-family:'Lora',Georgia,serif;font-size:1.35rem;font-weight:600;color:var(--dark);line-height:1.2;margin-bottom:3px;}
+    /* Features */
+    .feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+    .feature-item{display:flex;align-items:flex-start;gap:7px;padding:8px 10px;border-radius:8px;background:var(--slate-50);border:1px solid var(--border-light);}
+    .feature-dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;flex-shrink:0;margin-top:1px;}
+    .feature-text{font-size:.74rem;color:var(--slate-700);line-height:1.45;}
+    .feature-text strong{display:block;font-weight:700;color:var(--dark);font-size:.76rem;margin-bottom:1px;}
+    /* Info */
+    .info-callout{border-radius:10px;padding:10px 14px;display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;}
+    .info-callout-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px;}
+    .info-callout-text{font-size:.76rem;line-height:1.55;color:var(--slate-700);}
+    /* Stats */
+    .stat-row{display:flex;gap:10px;margin-bottom:12px;}
+    .stat-box{flex:1;border-radius:10px;padding:10px 12px;border:1px solid var(--border-light);text-align:center;}
+    .stat-value{font-size:1.2rem;font-weight:800;line-height:1;margin-bottom:3px;}
+    .stat-label{font-size:.65rem;color:var(--slate-500);font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
+    /* Layout */
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+    .divider{height:1px;background:var(--border-light);margin:12px 0;}
+    /* Tech */
+    .tech-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;font-size:.67rem;font-weight:700;margin:3px;border:1px solid var(--border);color:var(--slate-700);background:var(--slate-50);}
+    /* FAQ */
+    .faq-item{margin-bottom:9px;padding:10px 12px;border-radius:9px;border:1px solid var(--border-light);background:var(--slate-50);}
+    .faq-q{font-size:.78rem;font-weight:700;color:var(--dark);margin-bottom:5px;display:flex;align-items:flex-start;gap:7px;}
+    .faq-q-icon{min-width:18px;height:18px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:.58rem;font-weight:900;flex-shrink:0;}
+    .faq-a{font-size:.73rem;color:var(--slate-600);line-height:1.6;padding-left:25px;}
+    /* Section break */
+    .section-break{display:flex;align-items:center;gap:10px;margin:12px 0 10px;}
+    .section-break::before,.section-break::after{content:'';flex:1;height:1px;background:var(--border-light);}
+    .section-break span{font-size:.63rem;font-weight:800;color:var(--slate-400);text-transform:uppercase;letter-spacing:.12em;white-space:nowrap;}
+    /* Card */
+    .card{border-radius:10px;border:1px solid var(--border-light);padding:10px 12px;background:var(--white);}
+    .card-title{font-size:.72rem;font-weight:800;color:var(--dark);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px;}
+    /* Process */
+    .process-steps{display:flex;gap:0;position:relative;}
+    .process-step{flex:1;text-align:center;position:relative;padding:0 4px;}
+    .process-step:not(:last-child)::after{content:'→';position:absolute;right:-8px;top:10px;color:var(--slate-400);font-size:.9rem;}
+    .process-circle{width:26px;height:26px;border-radius:50%;background:var(--primary);color:white;font-size:.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 5px;}
+    .process-label{font-size:.67rem;font-weight:700;color:var(--dark);margin-bottom:2px;}
+    .process-desc{font-size:.61rem;color:var(--slate-500);line-height:1.4;}
+  </style>
+</head>
+
+<body>
+
+<!-- ═══════════════════════════════ HALAMAN 1 — COVER ═══════════════════════════════ -->
+<div class="page cover-page">
+  <div class="cover-accent-bar"></div>
+  <div class="cover-body">
+    <div class="cover-watermark">UAY</div>
+    <div class="cover-eyebrow">Company Showcase &amp; Product Catalog</div>
+    <h1 class="cover-title">Solusi Digital<br />yang <span>Benar-Benar</span><br />Berjalan.</h1>
+    <p class="cover-desc">UAY Studio merancang dan membangun sistem perangkat lunak dari nol — mulai dari manajemen lembaga pendidikan, kasir kuliner, platform ujian online, hingga sistem HR dan e-commerce premium. Setiap produk lahir dari kebutuhan nyata dan dibangun untuk skala produksi.</p>
+    <div class="cover-tags">
+      <span class="cover-tag">LMS &amp; Academic</span>
+      <span class="cover-tag">POS &amp; Kasir</span>
+      <span class="cover-tag">Exam Platform</span>
+      <span class="cover-tag">E-Commerce</span>
+      <span class="cover-tag">HRIS</span>
+      <span class="cover-tag">Mobile App</span>
+    </div>
+    <div class="cover-divider"></div>
+    <div class="cover-meta-row">
+      <div class="cover-meta-item"><span class="cover-meta-label">Tipe Dokumen</span><span class="cover-meta-value">Product Knowledge &amp; Sales Kit</span></div>
+      <div class="cover-meta-item"><span class="cover-meta-label">Audiens</span><span class="cover-meta-value">Calon Klien &amp; Mitra Bisnis</span></div>
+      <div class="cover-meta-item"><span class="cover-meta-label">Tahun</span><span class="cover-meta-value">2025 — 2026</span></div>
+    </div>
+  </div>
+  <div class="cover-bottom">
+    <div class="cover-logo">
+      <div class="cover-logo-icon">UAY</div>
+      <div class="cover-logo-name"><strong>UAY STUDIO</strong><span>Digital Engineering Studio</span></div>
+    </div>
+    <div class="cover-contact">uay.studio@gmail.com<br />Instagram: @uay.studio &nbsp;·&nbsp; Indonesia</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════ HALAMAN 2 — TENTANG KAMI ═══════════════════════════════ -->
+<div class="page">
+  <div class="doc-header">
+    <div class="logo-badge"><div class="logo-icon">UAY</div> UAY Studio</div>
+    <span class="page-info">Company Overview</span>
+  </div>
+
+  <div style="margin-bottom:14px;">
+    <div class="section-label">Siapa Kami</div>
+    <h2 class="section-title">Studio Rekayasa Digital<br />untuk Bisnis yang Serius.</h2>
+    <p class="section-subtitle">UAY Studio adalah tim rekayasa perangkat lunak butik yang mengkhususkan diri dalam membangun produk digital berkualitas produksi. Kami tidak hanya menulis kode — kami merancang arsitektur sistem, mendesain pengalaman pengguna, dan memastikan setiap baris kode berjalan mulus di lingkungan nyata.</p>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-box"><div class="stat-value" style="color:var(--primary);">6+</div><div class="stat-label">Produk Aktif</div></div>
+    <div class="stat-box"><div class="stat-value" style="color:var(--jajanden);">Multi-Tenant</div><div class="stat-label">Arsitektur SaaS</div></div>
+    <div class="stat-box"><div class="stat-value" style="color:var(--ujian);">Full-Stack</div><div class="stat-label">Kapabilitas</div></div>
+    <div class="stat-box"><div class="stat-value" style="color:var(--kopiden);">Custom</div><div class="stat-label">Bisa Dibuat Khusus</div></div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-label">Lini Produk Kami</div>
+  <div class="section-break"><span>6 Produk Unggulan</span></div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px;">
+    <div style="border-radius:10px;border:1px solid #dcfce7;background:#f0fdf4;padding:10px 12px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="font-size:1.1rem;">📚</span><span style="font-size:.78rem;font-weight:800;color:#065f46;">LMS &amp; Academic Management</span></div>
+      <p style="font-size:.7rem;color:#047857;line-height:1.5;">Sistem manajemen bimbel &amp; lembaga pendidikan lengkap dengan integrasi WhatsApp Gateway, pelacak hafalan, dan portal wali murid.</p>
+    </div>
+    <div style="border-radius:10px;border:1px solid #dbeafe;background:#eff6ff;padding:10px 12px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="font-size:1.1rem;">🧾</span><span style="font-size:.78rem;font-weight:800;color:#1e40af;">Jajanden POS</span></div>
+      <p style="font-size:.7rem;color:#1d4ed8;line-height:1.5;">Kasir digital SaaS multi-tenant untuk UMKM kuliner. Isolasi data per outlet, laporan real-time, dan manajemen inventori terintegrasi.</p>
+    </div>
+    <div style="border-radius:10px;border:1px solid #ede9fe;background:#f5f3ff;padding:10px 12px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="font-size:1.1rem;">🔐</span><span style="font-size:.78rem;font-weight:800;color:#5b21b6;">.Ujian Platform</span></div>
+      <p style="font-size:.7rem;color:#6d28d9;line-height:1.5;">Platform ujian online profesional dengan mesin anti-kecurangan aktif. Deteksi perpindahan tab, layar eksternal, dan live proctoring.</p>
+    </div>
+    <div style="border-radius:10px;border:1px solid #fde68a;background:#fffbeb;padding:10px 12px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="font-size:1.1rem;">☕</span><span style="font-size:.78rem;font-weight:800;color:#92400e;">Kopiden</span></div>
+      <p style="font-size:.7rem;color:#b45309;line-height:1.5;">E-commerce kopi premium dengan kalkulator seduhan interaktif, payment gateway Midtrans Snap, dan pengalaman belanja yang mengesankan.</p>
+    </div>
+    <div style="border-radius:10px;border:1px solid #bae6fd;background:#f0f9ff;padding:10px 12px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="font-size:1.1rem;">👥</span><span style="font-size:.78rem;font-weight:800;color:#075985;">HRIS</span></div>
+      <p style="font-size:.7rem;color:#0369a1;line-height:1.5;">Sistem informasi sumber daya manusia digital. Kelola data karyawan, absensi, penggajian, dan performa dalam satu platform terpusat.</p>
+    </div>
+    <div style="border-radius:10px;border:1px solid #fbcfe8;background:#fdf2f8;padding:10px 12px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="font-size:1.1rem;">📱</span><span style="font-size:.78rem;font-weight:800;color:#9d174d;">Khanza Mobile</span></div>
+      <p style="font-size:.7rem;color:#be185d;line-height:1.5;">Aplikasi mobile companion untuk lembaga. Wali murid, siswa, dan staf dapat mengakses informasi, jadwal, dan notifikasi dari genggaman.</p>
+    </div>
+  </div>
+
+  <div class="doc-footer">
+    <span>UAY Studio — Company Showcase &amp; Product Catalog</span>
+    <span class="page-num">2</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════ HALAMAN 3 — LMS ═══════════════════════════════ -->
+<div class="page">
+  <div class="doc-header">
+    <div class="logo-badge"><div class="logo-icon">UAY</div> UAY Studio</div>
+    <span class="page-info">Produk 1 dari 6</span>
+  </div>
+
+  <div class="product-header">
+    <div class="product-icon" style="background:#f0fdf4;">📚</div>
+    <div>
+      <div style="margin-bottom:4px;"><span class="product-badge" style="background:#dcfce7;color:#065f46;">LMS &amp; Automation</span></div>
+      <h2 class="product-title">LMS &amp; Academic Management</h2>
+      <p style="font-size:.74rem;color:var(--slate-500);line-height:1.5;">Platform manajemen bimbingan belajar dan lembaga pendidikan modern — lengkap, terhubung, dan otomatis.</p>
+    </div>
+  </div>
+
+  <div class="info-callout" style="background:#f0fdf4;border:1px solid #bbf7d0;">
+    <span class="info-callout-icon">💡</span>
+    <p class="info-callout-text">Dirancang khusus untuk pengelola bimbel, madrasah, dan lembaga Tahfidz. Sistem ini menggantikan pencatatan manual dengan alur kerja digital yang terhubung langsung ke WhatsApp orang tua — tanpa aplikasi tambahan yang perlu diinstall oleh wali murid.</p>
+  </div>
+
+  <div class="feature-grid">
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#dcfce7;color:#065f46;">📝</div>
+      <div class="feature-text"><strong>Manajemen Siswa &amp; Kelas</strong>Profil siswa lengkap, pembagian kelas otomatis, dan histori progres belajar yang mudah diakses kapan saja.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#dcfce7;color:#065f46;">📱</div>
+      <div class="feature-text"><strong>WhatsApp Gateway Terintegrasi</strong>Kirim laporan hafalan, presensi, dan tagihan SPP ke wali murid secara otomatis lewat WhatsApp.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#dcfce7;color:#065f46;">🕌</div>
+      <div class="feature-text"><strong>Pelacak Setoran Hafalan</strong>Rekam progres hafalan Al-Qur'an per siswa dengan tampilan visual yang informatif dan mudah dimonitor guru.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#dcfce7;color:#065f46;">💰</div>
+      <div class="feature-text"><strong>Penagihan &amp; Pembayaran SPP</strong>Sistem tagihan bulanan otomatis dengan riwayat pembayaran dan notifikasi jatuh tempo ke wali murid.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#dcfce7;color:#065f46;">📊</div>
+      <div class="feature-text"><strong>Portal Siswa &amp; Wali Murid</strong>Orang tua dapat memantau nilai, jadwal, presensi, dan laporan perkembangan anak dari mana saja.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#dcfce7;color:#065f46;">🗓️</div>
+      <div class="feature-text"><strong>Jadwal &amp; Presensi Digital</strong>Manajemen jadwal pengajar dan siswa terintegrasi, dengan rekap presensi harian yang otomatis.</div>
+    </div>
+  </div>
+
+  <div class="section-break"><span>Keunggulan Teknis</span></div>
+
+  <div class="two-col" style="gap:10px;">
+    <div class="card">
+      <div class="card-title" style="color:var(--primary);">🏗️ Arsitektur</div>
+      <div style="font-size:.72rem;color:var(--slate-600);line-height:1.6;">Dibangun di atas <strong>Next.js</strong> dengan backend <strong>Laravel / Node.js</strong>. Database PostgreSQL dengan isolasi data aman. Deploy di cloud dengan uptime tinggi dan Cloudflare CDN.</div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--primary);">⚡ Performa &amp; Notifikasi</div>
+      <div style="font-size:.72rem;color:var(--slate-600);line-height:1.6;">Halaman utama termuat dalam <strong>kurang dari 1 detik</strong>. Notifikasi WhatsApp terkirim dalam <strong>rata-rata 0.4 detik</strong> setelah guru menekan tombol simpan.</div>
+    </div>
+  </div>
+
+  <div class="doc-footer">
+    <span>UAY Studio — Company Showcase &amp; Product Catalog</span>
+    <span class="page-num">3</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════ HALAMAN 4 — JAJANDEN POS ═══════════════════════════════ -->
+<div class="page">
+  <div class="doc-header">
+    <div class="logo-badge"><div class="logo-icon">UAY</div> UAY Studio</div>
+    <span class="page-info">Produk 2 dari 6</span>
+  </div>
+
+  <div class="product-header">
+    <div class="product-icon" style="background:#eff6ff;">🧾</div>
+    <div>
+      <div style="margin-bottom:4px;"><span class="product-badge" style="background:#dbeafe;color:#1e40af;">SaaS Multi-Tenant</span></div>
+      <h2 class="product-title">Jajanden POS System</h2>
+      <p style="font-size:.74rem;color:var(--slate-500);line-height:1.5;">Sistem kasir digital untuk UMKM kuliner — dari warung makan hingga jaringan restoran dengan banyak cabang.</p>
+    </div>
+  </div>
+
+  <div class="info-callout" style="background:#eff6ff;border:1px solid #bfdbfe;">
+    <span class="info-callout-icon">💡</span>
+    <p class="info-callout-text">Jajanden POS dirancang dengan arsitektur <strong>multi-tenant</strong> sejati — setiap merchant atau outlet memiliki data yang terisolasi sepenuhnya. Satu platform, ratusan merchant, tanpa risiko data tercampur. Cocok untuk franchisor yang ingin mengelola banyak outlet sekaligus dari satu dashboard.</p>
+  </div>
+
+  <div class="feature-grid">
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#dbeafe;color:#1e40af;">🏪</div>
+      <div class="feature-text"><strong>Multi-Outlet &amp; Multi-Tenant</strong>Kelola ratusan outlet dari satu dashboard. Setiap tenant memiliki data, laporan, dan staf yang terpisah sepenuhnya.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#dbeafe;color:#1e40af;">📊</div>
+      <div class="feature-text"><strong>Laporan Penjualan Real-Time</strong>Pantau omzet harian, mingguan, dan bulanan secara langsung. Ekspor ke PDF atau Excel kapan saja.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#dbeafe;color:#1e40af;">📦</div>
+      <div class="feature-text"><strong>Manajemen Inventori</strong>Lacak stok bahan baku, atur titik reorder otomatis, dan terima peringatan saat stok mendekati habis.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#dbeafe;color:#1e40af;">🖨️</div>
+      <div class="feature-text"><strong>Cetak Struk Instan</strong>Integrasi printer thermal langsung dari browser. Struk tercetak dalam hitungan detik setelah setiap transaksi.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#dbeafe;color:#1e40af;">📱</div>
+      <div class="feature-text"><strong>Antarmuka Mobile-First</strong>Nyaman digunakan di tablet maupun ponsel. Ideal untuk kasir di meja konter tanpa memerlukan komputer khusus.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#dbeafe;color:#1e40af;">🏷️</div>
+      <div class="feature-text"><strong>Subscription Tiering</strong>Model berlangganan fleksibel — dari paket dasar untuk warung kecil hingga paket enterprise untuk jaringan besar.</div>
+    </div>
+  </div>
+
+  <div class="section-break"><span>Cocok untuk Bisnis Kuliner Berikut</span></div>
+
+  <div class="three-col">
+    <div style="text-align:center;padding:10px;border-radius:9px;background:#eff6ff;border:1px solid #bfdbfe;">
+      <div style="font-size:1.4rem;margin-bottom:4px;">🍜</div>
+      <div style="font-size:.7rem;font-weight:700;color:#1e40af;">Warung &amp; Restoran</div>
+      <div style="font-size:.62rem;color:#3b82f6;margin-top:2px;">Skala kecil hingga menengah</div>
+    </div>
+    <div style="text-align:center;padding:10px;border-radius:9px;background:#eff6ff;border:1px solid #bfdbfe;">
+      <div style="font-size:1.4rem;margin-bottom:4px;">☕</div>
+      <div style="font-size:.7rem;font-weight:700;color:#1e40af;">Kafe &amp; Coffee Shop</div>
+      <div style="font-size:.62rem;color:#3b82f6;margin-top:2px;">Single atau multi-outlet</div>
+    </div>
+    <div style="text-align:center;padding:10px;border-radius:9px;background:#eff6ff;border:1px solid #bfdbfe;">
+      <div style="font-size:1.4rem;margin-bottom:4px;">🏢</div>
+      <div style="font-size:.7rem;font-weight:700;color:#1e40af;">Jaringan Franchise</div>
+      <div style="font-size:.62rem;color:#3b82f6;margin-top:2px;">Ratusan cabang sekaligus</div>
+    </div>
+  </div>
+
+  <div class="doc-footer">
+    <span>UAY Studio — Company Showcase &amp; Product Catalog</span>
+    <span class="page-num">4</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════ HALAMAN 5 — .UJIAN ═══════════════════════════════ -->
+<div class="page">
+  <div class="doc-header">
+    <div class="logo-badge"><div class="logo-icon">UAY</div> UAY Studio</div>
+    <span class="page-info">Produk 3 dari 6</span>
+  </div>
+
+  <div class="product-header">
+    <div class="product-icon" style="background:#f5f3ff;">🔐</div>
+    <div>
+      <div style="margin-bottom:4px;"><span class="product-badge" style="background:#ede9fe;color:#5b21b6;">Anti-Cheat Engine</span></div>
+      <h2 class="product-title">.Ujian — Secure Exam Platform</h2>
+      <p style="font-size:.74rem;color:var(--slate-500);line-height:1.5;">Platform ujian online yang aman, terawasi, dan profesional — untuk institusi yang menjaga integritas tes.</p>
+    </div>
+  </div>
+
+  <div class="info-callout" style="background:#f5f3ff;border:1px solid #ddd6fe;">
+    <span class="info-callout-icon">🛡️</span>
+    <p class="info-callout-text">.Ujian telah digunakan secara nyata di institusi kesehatan terkemuka untuk menyelenggarakan ujian staf secara serentak. Sistem pengawasan aktif kami memastikan setiap peserta ujian tidak dapat melakukan kecurangan — bahkan di lingkungan remote sekalipun.</p>
+  </div>
+
+  <div class="feature-grid">
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#ede9fe;color:#5b21b6;">🔒</div>
+      <div class="feature-text"><strong>Browser Lockdown</strong>Peserta tidak dapat berpindah tab, minimize jendela, atau membuka aplikasi lain selama ujian berlangsung.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#ede9fe;color:#5b21b6;">🖥️</div>
+      <div class="feature-text"><strong>Deteksi Layar Eksternal</strong>Sistem otomatis mendeteksi monitor kedua atau split-screen dan langsung memberikan peringatan kepada pengawas.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#ede9fe;color:#5b21b6;">👁️</div>
+      <div class="feature-text"><strong>Live Proctoring Dashboard</strong>Pengawas memantau seluruh peserta ujian secara real-time dari satu dashboard terpusat yang komprehensif.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#ede9fe;color:#5b21b6;">⏱️</div>
+      <div class="feature-text"><strong>Timer &amp; Auto-Submit</strong>Ujian berakhir otomatis saat waktu habis. Jawaban tersimpan secara berkala untuk mencegah kehilangan data.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#ede9fe;color:#5b21b6;">📋</div>
+      <div class="feature-text"><strong>Bank Soal &amp; Pengacakan</strong>Buat bank soal sendiri, atur bobot nilai, dan aktifkan pengacakan soal agar setiap peserta mendapat urutan berbeda.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#ede9fe;color:#5b21b6;">📈</div>
+      <div class="feature-text"><strong>Rekap Nilai Otomatis</strong>Setelah ujian selesai, laporan nilai langsung tersedia dan dapat diekspor ke berbagai format yang dibutuhkan.</div>
+    </div>
+  </div>
+
+  <div class="section-break"><span>Cocok Untuk</span></div>
+
+  <div style="display:flex;gap:7px;flex-wrap:wrap;">
+    <span style="padding:5px 11px;border-radius:99px;background:#ede9fe;color:#5b21b6;font-size:.67rem;font-weight:700;border:1px solid #ddd6fe;">🏫 Sekolah &amp; Universitas</span>
+    <span style="padding:5px 11px;border-radius:99px;background:#ede9fe;color:#5b21b6;font-size:.67rem;font-weight:700;border:1px solid #ddd6fe;">🏥 Rumah Sakit &amp; Klinik</span>
+    <span style="padding:5px 11px;border-radius:99px;background:#ede9fe;color:#5b21b6;font-size:.67rem;font-weight:700;border:1px solid #ddd6fe;">🏛️ Lembaga Pemerintah</span>
+    <span style="padding:5px 11px;border-radius:99px;background:#ede9fe;color:#5b21b6;font-size:.67rem;font-weight:700;border:1px solid #ddd6fe;">🏢 Perusahaan (Rekrutmen)</span>
+    <span style="padding:5px 11px;border-radius:99px;background:#ede9fe;color:#5b21b6;font-size:.67rem;font-weight:700;border:1px solid #ddd6fe;">📚 Bimbingan Belajar</span>
+  </div>
+
+  <div class="doc-footer">
+    <span>UAY Studio — Company Showcase &amp; Product Catalog</span>
+    <span class="page-num">5</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════ HALAMAN 6 — KOPIDEN + HRIS ═══════════════════════════════ -->
+<div class="page">
+  <div class="doc-header">
+    <div class="logo-badge"><div class="logo-icon">UAY</div> UAY Studio</div>
+    <span class="page-info">Produk 4 &amp; 5 dari 6</span>
+  </div>
+
+  <div class="product-header" style="margin-bottom:10px;">
+    <div class="product-icon" style="background:#fffbeb;">☕</div>
+    <div>
+      <div style="margin-bottom:4px;"><span class="product-badge" style="background:#fef3c7;color:#92400e;">Luxury E-Commerce</span></div>
+      <h2 class="product-title" style="font-size:1.2rem;">Kopiden — Premium Coffee Store</h2>
+      <p style="font-size:.72rem;color:var(--slate-500);line-height:1.5;">E-commerce kopi premium yang memadukan pengalaman belanja mewah dengan teknologi pembayaran modern.</p>
+    </div>
+  </div>
+
+  <div class="feature-grid" style="margin-bottom:10px;">
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#fef3c7;">💳</div>
+      <div class="feature-text"><strong>Midtrans Snap Payment</strong>QRIS, Virtual Account, dan kartu kredit — semua metode pembayaran populer tersedia dalam satu halaman checkout.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#fef3c7;">⏱️</div>
+      <div class="feature-text"><strong>Brew Timer Interaktif</strong>Panduan seduh kopi dengan timer real-time dan rekomendasi rasio air-kopi yang dipersonalisasi untuk setiap jenis biji.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#fef3c7;">🎨</div>
+      <div class="feature-text"><strong>Desain Premium &amp; Immersive</strong>Tampilan visual berkelas dengan animasi halus dan tipografi elegan yang mencerminkan nilai premium produk.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#fef3c7;">📦</div>
+      <div class="feature-text"><strong>Manajemen Produk &amp; Katalog</strong>Kelola katalog produk, stok, varian, dan deskripsi dari panel admin yang intuitif dan mudah digunakan.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="product-header" style="margin-bottom:10px;">
+    <div class="product-icon" style="background:#f0f9ff;">👥</div>
+    <div>
+      <div style="margin-bottom:4px;"><span class="product-badge" style="background:#e0f2fe;color:#075985;">HR Management</span></div>
+      <h2 class="product-title" style="font-size:1.2rem;">HRIS — Human Resource Information System</h2>
+      <p style="font-size:.72rem;color:var(--slate-500);line-height:1.5;">Platform digital untuk mengelola seluruh siklus hidup karyawan — dari rekrutmen hingga pensiun, dalam satu sistem.</p>
+    </div>
+  </div>
+
+  <div class="feature-grid" style="margin-bottom:8px;">
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#e0f2fe;">👤</div>
+      <div class="feature-text"><strong>Database Karyawan Terpusat</strong>Simpan dan kelola data lengkap karyawan: kontrak, dokumen, jabatan, dan riwayat pekerjaan dalam satu tempat.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#e0f2fe;">📅</div>
+      <div class="feature-text"><strong>Absensi &amp; Cuti Digital</strong>Sistem absensi berbasis lokasi atau QR code. Pengajuan cuti online langsung disetujui atau ditolak oleh atasan.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#e0f2fe;">💵</div>
+      <div class="feature-text"><strong>Penggajian Otomatis</strong>Hitung gaji, tunjangan, dan potongan secara otomatis. Slip gaji digital dikirim langsung ke masing-masing karyawan.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#e0f2fe;">📊</div>
+      <div class="feature-text"><strong>Evaluasi Kinerja &amp; KPI</strong>Tetapkan target kinerja, pantau pencapaian, dan hasilkan laporan evaluasi karyawan secara berkala dan terstruktur.</div>
+    </div>
+  </div>
+
+  <div class="doc-footer">
+    <span>UAY Studio — Company Showcase &amp; Product Catalog</span>
+    <span class="page-num">6</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════ HALAMAN 7 — KHANZA MOBILE + TECH ═══════════════════════════════ -->
+<div class="page">
+  <div class="doc-header">
+    <div class="logo-badge"><div class="logo-icon">UAY</div> UAY Studio</div>
+    <span class="page-info">Produk 6 &amp; Teknologi</span>
+  </div>
+
+  <div class="product-header">
+    <div class="product-icon" style="background:#fdf2f8;">📱</div>
+    <div>
+      <div style="margin-bottom:4px;"><span class="product-badge" style="background:#fce7f3;color:#9d174d;">Mobile Companion App</span></div>
+      <h2 class="product-title">Khanza Mobile</h2>
+      <p style="font-size:.74rem;color:var(--slate-500);line-height:1.5;">Aplikasi mobile yang menghubungkan ekosistem lembaga ke genggaman pengguna — siswa, wali murid, dan staf.</p>
+    </div>
+  </div>
+
+  <div class="info-callout" style="background:#fdf2f8;border:1px solid #fbcfe8;">
+    <span class="info-callout-icon">📲</span>
+    <p class="info-callout-text">Khanza Mobile adalah jembatan antara sistem berbasis web dan pengguna yang mobile. Wali murid mendapat notifikasi push langsung di ponsel, siswa melihat jadwal dan nilai, sementara staf mencatat kehadiran dari mana saja — semua tanpa harus membuka browser.</p>
+  </div>
+
+  <div class="feature-grid" style="margin-bottom:14px;">
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#fce7f3;">🔔</div>
+      <div class="feature-text"><strong>Push Notification Real-Time</strong>Notifikasi langsung ke ponsel wali murid saat ada laporan baru, tagihan, atau pengumuman dari lembaga.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#fce7f3;">📆</div>
+      <div class="feature-text"><strong>Jadwal &amp; Kalender Lembaga</strong>Siswa dan wali melihat jadwal belajar, ujian, dan libur langsung dari aplikasi yang selalu tersinkronisasi.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#fce7f3;">✅</div>
+      <div class="feature-text"><strong>Absensi Mobile</strong>Staf mencatat kehadiran siswa langsung dari ponsel, data langsung tersinkron ke sistem utama secara instan.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-dot" style="background:#fce7f3;">💬</div>
+      <div class="feature-text"><strong>Pesan &amp; Pengumuman Resmi</strong>Kanal komunikasi terstruktur antara lembaga dan orang tua — lebih rapi dari group WhatsApp biasa.</div>
+    </div>
+  </div>
+
+  <div class="section-break"><span>Teknologi yang Kami Gunakan</span></div>
+
+  <div class="two-col" style="gap:10px;margin-bottom:8px;">
+    <div class="card">
+      <div class="card-title">🖥️ Frontend</div>
+      <div><span class="tech-pill">Next.js 14+</span><span class="tech-pill">React 19</span><span class="tech-pill">TypeScript</span><span class="tech-pill">Tailwind CSS</span><span class="tech-pill">Framer Motion</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚙️ Backend &amp; Database</div>
+      <div><span class="tech-pill">Node.js</span><span class="tech-pill">Laravel</span><span class="tech-pill">PostgreSQL</span><span class="tech-pill">Prisma ORM</span><span class="tech-pill">Redis</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">☁️ Infrastruktur</div>
+      <div><span class="tech-pill">Vercel</span><span class="tech-pill">Cloudflare CDN</span><span class="tech-pill">Docker</span><span class="tech-pill">SSL/TLS</span><span class="tech-pill">VPS</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🔗 Integrasi</div>
+      <div><span class="tech-pill">WhatsApp API</span><span class="tech-pill">Midtrans</span><span class="tech-pill">Firebase Push</span><span class="tech-pill">Meta API</span></div>
+    </div>
+  </div>
+
+  <div class="doc-footer">
+    <span>UAY Studio — Company Showcase &amp; Product Catalog</span>
+    <span class="page-num">7</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════ HALAMAN 8 — PROSES KERJA + FAQ 1 ═══════════════════════════════ -->
+<div class="page">
+  <div class="doc-header">
+    <div class="logo-badge"><div class="logo-icon">UAY</div> UAY Studio</div>
+    <span class="page-info">Cara Kerja &amp; FAQ</span>
+  </div>
+
+  <div style="margin-bottom:14px;">
+    <div class="section-label">Bagaimana Kami Bekerja</div>
+    <h2 class="section-title" style="font-size:1.25rem;margin-bottom:10px;">Dari Ide ke Produksi,<br />Transparan Penuh.</h2>
+    <div class="process-steps">
+      <div class="process-step"><div class="process-circle">01</div><div class="process-label">Brief &amp; Analisis</div><div class="process-desc">Kami pelajari kebutuhan bisnis Anda. Proposal teknis siap dalam 24 jam.</div></div>
+      <div class="process-step"><div class="process-circle" style="background:var(--jajanden);">02</div><div class="process-label">Desain &amp; Prototype</div><div class="process-desc">Wireframe interaktif untuk validasi alur sebelum coding dimulai.</div></div>
+      <div class="process-step"><div class="process-circle" style="background:var(--ujian);">03</div><div class="process-label">Development Sprint</div><div class="process-desc">Iteratif dan transparan. Live preview setiap fase. Update harian.</div></div>
+      <div class="process-step"><div class="process-circle" style="background:var(--hris);">04</div><div class="process-label">QA &amp; Testing</div><div class="process-desc">Pengujian fungsional, performa, dan keamanan sebelum launch.</div></div>
+      <div class="process-step"><div class="process-circle" style="background:#059669;">05</div><div class="process-label">Launch &amp; Support</div><div class="process-desc">Deploy ke cloud. Monitoring aktif. Support pasca-launch tersedia.</div></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Pertanyaan yang Sering Ditanyakan</div>
+  <h2 class="section-title" style="font-size:1.2rem;margin-bottom:10px;">Yang Ingin Anda Ketahui<br />Tentang UAY Studio.</h2>
+
+  <div class="faq-item">
+    <div class="faq-q"><div class="faq-q-icon">Q</div>Apakah UAY Studio bisa membuat sistem custom sesuai kebutuhan kami, bukan hanya produk yang sudah ada?</div>
+    <div class="faq-a">Tentu. Selain produk dalam katalog ini, kami menerima proyek custom. Tim kami akan mempelajari proses bisnis Anda, merancang arsitektur sistem yang tepat, dan membangun solusi dari nol yang benar-benar sesuai dengan kebutuhan spesifik Anda.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q"><div class="faq-q-icon">Q</div>Berapa lama waktu yang dibutuhkan untuk menyelesaikan sebuah proyek?</div>
+    <div class="faq-a">Tergantung kompleksitas fitur. Untuk sistem sedang (seperti LMS atau POS dasar), umumnya membutuhkan <strong>4–8 minggu</strong>. Proyek lebih kompleks dengan banyak integrasi bisa memakan waktu <strong>2–4 bulan</strong>. Estimasi akurat kami berikan setelah sesi brief awal.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q"><div class="faq-q-icon">Q</div>Apakah ada garansi setelah proyek selesai dan diluncurkan?</div>
+    <div class="faq-a">Ya. Setiap proyek dilengkapi periode garansi pasca-launch. Jika ada bug yang muncul setelah peluncuran, kami menanganinya tanpa biaya tambahan dalam periode tersebut. Paket maintenance berkelanjutan juga tersedia untuk dukungan jangka panjang.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q"><div class="faq-q-icon">Q</div>Apakah sistem yang dibuat bisa diakses dari ponsel?</div>
+    <div class="faq-a">Semua produk UAY Studio dibangun dengan pendekatan <strong>mobile-first</strong> — dioptimalkan untuk layar ponsel maupun tablet. Untuk kebutuhan aplikasi native di Google Play atau App Store, kami menyediakan layanan pengembangan melalui Khanza Mobile.</div>
+  </div>
+
+  <div class="doc-footer">
+    <span>UAY Studio — Company Showcase &amp; Product Catalog</span>
+    <span class="page-num">8</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════ HALAMAN 9 — FAQ LANJUTAN ═══════════════════════════════ -->
+<div class="page">
+  <div class="doc-header">
+    <div class="logo-badge"><div class="logo-icon">UAY</div> UAY Studio</div>
+    <span class="page-info">FAQ — Lanjutan</span>
+  </div>
+
+  <div class="section-label" style="margin-bottom:10px;">Pertanyaan yang Sering Ditanyakan</div>
+
+  <div class="faq-item">
+    <div class="faq-q"><div class="faq-q-icon">Q</div>Di mana data kami akan disimpan? Apakah aman?</div>
+    <div class="faq-a">Data disimpan di server cloud terenkripsi (VPS atau layanan cloud terkelola) dengan proteksi SSL/TLS penuh. Kami menerapkan isolasi data multi-tenant yang ketat — data Anda tidak akan pernah tercampur dengan data klien lain. Backup otomatis dilakukan secara berkala untuk memastikan tidak ada data yang hilang.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q"><div class="faq-q-icon">Q</div>Bisakah produk yang sudah ada disesuaikan dengan nama dan brand lembaga kami?</div>
+    <div class="faq-a">Ya, ini adalah salah satu permintaan paling umum dari klien kami. Kami menawarkan layanan <strong>white-label</strong> di mana produk dapat disesuaikan sepenuhnya dengan nama lembaga, logo, warna brand, dan domain milik Anda. Hasilnya adalah sistem yang terasa dibangun khusus untuk lembaga Anda.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q"><div class="faq-q-icon">Q</div>Apakah UAY Studio menangani hosting dan server, atau kami harus menyiapkan sendiri?</div>
+    <div class="faq-a">Kami menawarkan keduanya. Jika Anda tidak ingin repot, kami mengelola seluruh infrastruktur — dari pembelian server, konfigurasi, hingga pemantauan uptime — sebagai bagian dari paket layanan. Jika Anda sudah memiliki server sendiri, kami dapat melakukan deployment di infrastruktur Anda.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q"><div class="faq-q-icon">Q</div>Bagaimana model harga / biaya pembuatan sistemnya?</div>
+    <div class="faq-a">Kami menggunakan model <strong>proyek berbasis scope</strong> — biaya ditentukan berdasarkan fitur yang dibutuhkan, bukan jam kerja. Setelah brief awal, kami mengirimkan proposal dengan estimasi biaya yang transparan. Tidak ada biaya tersembunyi. Pembayaran biasanya dilakukan secara bertahap sesuai milestone pengerjaan.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q"><div class="faq-q-icon">Q</div>Apakah kami bisa melihat demo produk sebelum memutuskan?</div>
+    <div class="faq-a">Tentu saja. Semua produk kami memiliki demo yang dapat diakses secara langsung. Tim kami juga dengan senang hati menjadwalkan sesi demo langsung yang dipandu, di mana kami memperlihatkan fitur-fitur utama dan menjawab pertanyaan Anda secara real-time.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q"><div class="faq-q-icon">Q</div>Apakah UAY Studio melayani klien dari luar kota atau luar pulau?</div>
+    <div class="faq-a">Ya, kami melayani klien dari seluruh Indonesia — bahkan luar negeri. Semua proses komunikasi dan pembaruan progress dilakukan secara daring melalui WhatsApp, video call, atau email. Jarak bukan hambatan untuk menghadirkan sistem yang solid dan berkualitas tinggi.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q"><div class="faq-q-icon">Q</div>Bagaimana cara memulai kerja sama dengan UAY Studio?</div>
+    <div class="faq-a">Sangat mudah. Hubungi kami melalui WhatsApp atau email yang tertera. Kami jadwalkan sesi diskusi awal (30–60 menit) untuk memahami kebutuhan Anda. Setelah itu, proposal teknis dan estimasi biaya Anda terima dalam <strong>24 jam kerja</strong>. Tidak ada komitmen di tahap ini.</div>
+  </div>
+
+  <div class="doc-footer">
+    <span>UAY Studio — Company Showcase &amp; Product Catalog</span>
+    <span class="page-num">9</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════ HALAMAN 10 — PENUTUP ═══════════════════════════════ -->
+<div class="page" style="background:linear-gradient(160deg,#0b1f2e 0%,#0f172a 60%,#0e1a2b 100%);color:white;padding:0;overflow:hidden;">
+  <div style="height:5px;background:linear-gradient(90deg,#0f766e,#0369a1,#7c3aed);"></div>
+
+  <div style="padding:14mm 18mm;flex:1;display:flex;flex-direction:column;justify-content:space-between;height:calc(297mm - 5px);">
+
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+        <div style="width:32px;height:32px;background:linear-gradient(135deg,#0f766e,#0369a1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.78rem;color:white;">UAY</div>
+        <span style="font-weight:800;font-size:.95rem;letter-spacing:.06em;color:white;">UAY STUDIO</span>
+      </div>
+
+      <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:#5eead4;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+        <span style="display:block;width:28px;height:2px;background:#5eead4;border-radius:1px;"></span>
+        Langkah Selanjutnya
+      </div>
+
+      <h2 style="font-family:'Lora',Georgia,serif;font-size:2.4rem;font-weight:600;color:white;line-height:1.2;margin-bottom:14px;">Siap untuk Mulai<br /><span style="color:#5eead4;font-style:italic;">Bersama Kami?</span></h2>
+
+      <p style="font-size:.84rem;color:#94a3b8;line-height:1.75;max-width:360px;margin-bottom:28px;">Ceritakan tantangan bisnis Anda kepada kami. Dalam 24 jam, Anda akan menerima proposal teknis yang spesifik dan actionable — bukan presentasi yang penuh jargon kosong.</p>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:30px;">
+        <div style="padding:12px 20px;border-radius:10px;background:linear-gradient(135deg,#0f766e,#0369a1);font-size:.76rem;font-weight:700;color:white;line-height:1.4;">
+          <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:#99f6e4;margin-bottom:2px;">WhatsApp</div>
+          Mulai Diskusi Gratis
+        </div>
+        <div style="padding:12px 20px;border-radius:10px;border:1px solid rgba(255,255,255,.12);font-size:.76rem;font-weight:700;color:#e2e8f0;line-height:1.4;">
+          <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:#64748b;margin-bottom:2px;">Email</div>
+          uay.studio@gmail.com
+        </div>
+      </div>
+
+      <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:#475569;margin-bottom:10px;font-weight:700;">Produk dalam Katalog Ini</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:30px;">
+        <span style="padding:4px 11px;border:1px solid rgba(15,118,110,.4);border-radius:99px;font-size:.65rem;color:#5eead4;font-weight:700;">📚 LMS &amp; Academic</span>
+        <span style="padding:4px 11px;border:1px solid rgba(37,99,235,.4);border-radius:99px;font-size:.65rem;color:#93c5fd;font-weight:700;">🧾 Jajanden POS</span>
+        <span style="padding:4px 11px;border:1px solid rgba(124,58,237,.4);border-radius:99px;font-size:.65rem;color:#c4b5fd;font-weight:700;">🔐 .Ujian Platform</span>
+        <span style="padding:4px 11px;border:1px solid rgba(146,64,14,.4);border-radius:99px;font-size:.65rem;color:#fcd34d;font-weight:700;">☕ Kopiden</span>
+        <span style="padding:4px 11px;border:1px solid rgba(3,105,161,.4);border-radius:99px;font-size:.65rem;color:#7dd3fc;font-weight:700;">👥 HRIS</span>
+        <span style="padding:4px 11px;border:1px solid rgba(190,24,93,.4);border-radius:99px;font-size:.65rem;color:#f9a8d4;font-weight:700;">📱 Khanza Mobile</span>
+      </div>
+    </div>
+
+    <div style="padding-top:14px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:flex-end;">
+      <div>
+        <div style="font-size:.65rem;color:#334155;font-weight:600;margin-bottom:4px;">Dokumen ini ditujukan untuk calon klien dan mitra bisnis UAY Studio.</div>
+        <div style="font-size:.63rem;color:#334155;">© 2025–2026 UAY Studio. Seluruh hak dilindungi.</div>
+      </div>
+      <div style="font-size:.7rem;font-weight:700;color:#0f766e;">10 / 10</div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

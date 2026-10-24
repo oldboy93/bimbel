@@ -83,6 +83,9 @@ export interface Attendance {
   created_at: string;
 }
 
+// Shared PR parent feedback type
+export type ParentStatus = 'lancar' | 'cukup' | 'perlu_bimbingan';
+
 export interface HafalanProgress {
   id: string;
   enrollment_id: string;
@@ -94,6 +97,13 @@ export interface HafalanProgress {
   session_date: string;
   notes?: string;
   status?: 'lulus' | 'ngulang';
+  // PR (Pekerjaan Rumah) flagging fields
+  is_pr?: boolean;
+  pr_notes_guru?: string;
+  parent_rating?: number | null;
+  parent_status?: ParentStatus | null;
+  parent_notes?: string | null;
+  parent_simak_at?: string | null;
   created_at: string;
 }
 
@@ -125,6 +135,13 @@ export interface MurajaahSession {
   quality: 'lancar' | 'perlu_perbaikan' | 'mengulang';
   session_date: string;
   notes?: string;
+  // PR (Pekerjaan Rumah) flagging fields
+  is_pr?: boolean;
+  pr_notes_guru?: string;
+  parent_rating?: number | null;
+  parent_status?: ParentStatus | null;
+  parent_notes?: string | null;
+  parent_simak_at?: string | null;
   created_at: string;
 }
 
@@ -160,7 +177,7 @@ export interface Material {
   title: string;
   description?: string;
   file_url?: string;
-  type: 'pdf' | 'video' | 'link' | 'text' | 'artikel';
+  type: 'pdf' | 'video' | 'link' | 'text' | 'artikel' | 'audio';
   is_published: boolean;
   metadata?: any;
   created_at: string;

@@ -37,6 +37,8 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
   const [notes, setNotes] = useState("");
   const [juzKelipatan, setJuzKelipatan] = useState<3 | 5>(3);
   const [status, setStatus] = useState<'lulus' | 'ngulang'>('lulus');
+  const [isPr, setIsPr] = useState(false);
+  const [prNotesGuru, setPrNotesGuru] = useState("");
 
   // ── Mushaf Viewer state ──
   const [showMushaf, setShowMushaf] = useState(false);
@@ -53,30 +55,31 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
   const selectedJuzRange = getJuzPageRange(juzNum);
   const totalProgress = mode === 'surat' ? selectedSurah?.ayat ?? 1 : selectedJuz?.halaman ?? 1;
   const currentReached = mode === 'surat' ? ayatReached : pageReached;
-  const keyframeMarks = juzKelipatan === 3
-    ? [3, 6, 9, 12, 15, 18, 21]
-    : [5, 10, 15, 20, 25];
-  const isKeyframeReached = keyframeMarks.includes(currentReached) && currentReached > 0;
-  const availableExamMarks = mode === 'juz'
-    ? keyframeMarks.filter(mark => mark <= currentReached)
-    : [];
   const persen = hitungPersenHafalan(currentReached, totalProgress);
   const db = createClient();
-
-  useEffect(() => {
-    if (mode === 'surat' && examPages !== null) {
-      setExamPages(null);
-    }
-    if (examPages !== null && currentReached < examPages) {
-      setExamPages(null);
-    }
-  }, [mode, currentReached, examPages]);
 
   const load = () => {
     tampilRiwayatHafalan(enrollmentId).then(d => { setRiwayat(d); setIsLoading(false); });
   };
 
   useEffect(() => { load(); }, [enrollmentId]);
+
+  // Listener untuk membuka form dari StudentSummaryCard (Peta Surat / Input Sesi Hari Ini)
+  useEffect(() => {
+    const handleTrigger = (e: any) => {
+      setShowForm(true);
+      if (e.detail?.mode === 'juz') {
+        setMode('juz');
+        if (e.detail.juzNumber) setJuzNum(e.detail.juzNumber);
+      } else if (e.detail?.surahNumber) {
+        setMode('surat');
+        setSurahNum(e.detail.surahNumber);
+        setAyatReached(0);
+      }
+    };
+    window.addEventListener('open-hafalan-session', handleTrigger);
+    return () => window.removeEventListener('open-hafalan-session', handleTrigger);
+  }, []);
 
   // Smart pre-fill: Lanjutkan hafalan dari sesi terakhir murid secara otomatis
   useEffect(() => {
@@ -135,6 +138,8 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
         notes,
         juzNumber: mode === 'juz' ? juzNum : undefined,
         status,
+        is_pr: isPr,
+        pr_notes_guru: isPr ? prNotesGuru : undefined,
       });
 
       // Simpan penilaian tajwid secara paralel jika diaktifkan guru (opsional)
@@ -176,17 +181,21 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
 
     setShowForm(false);
     setNotes("");
+    setIsPr(false);
+    setPrNotesGuru("");
     setAyatReached(0);
     setPageReached(0);
     setStatus('lulus');
     load();
     setIsSaving(false);
+    window.dispatchEvent(new Event('refresh-student-summary'));
   };
 
   const handleHapus = async (id: string) => {
     if (!confirm("Hapus sesi hafalan ini?")) return;
     await db.from("hafalan_progress").delete().eq("id", id);
     load();
+    window.dispatchEvent(new Event('refresh-student-summary'));
   };
 
   if (isLoading) return <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-blue-600" /></div>;
@@ -361,7 +370,7 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
               <label className="block text-sm font-semibold text-slate-700 mb-1">
                 {mode === 'surat' ? 'Ayat Dicapai' : 'Halaman Dicapai'} <span className="text-slate-400 font-normal">(maks. {totalProgress})</span>
               </label>
-              <div className="relative py-6 flex items-center">
+              <div className="py-2 flex items-center">
                 <input
                   type="range"
                   min={0}
@@ -372,27 +381,11 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
                     const next = Math.min(totalProgress, Math.max(0, +e.target.value));
                     if (mode === 'surat') setAyatReached(next); else setPageReached(next);
                   }}
-                  className="w-full accent-indigo-600 relative z-20 cursor-pointer"
+                  className="w-full accent-blue-600 cursor-pointer"
                 />
-                <div className="pointer-events-none absolute inset-x-0 flex items-center px-[8px] z-10">
-                  <div className="relative w-full">
-                    {keyframeMarks.map(mark => {
-                      if (mark > totalProgress) return null;
-                      const left = totalProgress > 0 ? Math.min(100, (mark / totalProgress) * 100) : 0;
-                      const reached = currentReached >= mark;
-                      return (
-                        <div key={mark} style={{ left: `${left}%` }} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center">
-                          <div className={`flex items-center justify-center h-6 w-6 rounded-full shadow-sm transition-all z-30 font-bold text-[11px] ${reached ? 'bg-indigo-600 border-[3px] border-white text-white scale-110 shadow-indigo-200' : 'bg-slate-200 border-[3px] border-white text-slate-500'}`}>
-                            {mark}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
               </div>
 
-              <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div className="min-w-[4rem] rounded-2xl bg-slate-50 px-4 py-3 border border-slate-200 text-slate-900 font-semibold text-center">
                   {currentReached}
                 </div>
@@ -430,63 +423,15 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
                 </div>
               </div>
 
-              {mode === 'juz' && availableExamMarks.length > 0 && (
-                <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-sm font-semibold text-slate-800">Pilih ujian setelah halaman</p>
-                  <p className="text-xs text-slate-500 mb-3">Ujian tersedia setelah mencapai titik keyframe.</p>
-                  <select value={examPages ?? ''} onChange={e => setExamPages(e.target.value ? +e.target.value : null)}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                    <option value="">Pilih jumlah halaman ujian</option>
-                    {availableExamMarks.map(mark => (
-                      <option key={mark} value={mark}>{mark} halaman</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {isKeyframeReached ? (
-                <div className="mt-6 rounded-3xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-white p-6 shadow-sm relative overflow-hidden">
-                  <div className="absolute -top-6 -right-6 text-indigo-200/40 rotate-12">
-                    <Trophy size={120} />
-                  </div>
-                  <div className="relative z-10 space-y-4">
-                    <div className="flex items-start gap-4">
-                      <div className="flex shrink-0 items-center justify-center w-12 h-12 rounded-full bg-indigo-600 text-white shadow-md shadow-indigo-200">
-                        <Trophy size={24} />
-                      </div>
-                      <div>
-                        <h4 className="font-black text-indigo-900 text-lg">Milestone Tercapai! 🎉</h4>
-                        <p className="text-sm text-indigo-700 mt-1 leading-relaxed font-medium">
-                          Masya Allah, murid telah mencapai titik evaluasi di {mode === 'surat' ? 'ayat' : 'halaman'} ke-{currentReached}.
-                          Silakan masukkan catatan evaluasi ustadz/ustadzah di bawah ini sebagai laporan.
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="pt-2">
-                      <label className="block text-xs font-extrabold text-indigo-900 uppercase tracking-widest mb-2">
-                        Catatan Evaluasi Milestone
-                      </label>
-                      <textarea 
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        placeholder="Contoh: Kelancaran sudah baik, namun panjang pendek (mad) masih perlu diperhatikan..."
-                        className="w-full px-4 py-3 rounded-xl border border-indigo-200 bg-white text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none h-24 placeholder:text-slate-400"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="mt-4">
-                  <label className="block text-sm font-semibold text-slate-700 mb-1">Catatan Ustadz/Ustadzah (Opsional)</label>
-                  <textarea 
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Tambahkan catatan untuk sesi ini (contoh: tajwid lancar)..."
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white min-h-[80px]"
-                  />
-                </div>
-              )}
+              <div className="mt-4">
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Catatan Ustadz/Ustadzah (Opsional)</label>
+                <textarea 
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Tambahkan catatan untuk sesi ini (contoh: tajwid lancar)..."
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white min-h-[80px]"
+                />
+              </div>
             </div>
 
           {/* ── Quick Tajwid Assessment (Opsional) ── */}
@@ -526,6 +471,45 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+
+          {/* ── Tugaskan untuk Disimak di Rumah (PR) ── */}
+          <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl">🏠</span>
+                <div>
+                  <label htmlFor="toggle-pr-hafalan" className="text-sm font-bold text-amber-900 cursor-pointer">
+                    Tugaskan untuk Disimak di Rumah (PR)
+                  </label>
+                  <p className="text-xs text-amber-700">
+                    Orang tua akan menyimak di rumah, dibantu mushaf & audio murottal
+                  </p>
+                </div>
+              </div>
+              <input
+                id="toggle-pr-hafalan"
+                type="checkbox"
+                checked={isPr}
+                onChange={(e) => setIsPr(e.target.checked)}
+                className="w-5 h-5 accent-amber-600 rounded cursor-pointer"
+              />
+            </div>
+
+            {isPr && (
+              <div className="pt-2 border-t border-amber-200/70">
+                <label className="block text-xs font-bold text-amber-900 mb-1">
+                  Pesan / Instruksi Khusus untuk Orang Tua (Opsional)
+                </label>
+                <input
+                  type="text"
+                  value={prNotesGuru}
+                  onChange={(e) => setPrNotesGuru(e.target.value)}
+                  placeholder="Contoh: Mohon disimak bacaan mad dan ghunnahnya..."
+                  className="w-full px-3.5 py-2.5 text-xs bg-white border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none text-slate-800"
+                />
               </div>
             )}
           </div>
@@ -574,6 +558,20 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
                         }`}>
                           {statusLulus ? '✅ Lulus' : '🔄 Ngulang'}
                         </span>
+                        {/* ── PR / DISIMAK ORTU BADGE ── */}
+                        {r.is_pr && (
+                          <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
+                            r.parent_simak_at
+                              ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                              : 'bg-amber-100 text-amber-800 border-amber-300'
+                          }`}>
+                            {r.parent_simak_at ? (
+                              <>🏠 Disimak Ortu: ⭐ {r.parent_rating}/5 · {r.parent_status}</>
+                            ) : (
+                              <>🏠 Tugas Rumah (PR)</>
+                            )}
+                          </span>
+                        )}
                       </div>
                       <p className="text-xs text-slate-400 mt-0.5">
                         {new Date(r.session_date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
@@ -589,7 +587,12 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
                   <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
                     <div className={`h-full rounded-full ${statusLulus ? getProgressColor(p) : 'bg-amber-400'}`} style={{ width: `${p}%` }} />
                   </div>
-                  {r.notes && <p className="text-xs text-slate-500 mt-2 italic line-clamp-2">"{r.notes}"</p>}
+                  {r.notes && <p className="text-xs text-slate-500 mt-2 italic line-clamp-2">"Guru: {r.notes}"</p>}
+                  {r.is_pr && r.parent_notes && (
+                    <p className="text-xs text-amber-700 mt-1 italic line-clamp-2 bg-amber-50/70 p-1.5 rounded-lg border border-amber-100">
+                      "Wali: {r.parent_notes}"
+                    </p>
+                  )}
                 </div>
               );
             })}
@@ -660,6 +663,58 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
                   )}
                 </div>
               </div>
+
+              {/* Status PR & Simakan Orang Tua */}
+              {selectedDetail.is_pr && (
+                <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
+                      🏠 Tugas Rumah (PR Disimak Orang Tua)
+                    </span>
+                    <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
+                      selectedDetail.parent_simak_at
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                        : 'bg-amber-100 text-amber-800 border-amber-200'
+                    }`}>
+                      {selectedDetail.parent_simak_at ? '✅ Telah Disimak' : '⏳ Belum Disimak'}
+                    </span>
+                  </div>
+
+                  {selectedDetail.pr_notes_guru && (
+                    <p className="text-xs text-amber-800 bg-white p-2.5 rounded-xl border border-amber-200/60">
+                      <strong>Pesan Ustadz:</strong> {selectedDetail.pr_notes_guru}
+                    </p>
+                  )}
+
+                  {selectedDetail.parent_simak_at ? (
+                    <div className="bg-white p-3.5 rounded-xl border border-amber-200/60 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-bold text-slate-800">
+                            Status: <span className="text-emerald-700 uppercase">{selectedDetail.parent_status}</span>
+                          </p>
+                          <p className="text-[10px] text-slate-400">
+                            Disimak pada: {new Date(selectedDetail.parent_simak_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                          </p>
+                        </div>
+                        <div className="flex items-center text-amber-500 font-black text-sm">
+                          {"★".repeat(selectedDetail.parent_rating || 0)}
+                          <span className="text-xs text-slate-500 ml-1">({selectedDetail.parent_rating}/5)</span>
+                        </div>
+                      </div>
+                      {selectedDetail.parent_notes && (
+                        <p className="text-xs text-slate-600 italic bg-amber-50/40 p-2 rounded-lg border border-amber-100">
+                          Catatan Orang Tua: "{selectedDetail.parent_notes}"
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-amber-700 italic">
+                      Menunggu orang tua menyimak ananda di rumah dan memberikan penilaian di dashboard murid.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="flex gap-2 pt-2 border-t border-slate-100">
@@ -679,6 +734,8 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
                   }
                   if (target.notes) setNotes(target.notes);
                   setStatus(target.status ?? 'lulus');
+                  setIsPr(target.is_pr ?? false);
+                  setPrNotesGuru(target.pr_notes_guru ?? '');
                   setShowForm(true);
                 }}
                 className="flex-1 py-3 bg-blue-600 text-white font-bold text-sm rounded-xl hover:bg-blue-700 transition"

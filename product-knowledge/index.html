@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Proposal Solusi Digital — Platform Manajemen Bimbel Calistung & Tahfidz</title>
+  <meta name="description"
+    content="Dokumen pengenalan produk dan solusi manajemen bimbel modern untuk calon klien dan pengelola lembaga pendidikan." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;1,400&display=swap"
+    rel="stylesheet" />
+  <style>
+    /* ─── Reset ─── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+
+    :root {
+      --primary: #0f766e;
+      /* Teal elegan */
+      --primary-dark: #115e59;
+      --primary-light: #f0fdfa;
+      --primary-subtle: #ccfbf1;
+      --accent: #b45309;
+      /* Amber hangat */
+      --accent-light: #fffbeb;
+      --dark: #0f172a;
+      /* Slate 900 */
+      --slate-800: #1e293b;
+      --slate-700: #334155;
+      --slate-600: #475569;
+      --slate-500: #64748b;
+      --slate-200: #e2e8f0;
+      --slate-100: #f1f5f9;
+      --slate-50: #f8fafc;
+      --border: #cbd5e1;
+      --border-light: #e2e8f0;
+      --white: #ffffff;
+    }
+
+    html {
+      font-size: 11pt;
+      /* Ukuran terbaca jelas, tidak kekecilan */
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      color: var(--slate-700);
+      background-color: #e2e8f0;
+      line-height: 1.6;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ─── Halaman A4 Presisi (210mm x 297mm) ─── */
+    .page {
+      width: 210mm;
+      height: 297mm;
+      max-height: 297mm;
+      margin: 24px auto;
+      background: var(--white);
+      padding: 16mm 18mm 14mm 18mm;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    @media print {
+      body {
+        background: transparent;
+      }
+
+      .page {
+        width: 210mm;
+        height: 297mm;
+        margin: 0;
+        padding: 16mm 18mm 14mm 18mm;
+        box-shadow: none;
+        page-break-after: always;
+        break-after: page;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+    }
+
+    /* ─── Header & Footer Halaman Dalam ─── */
+    .doc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      margin-bottom: 18px;
+      border-bottom: 1.5px solid var(--border-light);
+    }
+
+    .doc-header .logo-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: var(--primary);
+    }
+
+    .doc-header .logo-icon {
+      width: 26px;
+      height: 26px;
+      background: var(--primary);
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+
+    .doc-header .doc-tag {
+      font-size: 0.74rem;
+      color: var(--slate-500);
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .doc-footer {
+      margin-top: auto;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-light);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      color: var(--slate-500);
+    }
+
+    /* ─── Tipografi & Hirarki ─── */
+    h1,
+    h2,
+    h3,
+    h4 {
+      color: var(--dark);
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .section-eyebrow {
+      font-size: 0.74rem;
+      font-weight: 800;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .section-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--dark);
+      margin-bottom: 10px;
+    }
+
+    .section-lead {
+      font-size: 0.9rem;
+      color: var(--slate-600);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    /* ─── Komponen Konten ─── */
+    .card {
+      background: var(--slate-50);
+      border: 1px solid var(--border-light);
+      border-radius: 9px;
+      padding: 14px 16px;
+    }
+
+    .card-primary {
+      background: var(--primary-light);
+      border-color: var(--primary-subtle);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 13px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 11px;
+    }
+
+    /* ─── Kartu Fitur Berisi & Jelas ─── */
+    .feature-card {
+      background: var(--white);
+      border: 1px solid var(--border-light);
+      border-radius: 9px;
+      padding: 13px 15px;
+      margin-bottom: 11px;
+    }
+
+    .feature-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 5px;
+    }
+
+    .feature-number {
+      width: 25px;
+      height: 25px;
+      border-radius: 6px;
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.78rem;
+      flex-shrink: 0;
+    }
+
+    .feature-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--dark);
+    }
+
+    .feature-desc {
+      font-size: 0.85rem;
+      color: var(--slate-600);
+      line-height: 1.55;
+    }
+
+    .badge-status {
+      font-size: 0.66rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 999px;
+      margin-left: auto;
+      letter-spacing: 0.04em;
+    }
+
+    .badge-ready {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .badge-integrating {
+      background: #fef3c7;
+      color: #b45309;
+    }
+
+    /* ─── Kotak Screenshot ─── */
+    .screenshot-frame {
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      overflow: hidden;
+      background: var(--white);
+      margin-bottom: 14px;
+    }
+
+    .screenshot-frame img {
+      width: 100%;
+      height: 215px;
+      display: block;
+      object-fit: cover;
+      object-position: top;
+    }
+
+    .screenshot-caption {
+      font-size: 0.78rem;
+      color: var(--slate-600);
+      padding: 9px 13px;
+      background: var(--slate-50);
+      border-top: 1px solid var(--border-light);
+      line-height: 1.5;
+    }
+
+    /* ─── Alur Penggunaan ─── */
+    .flow-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .flow-step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 13px;
+      background: var(--white);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 10px 13px;
+    }
+
+    .step-circle {
+      width: 27px;
+      height: 27px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: var(--white);
+      font-size: 0.8rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step-text h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 2px;
+    }
+
+    .step-text p {
+      font-size: 0.82rem;
+      color: var(--slate-600);
+      line-height: 1.48;
+    }
+
+    /* ─── Tabel Perbandingan ─── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+      margin-top: 8px;
+    }
+
+    th {
+      background: var(--slate-800);
+      color: var(--white);
+      font-weight: 700;
+      text-align: left;
+      padding: 9px 12px;
+    }
+
+    td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--slate-700);
+      vertical-align: top;
+      line-height: 1.48;
+    }
+
+    tbody tr:nth-child(even) {
+      background: var(--slate-50);
+    }
+
+    /* ─── Callout ─── */
+    .callout {
+      border-left: 4px solid var(--primary);
+      background: var(--primary-light);
+      padding: 11px 15px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.85rem;
+      color: var(--slate-700);
+      margin: 12px 0;
+      line-height: 1.55;
+    }
+
+    .callout-amber {
+      border-left-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    /* ─── FAQ ─── */
+    .faq-item {
+      border-bottom: 1px solid var(--border-light);
+      padding: 10px 0;
+    }
+
+    .faq-item:last-child {
+      border-bottom: none;
+    }
+
+    .faq-question {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 4px;
+    }
+
+    .faq-answer {
+      font-size: 0.84rem;
+      color: var(--slate-600);
+      line-height: 1.55;
+    }
+
+    /* ─── Kartu Kontak ─── */
+    .contact-card {
+      background: var(--white);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+
+    .contact-title {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--primary);
+      margin-bottom: 3px;
+    }
+
+    .contact-detail {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--dark);
+    }
+
+    /* ─── Cover Style ─── */
+    .cover-wrapper {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+    }
+
+    .cover-top-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .cover-logo-box {
+      width: 48px;
+      height: 48px;
+      background: var(--primary);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+
+    .cover-logo-box svg {
+      width: 28px;
+      height: 28px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .cover-brand-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--dark);
+    }
+
+    .cover-badge-pill {
+      display: inline-block;
+      font-size: 0.76rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 5px 14px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid var(--primary-subtle);
+      border-radius: 999px;
+      margin-bottom: 18px;
+    }
+
+    .cover-headline {
+      font-family: 'Lora', serif;
+      font-size: 2.35rem;
+      font-weight: 600;
+      line-height: 1.28;
+      color: var(--dark);
+      margin-bottom: 16px;
+    }
+
+    .cover-headline em {
+      color: var(--primary);
+      font-style: italic;
+    }
+
+    .cover-description {
+      font-size: 1rem;
+      color: var(--slate-600);
+      max-width: 580px;
+      line-height: 1.68;
+      margin-bottom: 24px;
+    }
+
+    .cover-highlights {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .cover-highlight-card {
+      background: var(--white);
+      border: 1px solid var(--border-light);
+      border-left: 3.5px solid var(--primary);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .cover-highlight-title {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--dark);
+      margin-bottom: 2px;
+    }
+
+    .cover-highlight-desc {
+      font-size: 0.74rem;
+      color: var(--slate-600);
+      line-height: 1.4;
+    }
+
+    .cover-grid-box {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      padding: 14px 18px;
+      background: var(--slate-50);
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+    }
+
+    .cover-grid-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--slate-500);
+      margin-bottom: 2px;
+    }
+
+    .cover-grid-val {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--dark);
+    }
+
+    .cover-bottom-bar {
+      border-top: 1px solid var(--border-light);
+      padding-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.76rem;
+      color: var(--slate-500);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ========================================== -->
+  <!-- HALAMAN 1: COVER PROPOSAL PRODUK           -->
+  <!-- ========================================== -->
+  <div class="page">
+    <div class="cover-wrapper">
+      <div>
+        <div class="cover-top-brand">
+          <div class="cover-logo-box">
+            <svg viewBox="0 0 24 24">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+          </div>
+          <div>
+            <div class="cover-brand-title">Alhanif</div>
+            <div style="font-size: 0.85rem; color: var(--slate-500);">Platform Terpadu Bimbingan Belajar Calistung &
+              Tahfidz</div>
+          </div>
+        </div>
+
+        <div class="cover-badge-pill">Profil Produk & Solusi Manajemen Digital</div>
+
+        <h1 class="cover-headline">
+          Pengelolaan Bimbel Rapi, Transparan, dan <em>Terhubung Langsung</em> dengan Orang Tua.
+        </h1>
+
+        <p class="cover-description">
+          Solusi sistem akademik berbasis web modern untuk lembaga bimbingan belajar anak usia dini dan sekolah dasar.
+          Menggantikan buku catatan fisik dan pesan WhatsApp yang tercecer menjadi satu portal pelaporan yang
+          profesional dan terpercaya.
+        </p>
+
+        <!-- 3 Pilar Unggulan yang Mengisi Halaman Lebih Berbobot -->
+        <div class="cover-highlights">
+          <div class="cover-highlight-card">
+            <div class="cover-highlight-title">1. Hafalan & Iqro Praktis</div>
+            <div class="cover-highlight-desc">Pencatatan setoran ayat cepat, Mushaf digital, dan mutabaah Iqro otomatis.
+            </div>
+          </div>
+          <div class="cover-highlight-card">
+            <div class="cover-highlight-title">2. Raport PDF Resmi</div>
+            <div class="cover-highlight-desc">Penerbitan raport terstandar siap unduh dan cetak berkop lembaga Anda.
+            </div>
+          </div>
+          <div class="cover-highlight-card">
+            <div class="cover-highlight-title">3. Kontrol SPP & Presensi</div>
+            <div class="cover-highlight-desc">Monitoring kas SPP bulanan serta rekap absensi harian kelas dalam 1 layar.
+            </div>
+          </div>
+        </div>
+
+        <div class="cover-grid-box">
+          <div>
+            <div class="cover-grid-label">Sasaran Lembaga</div>
+            <div class="cover-grid-val">Bimbel Calistung, Rumah Tahfidz, TPQ & Diniyah</div>
+          </div>
+          <div>
+            <div class="cover-grid-label">Akses Pengguna</div>
+            <div class="cover-grid-val">Pengelola / Owner, Tenaga Pengajar, Wali Santri</div>
+          </div>
+          <div>
+            <div class="cover-grid-label">Format Kemitraan</div>
+            <div class="cover-grid-val">Sharing Profit & Siap Kustomisasi</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cover-bottom-bar">
+        <span>© 2026 Alhanif — Solusi Manajemen Pendidikan Anak</span>
+        <span>Dokumen Pengenalan Produk Resmi untuk Calon Klien</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- HALAMAN 2: TANTANGAN & SOLUSI LEMBAGA      -->
+  <!-- ========================================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-badge">
+        <span class="logo-icon">A</span> Alhanif
+      </div>
+      <div class="doc-tag">1. Masalah & Solusi Nyata</div>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+      <span class="section-eyebrow">Tantangan yang Sering Dihadapi Lembaga Anda</span>
+      <h2 class="section-title">Kerepotan Operasional Saat Bimbel Masih Manual</h2>
+      <p class="section-lead">
+        Dalam mengelola bimbingan belajar anak, menjaga kualitas pengajaran dan kepuasan orang tua sering kali terganggu
+        oleh beban administrasi harian yang menyita tenaga:
+      </p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div style="font-weight: 700; font-size: 0.95rem; color: var(--dark); margin-bottom: 5px;">Buku Setoran &
+            Absensi Rentan Hilang</div>
+          <p style="font-size: 0.85rem; color: var(--slate-600); line-height: 1.55;">
+            Ketika buku mutabaah fisik anak tertinggal di rumah, rusak, atau guru pengganti masuk, riwayat capaian anak
+            tidak bisa dicek. Evaluasi menjadi terhambat dan tidak konsisten.
+          </p>
+        </div>
+        <div class="card">
+          <div style="font-weight: 700; font-size: 0.95rem; color: var(--dark); margin-bottom: 5px;">Guru Lelah Mengetik
+            Laporan WA Tiap Malam</div>
+          <p style="font-size: 0.85rem; color: var(--slate-600); line-height: 1.55;">
+            Orang tua ingin tahu anak mereka sudah sampai mana. Guru kehabisan waktu istirahat karena harus mengetik
+            pesan laporan satu per satu ke puluhan nomor orang tua.
+          </p>
+        </div>
+        <div class="card">
+          <div style="font-weight: 700; font-size: 0.95rem; color: var(--dark); margin-bottom: 5px;">Tunggakan SPP Sulit
+            Terpantau Jelas</div>
+          <p style="font-size: 0.85rem; color: var(--slate-600); line-height: 1.55;">
+            Pencatatan kas di buku tulis membuat pengelola ragu siapa yang sudah lunas dan siapa yang menunggak bulan
+            berjalan, berisiko mengganggu kelancaran arus kas bimbel.
+          </p>
+        </div>
+        <div class="card">
+          <div style="font-weight: 700; font-size: 0.95rem; color: var(--dark); margin-bottom: 5px;">Pembuatan Raport
+            Semesteran Sangat Lama</div>
+          <p style="font-size: 0.85rem; color: var(--slate-600); line-height: 1.55;">
+            Setiap akhir semester guru lembur mengetik raport manual di komputer. Format antar kelas sering tidak
+            seragam dan memakan waktu berhari-hari.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <span class="section-eyebrow">Bagaimana Alhanif Membantu Lembaga Anda</span>
+      <h2 class="section-title">Semua Data Terpusat, Rapi, dan Mudah Diakses</h2>
+      <p class="section-lead">
+        Aplikasi ini memindahkan seluruh pencatatan dari kertas dan chat WhatsApp ke satu tempat kerja digital yang bisa
+        dibuka lewat HP pengajar maupun wali murid:
+      </p>
+
+      <div class="grid-3">
+        <div class="card card-primary">
+          <div style="font-weight: 800; font-size: 0.92rem; color: var(--primary-dark); margin-bottom: 4px;">Untuk
+            Pengelola (Owner)</div>
+          <p style="font-size: 0.82rem; color: var(--slate-700); line-height: 1.5;">Memantau seluruh kelas, rekap murid
+            aktif, dan status bayar SPP bulanan tanpa harus menanyai guru satu per satu.</p>
+        </div>
+        <div class="card">
+          <div style="font-weight: 800; font-size: 0.92rem; color: var(--dark); margin-bottom: 4px;">Untuk Guru / Ustadz
+          </div>
+          <p style="font-size: 0.82rem; color: var(--slate-700); line-height: 1.5;">Input absensi kelas, setoran
+            hafalan, mutabaah Iqro, hingga terbit raport resmi langsung dari HP dalam hitungan menit.</p>
+        </div>
+        <div class="card">
+          <div style="font-weight: 800; font-size: 0.92rem; color: var(--dark); margin-bottom: 4px;">Untuk Orang Tua
+            (Wali)</div>
+          <p style="font-size: 0.82rem; color: var(--slate-700); line-height: 1.5;">Melihat riwayat kemajuan anak kapan
+            saja secara transparan dan mengunduh raport digital resmi format PDF dari rumah.</p>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top: 14px;">
+        <strong>Komitmen Kami:</strong> Sistem ini tidak mengubah kurikulum maupun ciri khas pengajaran di lembaga Anda.
+        Sistem ini hanya menertibkan administrasi agar guru Anda dapat fokus penuh mendampingi santri belajar.
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span>Alhanif — Solusi Manajemen Bimbingan Belajar</span>
+      <span>Halaman 2</span>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- HALAMAN 3: TAMPILAN ANTARMUKA PORTAL       -->
+  <!-- ========================================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-badge">
+        <span class="logo-icon">A</span> Alhanif
+      </div>
+      <div class="doc-tag">2. Tampilan Antarmuka Aplikasi</div>
+    </div>
+
+    <span class="section-eyebrow">Mudah Digunakan Tanpa Aplikasi Berat</span>
+    <h2 class="section-title">Antarmuka Bersih, Ringan, dan Nyaman di Layar HP</h2>
+    <p class="section-lead">
+      Pengguna di lembaga Anda (baik guru sepuh maupun orang tua) tidak perlu mengunduh aplikasi berat dari Play Store.
+      Cukup membuka tautan website melalui peramban HP (Chrome atau Safari) dan sistem langsung siap digunakan.
+    </p>
+
+    <!-- Screenshot 1: Landing Page -->
+    <div class="screenshot-frame">
+      <img src="assets/ss_landing_hero.png" alt="Portal Utama Alhanif" />
+      <div class="screenshot-caption">
+        <strong>Tampilan Portal Utama Lembaga:</strong> Halaman muka representatif yang menampilkan identitas bimbel
+        Anda, ringkasan program belajar, serta tombol masuk akun bagi guru, wali murid, dan pengelola.
+      </div>
+    </div>
+
+    <!-- Screenshot 2: Login Page -->
+    <div class="screenshot-frame">
+      <img src="assets/ss_login.png" alt="Pintu Masuk Terpadu" />
+      <div class="screenshot-caption">
+        <strong>Akses Masuk Aman & Otomatis:</strong> Setiap pengguna masuk menggunakan akun terdaftar. Sistem secara
+        cerdas mengarahkan hak akses sesuai peran masing-masing (Owner, Pengajar, atau Wali).
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span>Alhanif — Solusi Manajemen Bimbingan Belajar</span>
+      <span>Halaman 3</span>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- HALAMAN 4: PROGRAM BELAJAR & NILAI LAYANAN -->
+  <!-- ========================================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-badge">
+        <span class="logo-icon">A</span> Alhanif
+      </div>
+      <div class="doc-tag">3. Program Pembelajaran Terarah</div>
+    </div>
+
+    <span class="section-eyebrow">Struktur Akademik Terintegrasi</span>
+    <h2 class="section-title">Dua Kurikulum Inti: Calistung & Tahfidz</h2>
+    <p class="section-lead">
+      Arsitektur aplikasi dibangun khusus menyesuaikan kurikulum bimbingan belajar anak di Indonesia, memadukan
+      kemandirian literasi membaca Al-Qur'an dengan kesiapan akademik sekolah dasar:
+    </p>
+
+    <!-- Screenshot 3: Features Block -->
+    <div class="screenshot-frame">
+      <img src="assets/ss_features.png" alt="Pilar Nilai Utama" />
+      <div class="screenshot-caption">
+        <strong>Nilai Unggulan yang Dirasakan Klien:</strong> Transparansi rekap harian, keamanan data anak,
+        standarisasi penilaian, dan kemudahan akses laporan kapan saja bagi wali murid.
+      </div>
+    </div>
+
+    <!-- Screenshot 4: Programs Block -->
+    <div class="screenshot-frame">
+      <img src="assets/ss_programs.png" alt="Program Calistung & Tahfidz" />
+      <div class="screenshot-caption">
+        <strong>Fleksibilitas Program:</strong> Mendukung kelas Calistung (Membaca, Menulis, Berhitung) serta kelas
+        Tahfidz Qur'an (Surat Pendek, Juz 'Amma, dan Hafalan Al-Qur'an Berkelanjutan).
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span>Alhanif — Solusi Manajemen Bimbingan Belajar</span>
+      <span>Halaman 4</span>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- HALAMAN 5: FITUR UNGGULAN TAHFIDZ & IQRO   -->
+  <!-- ========================================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-badge">
+        <span class="logo-icon">A</span> Alhanif
+      </div>
+      <div class="doc-tag">4. Fitur Khusus Tahfidz & Iqro</div>
+    </div>
+
+    <span class="section-eyebrow">Kemudahan Mengajar di Kelas</span>
+    <h2 class="section-title">Pencatatan Hafalan Cepat & Terstruktur</h2>
+    <p class="section-lead">
+      Fitur-fitur ini dirancang khusus agar ustadz/ustadzah dapat mencatat setoran anak tanpa memecah konsentrasi saat
+      menyimak bacaan santri:
+    </p>
+
+    <!-- Fitur 1 -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-number">1</div>
+        <div class="feature-title">Pencatatan Setoran Hafalan Qur'an & Mushaf Terintegrasi</div>
+        <span class="badge-status badge-ready">Siap Digunakan</span>
+      </div>
+      <p class="feature-desc">
+        Guru mencatat kemajuan hafalan santri per surah dan nomor ayat, atau per juz. Dilengkapi tombol cepat <em>+1
+          Ayat</em> dan <em>+1 Halaman</em> sehingga rekap setoran selesai dalam 3 detik. Aplikasi juga menyediakan
+        <strong>Mushaf Viewer digital</strong> langsung di layar HP guru sebagai panduan menyimak tanpa perlu membawa
+        mushaf fisik terpisah.
+      </p>
+    </div>
+
+    <!-- Fitur 2 -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-number">2</div>
+        <div class="feature-title">Mutabaah Bacaan Iqro & Aisar</div>
+        <span class="badge-status badge-ready">Siap Digunakan</span>
+      </div>
+      <p class="feature-desc">
+        Bagi santri pemula yang belum masuk Al-Qur'an, aplikasi mencatat jilid 1–6 dan halaman buku Iqro/Aisar. Sistem
+        memiliki <strong>kelanjutan otomatis (smart continuation)</strong> yang langsung menampilkan posisi jilid dan
+        halaman terakhir santri, disertai catatan tingkat kelancaran (Perlu Bimbingan, Cukup, Lancar, Sangat Mahir).
+      </p>
+    </div>
+
+    <!-- Fitur 3 -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-number">3</div>
+        <div class="feature-title">Presensi Kelas Cepat (Satu Klik untuk Semua)</div>
+        <span class="badge-status badge-ready">Siap Digunakan</span>
+      </div>
+      <p class="feature-desc">
+        Menghemat waktu absensi kelas yang biasanya berlarut-larut. Guru cukup menekan tombol <em>"Tandai Semua
+          Hadir"</em>, lalu mengubah santri yang berhalangan menjadi Izin (I) atau Alpha (A). Data langsung terekam rapi
+        per tanggal dan otomatis membentuk persentase kehadiran bulanan.
+      </p>
+    </div>
+
+    <div class="callout callout-amber" style="margin-top: 14px;">
+      <strong>Manfaat Nyata:</strong> Guru Anda menghemat waktu administrasi hingga 80%. Waktu belajar santri menjadi
+      lebih efektif dan tidak terpotong oleh urusan menulis buku absensi manual.
+    </div>
+
+    <div class="doc-footer">
+      <span>Alhanif — Solusi Manajemen Bimbingan Belajar</span>
+      <span>Halaman 5</span>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- HALAMAN 6: FITUR CALISTUNG & KEAMANAN PIN  -->
+  <!-- ========================================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-badge">
+        <span class="logo-icon">A</span> Alhanif
+      </div>
+      <div class="doc-tag">5. Fitur Calistung & Komunikasi Wali</div>
+    </div>
+
+    <span class="section-eyebrow">Pendampingan Usia Dini</span>
+    <h2 class="section-title">Evaluasi Calistung & Keamanan Data Wali</h2>
+    <p class="section-lead">
+      Mendukung pemantauan motorik dan perkembangan kognitif anak secara detail serta menjaga privasi komunikasi antara
+      guru dan orang tua:
+    </p>
+
+    <!-- Fitur 4 -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-number">4</div>
+        <div class="feature-title">Penilaian Calistung Tiga Dimensi Terstandar</div>
+        <span class="badge-status badge-ready">Siap Digunakan</span>
+      </div>
+      <p class="feature-desc">
+        Mencakup instrumen evaluasi lengkap: <strong>Membaca</strong> (pengenalan huruf, mengeja suku kata),
+        <strong>Menulis</strong> (motorik halus, ketepatan garis, cara memegang pensil), dan <strong>Berhitung</strong>
+        (pengenalan angka, penjumlahan sederhana). Penilaian disajikan dengan skala kualitatif ramah anak (Mulai,
+        Sedang, Lancar).
+      </p>
+    </div>
+
+    <!-- Fitur 5 -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-number">5</div>
+        <div class="feature-title">Catatan Personal Guru & Proteksi Kunci PIN Wali 6-Digit</div>
+        <span class="badge-status badge-ready">Siap Digunakan</span>
+      </div>
+      <p class="feature-desc">
+        Guru dapat menulis catatan evaluasi perilaku atau pesan khusus terkait anak. Untuk menjamin kerahasiaan catatan
+        personal tersebut, sistem menyediakan fitur <strong>kunci keamanan PIN 6-digit</strong> yang wajib dimasukkan
+        orang tua sebelum membaca isi catatan guru.
+      </p>
+    </div>
+
+    <!-- Fitur 6 -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-number">6</div>
+        <div class="feature-title">Distribusi Modul & Media Belajar (LMS Sederhana)</div>
+        <span class="badge-status badge-ready">Siap Digunakan</span>
+      </div>
+      <p class="feature-desc">
+        Guru dapat membagikan lembar kerja (worksheet PDF), tautan video panduan makhraj huruf, maupun materi artikel
+        terformat langsung ke akun murid. Murid dan orang tua dapat mengulang pelajaran dengan nyaman dari rumah.
+      </p>
+    </div>
+
+    <div class="callout" style="margin-top: 14px;">
+      <strong>Kepercayaan Orang Tua:</strong> Orang tua merasa sangat tenang karena catatan mengenai kekurangan atau
+      kebutuhan khusus anaknya tersimpan privat dan hanya dapat dibuka oleh wali sah pemegang PIN.
+    </div>
+
+    <div class="doc-footer">
+      <span>Alhanif — Solusi Manajemen Bimbingan Belajar</span>
+      <span>Halaman 6</span>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- HALAMAN 7: RAPORT DIGITAL & KONTROL KAS    -->
+  <!-- ========================================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-badge">
+        <span class="logo-icon">A</span> Alhanif
+      </div>
+      <div class="doc-tag">6. Raport Digital & Kontrol Keuangan</div>
+    </div>
+
+    <span class="section-eyebrow">Hasil Belajar & Pengawasan Kas</span>
+    <h2 class="section-title">Raport Otomatis PDF A4 & Monitoring SPP</h2>
+    <p class="section-lead">
+      Dua modul penentu citra profesional dan kesehatan keuangan bimbingan belajar Anda:
+    </p>
+
+    <!-- Fitur 7: Raport PDF -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-number">7</div>
+        <div class="feature-title">Penerbitan Raport Digital & Unduh Dokumen PDF Resmi</div>
+        <span class="badge-status badge-ready">Siap Digunakan</span>
+      </div>
+      <p class="feature-desc">
+        Guru cukup memasukkan narasi evaluasi akhir dan capaian nilai. Raport resmi terbit secara otomatis lengkap
+        dengan kop lembaga Anda, dan dapat langsung diunduh wali santri dalam bentuk <strong>file PDF standar
+          A4</strong> yang rapi, siap dicetak maupun diarsipkan di smartphone.
+      </p>
+    </div>
+
+    <!-- Fitur 8: SPP -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-number">8</div>
+        <div class="feature-title">Monitoring Pembayaran SPP Bulanan & Kas Murid</div>
+        <span class="badge-status badge-ready">Siap Digunakan</span>
+      </div>
+      <p class="feature-desc">
+        Dashboard khusus pemilik bimbel yang menyajikan daftar murid per kelas beserta status tagihan SPP. Anda dapat
+        langsung mengetahui siapa yang sudah lunas dan siapa yang masih menunggak dalam satu layar tanpa perlu memeriksa
+        tumpukan nota kwitansi.
+      </p>
+    </div>
+
+    <!-- Fitur 9: Roadmap WA -->
+    <div class="feature-card" style="border-color: #fde68a; background: var(--accent-light);">
+      <div class="feature-header">
+        <div class="feature-number" style="background: #b45309;">9</div>
+        <div class="feature-title">Pemberitahuan Otomatis WhatsApp ke Nomor Orang Tua</div>
+        <span class="badge-status badge-integrating">Tahap Integrasi Gateway</span>
+      </div>
+      <p class="feature-desc">
+        Arsitektur dan template pesan otomatis (laporan kehadiran dan setoran santri) telah tersedia di sistem. Saat ini
+        modul sedang dalam tahap integrasi gateway pengiriman WhatsApp agar pengiriman pesan ke wali berjalan otomatis
+        dan hemat biaya.
+      </p>
+    </div>
+
+    <div class="doc-footer">
+      <span>Alhanif — Solusi Manajemen Bimbingan Belajar</span>
+      <span>Halaman 7</span>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- HALAMAN 8: ALUR & NILAI UNTUK LEMBAGA      -->
+  <!-- ========================================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-badge">
+        <span class="logo-icon">A</span> Alhanif
+      </div>
+      <div class="doc-tag">7. Alur Kerja & Nilai Keunggulan</div>
+    </div>
+
+    <div style="margin-bottom: 18px;">
+      <span class="section-eyebrow">Alur Penggunaan Praktis</span>
+      <h2 class="section-title">Mudah Dimulai dari Hari Pertama</h2>
+      <div class="flow-steps">
+        <div class="flow-step-item">
+          <div class="step-circle">1</div>
+          <div class="step-text">
+            <h4>Pendaftaran Lembaga & Kelas</h4>
+            <p>Admin mendaftarkan nama bimbel, mengelompokkan kelas (contoh: Tahfidz Pagi, Calistung Sore), serta
+              menentukan guru pengampu.</p>
+          </div>
+        </div>
+        <div class="flow-step-item">
+          <div class="step-circle">2</div>
+          <div class="step-text">
+            <h4>Aktivasi Akun Guru & Santri</h4>
+            <p>Akun dibagikan ke guru dan wali murid. Akses langsung melalui peramban HP tanpa instalasi aplikasi yang
+              membebani memori.</p>
+          </div>
+        </div>
+        <div class="flow-step-item">
+          <div class="step-circle">3</div>
+          <div class="step-text">
+            <h4>Pencatatan Presensi & Hafalan Rutin</h4>
+            <p>Setiap sesi mengajar, guru mencentang kehadiran dan menginput capaian hafalan/Iqro dalam 2–3 menit per
+              kelas.</p>
+          </div>
+        </div>
+        <div class="flow-step-item">
+          <div class="step-circle">4</div>
+          <div class="step-text">
+            <h4>Laporan & Raport Otomatis</h4>
+            <p>Orang tua memantau perkembangan harian dari rumah, dan mengunduh raport resmi berformat PDF pada akhir
+              semester.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <span class="section-eyebrow">Perbandingan Nyata</span>
+      <h2 class="section-title">Sebelum vs Sesudah Menggunakan Sistem</h2>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 24%;">Kegiatan</th>
+            <th style="width: 38%;">Cara Lama (Kertas & WA Manual)</th>
+            <th style="width: 38%;">Dengan Alhanif</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Absensi Murid</strong></td>
+            <td>Mencentang buku tulis; rekap bulanan dihitung manual satu per satu.</td>
+            <td>1 klik "Tandai Semua Hadir", rekap persentase otomatis terhitung.</td>
+          </tr>
+          <tr>
+            <td><strong>Mutabaah Hafalan</strong></td>
+            <td>Ditulis di buku saku anak; rawan tertinggal, kotor, atau hilang.</td>
+            <td>Tercatat di akun anak, dilengkapi Mushaf digital & riwayat per juz.</td>
+          </tr>
+          <tr>
+            <td><strong>Laporan ke Orang Tua</strong></td>
+            <td>Ketik pesan WA satu-satu atau menunggu rapat akhir semester.</td>
+            <td>Wali login mandiri kapan saja melihat capaian belajar real-time.</td>
+          </tr>
+          <tr>
+            <td><strong>Penerbitan Raport</strong></td>
+            <td>Ketik manual di Word/Excel berhari-hari menjelang akhir tahun.</td>
+            <td>Terbit otomatis dari aplikasi dan diunduh jadi file PDF A4 resmi.</td>
+          </tr>
+          <tr>
+            <td><strong>Monitoring SPP</strong></td>
+            <td>Buku catatan kas rawan terlewat atau lupa tertagih.</td>
+            <td>Penyaringan jelas santri lunas vs belum bayar dalam satu layar.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="doc-footer">
+      <span>Alhanif — Solusi Manajemen Bimbingan Belajar</span>
+      <span>Halaman 8</span>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- HALAMAN 9: MODEL KERJA SAMA & SHARING PROFIT-->
+  <!-- ========================================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-badge">
+        <span class="logo-icon">A</span> Alhanif
+      </div>
+      <div class="doc-tag">8. Model Kemitraan Ramah Anggaran</div>
+    </div>
+
+    <span class="section-eyebrow">Solusi Investasi Tanpa Risiko</span>
+    <h2 class="section-title">Skema Kerja Sama Fleksibel & Sharing Profit</h2>
+    <p class="section-lead">
+      Kami memahami bahwa membangun aplikasi sendiri dari nol membutuhkan biaya besar (puluhan juta rupiah), belum
+      termasuk biaya sewa server bulanan dan biaya tenaga IT. Melalui kemitraan Alhanif, lembaga Anda dapat
+      langsung menikmati teknologi ini dengan risiko minimal:
+    </p>
+
+    <div class="card card-primary" style="margin-bottom: 14px;">
+      <h3 style="font-size: 0.98rem; color: var(--primary-dark); margin-bottom: 6px;">Prinsip Kemitraan: Bertumbuh
+        Bersama Lembaga Anda</h3>
+      <p style="font-size: 0.86rem; color: var(--slate-700); line-height: 1.6;">
+        Lembaga Anda tidak dibebani biaya pembuatan software di awal. Kami menerapkan model kerja sama yang adaptif
+        (seperti bagi hasil / sharing profit atau biaya terjangkau berbasis jumlah santri aktif). Jika santri Anda
+        sedikit di awal, biaya operasional sistem tetap sangat ringan dan proporsional.
+      </p>
+    </div>
+
+    <div class="grid-2" style="margin-bottom: 14px;">
+      <div class="card">
+        <h4 style="font-size: 0.92rem; color: var(--dark); margin-bottom: 6px;">Keuntungan untuk Lembaga Anda:</h4>
+        <ul style="font-size: 0.84rem; color: var(--slate-600); line-height: 1.6; padding-left: 16px;">
+          <li>Langsung siap pakai tanpa harus menunggu pembuatan berbulan-bulan.</li>
+          <li>Bebas biaya pemeliharaan server, keamanan database, dan backup rutin.</li>
+          <li>Mendapatkan pembaruan fitur sistem secara berkala tanpa biaya tambahan.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4 style="font-size: 0.92rem; color: var(--dark); margin-bottom: 6px;">Tiga Pilihan Format Kemitraan:</h4>
+        <ul style="font-size: 0.84rem; color: var(--slate-600); line-height: 1.6; padding-left: 16px;">
+          <li><strong>Skema Bagi Hasil (Sharing Profit):</strong> Berdasarkan porsi iuran SPP santri.</li>
+          <li><strong>Skema Langganan Terjangkau:</strong> Tarif flat per murid aktif per bulan.</li>
+          <li><strong>Kemitraan Lisensi Yayasan:</strong> Untuk lembaga dengan banyak cabang/TPQ.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout callout-amber">
+      <strong>Keterbukaan Diskusi:</strong> Angka dan formula pembagian hasil dirumuskan bersama dengan mengutamakan
+      keberlangsungan finansial lembaga Anda. Kami siap duduk bersama untuk mendiskusikan angka yang paling masuk akal
+      bagi bimbel Anda.
+    </div>
+
+    <div class="doc-footer">
+      <span>Alhanif — Solusi Manajemen Bimbingan Belajar</span>
+      <span>Halaman 9</span>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- HALAMAN 10: KUSTOMISASI & TANYA JAWAB (FAQ)-->
+  <!-- ========================================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-badge">
+        <span class="logo-icon">A</span> Alhanif
+      </div>
+      <div class="doc-tag">9. Kustomisasi & Tanya Jawab</div>
+    </div>
+
+    <div style="margin-bottom: 16px;">
+      <span class="section-eyebrow">Dapat Disesuaikan dengan Karakter Lembaga</span>
+      <h2 class="section-title">Kustomisasi Branding & Tata Tertib Bimbel</h2>
+      <p class="section-lead">
+        Setiap lembaga memiliki keunikan tersendiri. Arsitektur sistem kami terbuka untuk penyesuaian khusus dengan
+        biaya yang sangat terjangkau:
+      </p>
+
+      <div class="grid-3">
+        <div class="card">
+          <div style="font-weight: 700; font-size: 0.88rem; color: var(--dark); margin-bottom: 4px;">Logo & Kop Surat
+            Lembaga</div>
+          <p style="font-size: 0.8rem; color: var(--slate-600); line-height: 1.5;">Menyesuaikan nama portal bimbel, logo
+            resmi, dan kop surat resmi pada lembar raport digital.</p>
+        </div>
+        <div class="card">
+          <div style="font-weight: 700; font-size: 0.88rem; color: var(--dark); margin-bottom: 4px;">Format Indikator
+            Penilaian</div>
+          <p style="font-size: 0.8rem; color: var(--slate-600); line-height: 1.5;">Menyesuaikan kriteria nilai hafalan,
+            tajwid, atau calistung agar sejalan dengan standar yayasan Anda.</p>
+        </div>
+        <div class="card">
+          <div style="font-weight: 700; font-size: 0.88rem; color: var(--dark); margin-bottom: 4px;">Pengembangan Fitur
+            Khusus</div>
+          <p style="font-size: 0.8rem; color: var(--slate-600); line-height: 1.5;">Dapat didiskusikan penambahan modul
+            khusus seperti formulir pendaftaran santri baru atau kalender ujian.</p>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <span class="section-eyebrow">Pertanyaan yang Sering Diajukan</span>
+      <h2 class="section-title">Tanya Jawab Seputar Penggunaan (FAQ)</h2>
+
+      <div class="faq-item">
+        <div class="faq-question">Apakah guru sepuh atau orang tua yang kurang mengerti teknologi bisa menggunakannya?
+        </div>
+        <div class="faq-answer">Sangat bisa. Tampilan aplikasi dirancang sangat sederhana dengan tombol yang besar dan
+          jelas. Guru hanya perlu memilih nama anak dan mengklik status hadir atau setoran hafalan tanpa pengaturan
+          teknis yang membingungkan.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">Apakah data santri kami aman dan terpisah dari lembaga lain?</div>
+        <div class="faq-answer">Dijamin aman. Sistem database menggunakan keamanan <em>Row Level Security (RLS)</em>
+          yang memisahkan hak akses data setiap lembaga secara ketat. Pihak luar atau bimbel lain tidak dapat melihat
+          data santri Anda.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">Apakah kami dapat mencoba akun simulasi (demo) terlebih dahulu?</div>
+        <div class="faq-answer">Tentu saja. Kami telah menyiapkan akun demo lengkap dengan simulasi data guru, murid,
+          dan raport agar Bapak/Ibu dapat mencoba alur penggunaannya secara langsung sebelum memutuskan kerja sama.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">Bagaimana jika terjadi kendala teknis saat aplikasi digunakan?</div>
+        <div class="faq-answer">Lembaga Anda tidak perlu repot. Seluruh pemeliharaan teknis, perbaikan gangguan, dan
+          kelancaran server didukung penuh oleh tim teknis kami.</div>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span>Alhanif — Solusi Manajemen Bimbingan Belajar</span>
+      <span>Halaman 10</span>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- HALAMAN 11: LANGKAH MEMULAI & KONTAK KLIEN -->
+  <!-- ========================================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-badge">
+        <span class="logo-icon">A</span> Alhanif
+      </div>
+      <div class="doc-tag">10. Konsultasi & Kontak Kemitraan</div>
+    </div>
+
+    <div style="max-width: 620px; margin: 15px auto 25px auto; text-align: center;">
+      <span class="section-eyebrow" style="text-align: center;">Langkah Berikutnya</span>
+      <h2 class="section-title" style="font-size: 1.65rem; margin-bottom: 12px;">Mari Jadwalkan Sesi Demo Gratis</h2>
+      <p class="section-lead" style="font-size: 0.95rem; line-height: 1.7;">
+        Modernisasi administrasi bimbel bukan tentang membuat proses belajar menjadi rumit, melainkan memberikan
+        kepastian, kerapian, dan rasa bangga bagi guru, murid, serta orang tua di lembaga Anda.
+      </p>
+      <p class="section-lead" style="font-size: 0.95rem; line-height: 1.7; margin-top: -8px;">
+        Kami mengundang Bapak/Ibu pimpinan pengelola bimbel untuk berdiskusi santai, melihat demo langsung di layar
+        smartphone, dan mendiskusikan format kerja sama terbaik bagi lembaga Anda.
+      </p>
+    </div>
+
+    <div class="card card-primary" style="padding: 20px 24px; margin-bottom: 22px;">
+      <h3 style="font-size: 1.05rem; color: var(--primary-dark); text-align: center; margin-bottom: 16px;">Saluran
+        Komunikasi Resmi Konsultasi Lembaga</h3>
+
+      <div class="grid-2">
+        <div class="contact-card">
+          <div class="contact-title">WhatsApp Diskusi & Demo</div>
+          <div class="contact-detail">[085364932661 / Tim Resmi]</div>
+        </div>
+        <div class="contact-card">
+          <div class="contact-title">Email Resmi Kemitraan</div>
+          <div class="contact-detail">hello@uay.com</div>
+        </div>
+        <div class="contact-card">
+          <div class="contact-title">Pengembang Teknologi</div>
+          <div class="contact-detail">UAY Studio</div>
+        </div>
+        <div class="contact-card">
+          <div class="contact-title">Tautan Akses Portal Demo</div>
+          <div class="contact-detail">alhanif.online</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-amber" style="font-size: 0.82rem; text-align: center;">
+      <strong>Tanpa Komitmen Awal:</strong> Bapak/Ibu bebas berkonsultasi dan mencoba akun demo terlebih dahulu untuk
+      memastikan sistem ini benar-benar cocok dengan kebutuhan bimbel Anda.
+    </div>
+
+    <div class="no-print" style="text-align: center; margin-top: 24px;">
+      <button onclick="window.print()" style="
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 13px 30px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: inherit;
+        box-shadow: 0 4px 14px rgba(15, 118, 110, 0.25);
+      ">
+        🖨 Cetak atau Simpan sebagai PDF (A4)
+      </button>
+    </div>
+
+    <div class="doc-footer" style="margin-top: auto;">
+      <span>© 2026 Alhanif — Bahan Diskusi & Presentasi Solusi Lembaga</span>
+      <span>Halaman 11</span>
+    </div>
+  </div>
+
+</body>
+
+</html>

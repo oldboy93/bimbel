@@ -74,6 +74,14 @@ export default function TabCalistung({ enrollmentId, guruId }: Props) {
 
   useEffect(() => { load(); }, [enrollmentId]);
 
+  useEffect(() => {
+    const handleTrigger = () => {
+      setShowForm(true);
+    };
+    window.addEventListener('open-calistung-session', handleTrigger);
+    return () => window.removeEventListener('open-calistung-session', handleTrigger);
+  }, []);
+
   // Pre-fill dari penilaian calistung terakhir jika ada
   useEffect(() => {
     if (riwayat && riwayat.length > 0) {
@@ -104,6 +112,7 @@ export default function TabCalistung({ enrollmentId, guruId }: Props) {
     if (!confirm("Hapus penilaian calistung ini?")) return;
     await db.from("tajwid_assessments").delete().eq("id", id);
     load();
+    window.dispatchEvent(new Event('refresh-student-summary'));
   };
 
   const handleSimpan = async (e: React.FormEvent) => {
@@ -122,6 +131,7 @@ export default function TabCalistung({ enrollmentId, guruId }: Props) {
     setShowForm(false);
     load();
     setIsSaving(false);
+    window.dispatchEvent(new Event('refresh-student-summary'));
   };
 
   const updateItem = (key: keyof CalistungData, value: Level) => {

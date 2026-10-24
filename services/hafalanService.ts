@@ -19,6 +19,19 @@ export const tampilRiwayatHafalan = async (enrollmentId: string): Promise<Hafala
   return data ?? [];
 };
 
+// ── AMBIL TUGAS RUMAH (PR) HAFALAN ─────────────────────────
+export const tampilPrHafalan = async (enrollmentId: string): Promise<HafalanProgress[]> => {
+  const db = getDb();
+  const { data, error } = await db
+    .from('hafalan_progress')
+    .select('*')
+    .eq('enrollment_id', enrollmentId)
+    .eq('is_pr', true)
+    .order('session_date', { ascending: false });
+  if (error) throw new Error(error.message);
+  return data ?? [];
+};
+
 // ── AMBIL HAFALAN TERKINI (surat terakhir yang dipelajari) ─
 export const tampilHafalanTerkini = async (enrollmentId: string): Promise<HafalanProgress | null> => {
   const db = getDb();
@@ -45,6 +58,8 @@ export const simpanHafalan = async (input: {
   notes?: string;
   juzNumber?: number;
   status?: 'lulus' | 'ngulang';
+  is_pr?: boolean;
+  pr_notes_guru?: string;
 }): Promise<HafalanProgress> => {
   const db = getDb();
   const baseQuery = db.from('hafalan_progress').select('*').eq('enrollment_id', input.enrollmentId).order('session_date', { ascending: false }).limit(1);
@@ -68,6 +83,8 @@ export const simpanHafalan = async (input: {
         session_date: input.sessionDate,
         notes: input.notes ?? '',
         status: input.status ?? 'lulus',
+        is_pr: input.is_pr ?? false,
+        pr_notes_guru: input.pr_notes_guru ?? null,
       })
       .eq('id', existing.id)
       .select()
@@ -88,11 +105,33 @@ export const simpanHafalan = async (input: {
       session_date: input.sessionDate,
       notes: input.notes ?? '',
       status: input.status ?? 'lulus',
+      is_pr: input.is_pr ?? false,
+      pr_notes_guru: input.pr_notes_guru ?? null,
     })
     .select()
     .single();
   if (error) throw new Error(error.message);
   return data as HafalanProgress;
+};
+
+// ── UPDATE NILAI SIMAKAN ORANG TUA (HAFALAN) ───────────────
+export const updateParentFeedbackHafalan = async (input: {
+  hafalanId: string;
+  parentRating: number;
+  parentStatus: 'lancar' | 'cukup' | 'perlu_bimbingan';
+  parentNotes?: string;
+}): Promise<void> => {
+  const db = getDb();
+  const { error } = await db
+    .from('hafalan_progress')
+    .update({
+      parent_rating: input.parentRating,
+      parent_status: input.parentStatus,
+      parent_notes: input.parentNotes ?? null,
+      parent_simak_at: new Date().toISOString(),
+    })
+    .eq('id', input.hafalanId);
+  if (error) throw new Error(error.message);
 };
 
 // ── HAPUS SESI HAFALAN ─────────────────────────────────────

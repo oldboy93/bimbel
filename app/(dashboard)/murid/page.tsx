@@ -9,12 +9,15 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { tampilEnrollmentMurid } from "@/services/studentService";
-import { tampilHafalanTerkini, tampilRiwayatHafalan } from "@/services/hafalanService";
+import { tampilHafalanTerkini, tampilRiwayatHafalan, tampilPrHafalan } from "@/services/hafalanService";
 import { tampilRiwayatIqro } from "@/services/iqroService";
 import { tampilAbsensiMurid, hitungStatistikAbsensi } from "@/services/attendanceService";
+import { tampilPrMurajaah } from "@/services/murajaahService";
 import { getClassLeaderboard, type LeaderboardEntry } from "@/services/leaderboardService";
 import { DAY_NAMES, Format, PROGRAM_TYPES, getProgressColor } from "@/lib/helpers";
 import type { EnrollmentWithDetails, HafalanProgress, IqroProgress, Schedule } from "@/types";
+import ModalSimakPr, { type PrItem } from "@/components/ModalSimakPr";
+import MushafViewer from "@/components/MushafViewer";
 
 const HADITHS = [
   { text: "Barang siapa yang menempuh jalan untuk mencari ilmu, Allah akan memudahkan baginya jalan ke surga.", narrator: "HR. Muslim" },
@@ -46,6 +49,13 @@ export default function MuridDashboard() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [activeClassTab, setActiveClassTab] = useState<string>("all");
   const [schedulePages, setSchedulePages] = useState<Record<string, number>>({});
+  const [prList, setPrList] = useState<PrItem[]>([]);
+  const [selectedPrItem, setSelectedPrItem] = useState<PrItem | null>(null);
+  const [isModalSimakOpen, setIsModalSimakOpen] = useState(false);
+  const [isMushafOpen, setIsMushafOpen] = useState(false);
+  const [mushafSurah, setMushafSurah] = useState(1);
+  const [mushafHighlightFrom, setMushafHighlightFrom] = useState<number | undefined>(undefined);
+  const [mushafHighlightTo, setMushafHighlightTo] = useState<number | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const supabase = createClient();
 
@@ -55,13 +65,12 @@ export default function MuridDashboard() {
     weekday: "long", day: "numeric", month: "long", year: "numeric",
   });
 
-  useEffect(() => {
-    const load = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
+  const loadData = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
 
       // ── Validasi sinkronisasi akun login dengan active_student_id ──
       const { data: authProfile } = await supabase
@@ -196,11 +205,58 @@ export default function MuridDashboard() {
         })
       );
 
+      // Ambil daftar tugas rumah (PR) untuk seluruh enrollment murid ini
+      const collectedPr: PrItem[] = [];
+      await Promise.all(
+        enrollments.map(async (enr) => {
+          const [prHafalan, prMurajaah] = await Promise.all([
+            tampilPrHafalan(enr.id).catch(() => []),
+            tampilPrMurajaah(enr.id).catch(() => []),
+          ]);
+          prHafalan.forEach((h) => {
+            collectedPr.push({
+              type: "hafalan",
+              id: h.id,
+              surah_name: h.surah_name,
+              surah_number: h.surah_number,
+              ayat_reached: h.ayat_reached,
+              total_ayat: h.total_ayat,
+              pr_notes_guru: h.pr_notes_guru,
+              parent_rating: h.parent_rating,
+              parent_status: h.parent_status,
+              parent_notes: h.parent_notes,
+              parent_simak_at: h.parent_simak_at,
+              session_date: h.session_date,
+            });
+          });
+          prMurajaah.forEach((m) => {
+            collectedPr.push({
+              type: "murajaah",
+              id: m.id,
+              surah_name: m.surah_name,
+              surah_number: m.surah_number,
+              ayat_or_page_range: m.ayat_or_page_range,
+              pr_notes_guru: m.pr_notes_guru,
+              parent_rating: m.parent_rating,
+              parent_status: m.parent_status,
+              parent_notes: m.parent_notes,
+              parent_simak_at: m.parent_simak_at,
+              session_date: m.session_date,
+            });
+          });
+        })
+      );
+      collectedPr.sort(
+        (a, b) => new Date(b.session_date).getTime() - new Date(a.session_date).getTime()
+      );
+      setPrList(collectedPr);
+
       setSummaries(results);
       setIsLoading(false);
-    };
+  };
 
-    load();
+  useEffect(() => {
+    loadData();
   }, []);
 
   if (isLoading) {
@@ -283,6 +339,125 @@ export default function MuridDashboard() {
           <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Kehadiran</p>
         </div>
       </div>
+
+      {/* ── Tugas Rumah & Muroja'ah (Disimak Orang Tua) ── */}
+      {prList.length > 0 && (
+        <section className="bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-white rounded-3xl border border-amber-200/80 p-5 shadow-sm space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-amber-500 text-white rounded-2xl shadow-xs">
+                <BookOpen size={18} />
+              </div>
+              <div>
+                <h2 className="font-extrabold text-slate-900 text-base">
+                  Tugas Rumah & Muroja'ah Mandiri
+                </h2>
+                <p className="text-xs text-amber-800 font-medium">
+                  Ditugaskan oleh guru untuk disimak oleh orang tua di rumah
+                </p>
+              </div>
+            </div>
+            <span className="text-xs font-black bg-amber-500 text-white px-2.5 py-1 rounded-full shadow-xs">
+              {prList.filter((p) => !p.parent_simak_at).length} Perlu Disimak
+            </span>
+          </div>
+
+          <div className="space-y-3">
+            {prList.map((pr) => {
+              const isDone = Boolean(pr.parent_simak_at);
+              return (
+                <div
+                  key={`${pr.type}-${pr.id}`}
+                  className="bg-white p-4 rounded-2xl border border-amber-200/60 shadow-xs hover:border-amber-300 transition space-y-3"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-amber-100 text-amber-800">
+                          {pr.type === "hafalan" ? "Hafalan Baru" : "Muroja'ah"}
+                        </span>
+                        <span
+                          className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
+                            isDone
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-amber-50 text-amber-700 border-amber-200"
+                          }`}
+                        >
+                          {isDone ? `✅ Disimak (⭐ ${pr.parent_rating}/5)` : "⏳ Belum Disimak"}
+                        </span>
+                      </div>
+                      <h4 className="font-extrabold text-slate-900 text-base">
+                        {pr.surah_name} {pr.ayat_or_page_range ? `(${pr.ayat_or_page_range})` : ""}
+                      </h4>
+                      {pr.type === "hafalan" && pr.ayat_reached && pr.total_ayat && (
+                        <p className="text-xs text-slate-500 font-medium">
+                          Target: Ayat 1 s.d. {pr.ayat_reached} (dari total {pr.total_ayat} ayat)
+                        </p>
+                      )}
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-medium bg-slate-50 px-2 py-1 rounded-lg">
+                      {Format.tanggalPendek(pr.session_date)}
+                    </span>
+                  </div>
+
+                  {pr.pr_notes_guru && (
+                    <div className="bg-amber-50/60 p-2.5 rounded-xl border border-amber-100 text-xs text-slate-700">
+                      <strong className="text-amber-900">Pesan Ustadz:</strong> "{pr.pr_notes_guru}"
+                    </div>
+                  )}
+
+                  {isDone && pr.parent_notes && (
+                    <div className="bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100 text-xs text-emerald-800 italic">
+                      <strong>Catatan Ortu:</strong> "{pr.parent_notes}"
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPrItem(pr);
+                        setIsModalSimakOpen(true);
+                      }}
+                      className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs ${
+                        isDone
+                          ? "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                          : "bg-amber-600 hover:bg-amber-700 text-white"
+                      }`}
+                    >
+                      <span>{isDone ? "Ubah Nilai Simakan" : "Simak & Beri Nilai"}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const sNum = pr.surah_number && pr.surah_number > 0 ? pr.surah_number : 1;
+                        let from = 1;
+                        let to = pr.ayat_reached;
+                        if (pr.ayat_or_page_range) {
+                          const m = pr.ayat_or_page_range.match(/(\d+)\s*[-–]\s*(\d+)/);
+                          if (m) {
+                            from = parseInt(m[1], 10);
+                            to = parseInt(m[2], 10);
+                          }
+                        }
+                        setMushafSurah(sNum);
+                        setMushafHighlightFrom(from);
+                        setMushafHighlightTo(to);
+                        setIsMushafOpen(true);
+                      }}
+                      className="py-2.5 px-3.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl text-xs font-bold transition flex items-center gap-1 border border-emerald-200"
+                      title="Buka Mushaf & Putar Murottal"
+                    >
+                      <BookOpen size={14} />
+                      <span>Mushaf & Audio</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* ── Jadwal Hari Ini ── */}
       <section>
@@ -750,6 +925,35 @@ export default function MuridDashboard() {
           </Link>
         </div>
       </section>
+
+      {/* ── Modal Simakan Orang Tua ── */}
+      <ModalSimakPr
+        isOpen={isModalSimakOpen}
+        item={selectedPrItem}
+        onClose={() => {
+          setIsModalSimakOpen(false);
+          setSelectedPrItem(null);
+        }}
+        onSuccess={() => {
+          loadData();
+        }}
+        onOpenMushaf={(surahNumber, highlightFrom, highlightTo) => {
+          setMushafSurah(surahNumber);
+          setMushafHighlightFrom(highlightFrom);
+          setMushafHighlightTo(highlightTo);
+          setIsMushafOpen(true);
+        }}
+      />
+
+      {/* ── Mushaf Viewer Drawer dengan Audio Murottal ── */}
+      <MushafViewer
+        isOpen={isMushafOpen}
+        onClose={() => setIsMushafOpen(false)}
+        initialMode="surat"
+        initialSurahNumber={mushafSurah}
+        highlightFrom={mushafHighlightFrom}
+        highlightTo={mushafHighlightTo}
+      />
     </div>
   );
 }

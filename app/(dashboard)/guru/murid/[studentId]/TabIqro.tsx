@@ -56,6 +56,14 @@ export default function TabIqro({ enrollmentId, guruId, studentPhone, studentNam
 
   useEffect(() => { load(); }, [enrollmentId]);
 
+  useEffect(() => {
+    const handleTrigger = () => {
+      setShowForm(true);
+    };
+    window.addEventListener('open-iqro-session', handleTrigger);
+    return () => window.removeEventListener('open-iqro-session', handleTrigger);
+  }, []);
+
   const handleSimpan = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
@@ -93,12 +101,14 @@ export default function TabIqro({ enrollmentId, guruId, studentPhone, studentNam
     setNotes("");
     load();
     setIsSaving(false);
+    window.dispatchEvent(new Event('refresh-student-summary'));
   };
 
   const handleHapus = async (id: string) => {
     if (!confirm("Hapus catatan sesi ini?")) return;
     await hapusIqro(id);
     load();
+    window.dispatchEvent(new Event('refresh-student-summary'));
   };
 
   if (isLoading) {
