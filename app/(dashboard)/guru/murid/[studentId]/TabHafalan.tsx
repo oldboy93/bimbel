@@ -209,6 +209,14 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
         </button>
         <button
           type="button"
+          onClick={() => window.dispatchEvent(new CustomEvent("open-pr-modal"))}
+          className="flex items-center gap-1.5 px-3.5 py-3 bg-amber-50 text-amber-800 font-bold rounded-xl border border-amber-200 hover:bg-amber-100 transition text-sm"
+          title="Tugaskan PR untuk Disimak di Rumah"
+        >
+          <span>🏠 PR</span>
+        </button>
+        <button
+          type="button"
           onClick={() => setShowMushaf(true)}
           className="flex items-center gap-2 px-4 py-3 bg-emerald-50 text-emerald-700 font-bold rounded-xl border border-emerald-200 hover:bg-emerald-100 transition text-sm"
         >
@@ -499,7 +507,24 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
             </div>
 
             {isPr && (
-              <div className="pt-2 border-t border-amber-200/70">
+              <div className="pt-2 border-t border-amber-200/70 space-y-2">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[10px] font-bold text-amber-800">Target Cepat:</span>
+                  <button
+                    type="button"
+                    onClick={() => setPrNotesGuru((prev) => prev ? `[PR Weekend] ${prev}` : "[PR Weekend] Mohon disimak lancar saat akhir pekan")}
+                    className="px-2 py-0.5 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded text-[10px] font-semibold transition"
+                  >
+                    + PR Weekend
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPrNotesGuru((prev) => prev ? `[Target Pekanan] ${prev}` : "[Target Pekanan] Disimak berkala selama 1 pekan ini")}
+                    className="px-2 py-0.5 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded text-[10px] font-semibold transition"
+                  >
+                    + Target Pekanan
+                  </button>
+                </div>
                 <label className="block text-xs font-bold text-amber-900 mb-1">
                   Pesan / Instruksi Khusus untuk Orang Tua (Opsional)
                 </label>
@@ -528,6 +553,81 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
 
       {/* Riwayat */}
       <div className="space-y-3">
+        {/* ── PINNED: Capaian Makro Juz & Halaman (Agar Tidak Tenggelam saat diisi setoran harian baru) ── */}
+        {(() => {
+          const macroJuzRecord = riwayat.find(
+            (r) => r.surah_number === 0 || r.surah_name.startsWith("Juz ")
+          );
+          if (!macroJuzRecord) return null;
+          const isLulus = (macroJuzRecord.status ?? "lulus") === "lulus";
+          const percent = Math.min(
+            100,
+            Math.round(
+              (macroJuzRecord.ayat_reached / (macroJuzRecord.total_ayat || 20)) * 100
+            )
+          );
+
+          return (
+            <div
+              onClick={() => setSelectedDetail(macroJuzRecord)}
+              className="bg-white rounded-2xl border-2 border-emerald-500/30 p-4 shadow-sm hover:border-emerald-500 hover:shadow-md transition cursor-pointer group"
+            >
+              <div className="flex justify-between items-start mb-2">
+                <div className="flex-1 min-w-0">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                    📌 Posisi Capaian Juz &amp; Halaman (Makro)
+                  </span>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <h4 className="font-black text-slate-900 group-hover:text-emerald-700 transition text-base">
+                      {macroJuzRecord.surah_name}
+                    </h4>
+                    <span
+                      className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
+                        isLulus
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-amber-50 text-amber-700 border-amber-200"
+                      }`}
+                    >
+                      {isLulus ? "✅ Lulus" : "🔄 Ngulang"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {new Date(macroJuzRecord.session_date).toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
+
+                <div
+                  className="flex items-center gap-2 ml-2"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <span className="text-base font-black text-blue-600">
+                    {macroJuzRecord.ayat_reached}/{macroJuzRecord.total_ayat}
+                  </span>
+                  <button
+                    onClick={() => handleHapus(macroJuzRecord.id)}
+                    className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
+                    title="Hapus capaian juz"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${
+                    isLulus ? "bg-emerald-500" : "bg-amber-400"
+                  }`}
+                  style={{ width: `${percent}%` }}
+                />
+              </div>
+            </div>
+          );
+        })()}
         {riwayat.length === 0 ? (
           <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-slate-400">
             <BookOpen className="mx-auto mb-2 text-slate-300" size={32} />
@@ -535,6 +635,14 @@ export default function TabHafalan({ enrollmentId, guruId, studentPhone, student
           </div>
         ) : (
           <>
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Riwayat Sesi Setoran
+              </span>
+              <span className="text-[11px] text-slate-400">
+                {riwayat.length} sesi
+              </span>
+            </div>
             {(showAll ? riwayat : riwayat.slice(0, LIMIT)).map(r => {
               const p = hitungPersenHafalan(r.ayat_reached, r.total_ayat);
               const statusLulus = (r.status ?? 'lulus') === 'lulus';

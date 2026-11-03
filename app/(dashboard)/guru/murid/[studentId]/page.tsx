@@ -175,6 +175,7 @@ export default function StudentDetailPage() {
         {enrollment && (
           <StudentSummaryCard
             enrollmentId={enrollment.id}
+            guruId={guruId}
             classType={(enrollment?.classes?.type as "calistung" | "tahfidz" | "umum") ?? "umum"}
             studentName={student.full_name}
             onNavigateToSection={handleSummaryNavigate}
@@ -261,6 +262,7 @@ export default function StudentDetailPage() {
         {enrollment && (
           <StudentSummaryCard
             enrollmentId={enrollment.id}
+            guruId={guruId}
             classType={(enrollment?.classes?.type as "calistung" | "tahfidz" | "umum") ?? "umum"}
             studentName={student.full_name}
             onNavigateToSection={handleSummaryNavigate}

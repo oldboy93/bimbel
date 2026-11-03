@@ -177,6 +177,14 @@ export default function TabMurajaah({ enrollmentId, guruId, studentPhone, studen
         </button>
         <button
           type="button"
+          onClick={() => window.dispatchEvent(new CustomEvent("open-pr-modal"))}
+          className="flex items-center gap-1.5 px-3.5 py-3 bg-amber-50 text-amber-800 font-bold rounded-xl border border-amber-200 hover:bg-amber-100 transition text-sm"
+          title="Tugaskan PR untuk Disimak di Rumah"
+        >
+          <span>🏠 PR</span>
+        </button>
+        <button
+          type="button"
           onClick={() => setShowMushaf(true)}
           className="flex items-center gap-2 px-4 py-3 bg-emerald-50 text-emerald-700 font-bold rounded-xl border border-emerald-200 hover:bg-emerald-100 transition text-sm"
         >
@@ -366,7 +374,24 @@ export default function TabMurajaah({ enrollmentId, guruId, studentPhone, studen
               </div>
 
               {isPr && (
-                <div className="pt-2 border-t border-amber-200/70">
+                <div className="pt-2 border-t border-amber-200/70 space-y-2">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] font-bold text-amber-800">Target Cepat:</span>
+                    <button
+                      type="button"
+                      onClick={() => setPrNotesGuru((prev) => prev ? `[PR Weekend] ${prev}` : "[PR Weekend] Mohon disimak pengulangan saat akhir pekan")}
+                      className="px-2 py-0.5 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded text-[10px] font-semibold transition"
+                    >
+                      + PR Weekend
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPrNotesGuru((prev) => prev ? `[Target Pekanan] ${prev}` : "[Target Pekanan] Disimak berkala selama 1 pekan ini")}
+                      className="px-2 py-0.5 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded text-[10px] font-semibold transition"
+                    >
+                      + Target Pekanan
+                    </button>
+                  </div>
                   <label className="block text-xs font-bold text-amber-900 mb-1">
                     Pesan / Instruksi Khusus untuk Orang Tua (Opsional)
                   </label>

@@ -395,8 +395,8 @@ export default function MuridDashboard() {
                         </p>
                       )}
                     </div>
-                    <span className="text-[10px] text-slate-400 font-medium bg-slate-50 px-2 py-1 rounded-lg">
-                      {Format.tanggalPendek(pr.session_date)}
+                    <span className="text-[10px] text-amber-900 font-bold bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-lg shrink-0">
+                      Batas: {Format.tanggalPendek(pr.session_date)}
                     </span>
                   </div>
 

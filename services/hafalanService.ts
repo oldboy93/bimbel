@@ -121,17 +121,54 @@ export const updateParentFeedbackHafalan = async (input: {
   parentStatus: 'lancar' | 'cukup' | 'perlu_bimbingan';
   parentNotes?: string;
 }): Promise<void> => {
+  const res = await fetch('/api/pr/simak', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      type: 'hafalan',
+      id: input.hafalanId,
+      rating: input.parentRating,
+      status: input.parentStatus,
+      notes: input.parentNotes,
+    }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || 'Gagal menyimpan penilaian simakan hafalan.');
+  }
+};
+
+// ── SIMPAN TUGAS RUMAH (PR) HAFALAN INDEPENDEN ──────────────
+export const simpanPrHafalan = async (input: {
+  enrollmentId: string;
+  guruId: string;
+  surahNumber?: number;
+  surahName: string;
+  totalAyat: number;
+  ayatReached: number;
+  sessionDate: string;
+  prNotesGuru: string;
+}): Promise<HafalanProgress> => {
   const db = getDb();
-  const { error } = await db
+  const { data, error } = await db
     .from('hafalan_progress')
-    .update({
-      parent_rating: input.parentRating,
-      parent_status: input.parentStatus,
-      parent_notes: input.parentNotes ?? null,
-      parent_simak_at: new Date().toISOString(),
+    .insert({
+      enrollment_id: input.enrollmentId,
+      guru_id: input.guruId,
+      surah_number: input.surahNumber ?? 0,
+      surah_name: input.surahName,
+      total_ayat: input.totalAyat,
+      ayat_reached: input.ayatReached,
+      session_date: input.sessionDate,
+      is_pr: true,
+      pr_notes_guru: input.prNotesGuru,
+      status: 'lulus',
     })
-    .eq('id', input.hafalanId);
+    .select()
+    .single();
   if (error) throw new Error(error.message);
+  return data as HafalanProgress;
 };
 
 // ── HAPUS SESI HAFALAN ─────────────────────────────────────

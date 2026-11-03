@@ -1,17 +1,20 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { tampilRiwayatHafalan } from "@/services/hafalanService";
+import { tampilRiwayatHafalan, hapusHafalan } from "@/services/hafalanService";
+import { tampilRiwayatMurajaah, hapusMurajaah } from "@/services/murajaahService";
 import { tampilRiwayatIqro } from "@/services/iqroService";
 import { tampilAssessmentTajwid } from "@/services/gradeService";
 import { tampilAbsensiMurid } from "@/services/attendanceService";
 import { QURAN_SURAHS } from "@/lib/quranData";
 import { calcAttendanceRate } from "@/lib/helpers";
-import type { HafalanProgress, IqroProgress, Attendance } from "@/types";
+import type { HafalanProgress, MurajaahSession, IqroProgress, Attendance } from "@/types";
 import { ChevronRight, X } from "lucide-react";
+import ModalBeriPr from "@/components/ModalBeriPr";
 
 interface Props {
   enrollmentId: string;
+  guruId?: string;
   classType: "tahfidz" | "calistung" | "umum";
   studentName: string;
   onNavigateToSection: (sectionKey: string) => void;
@@ -19,17 +22,20 @@ interface Props {
 
 export default function StudentSummaryCard({
   enrollmentId,
+  guruId = "",
   classType,
   studentName,
   onNavigateToSection,
 }: Props) {
   const [hafalanList, setHafalanList] = useState<HafalanProgress[]>([]);
+  const [murajaahList, setMurajaahList] = useState<MurajaahSession[]>([]);
   const [iqroList, setIqroList] = useState<IqroProgress[]>([]);
   const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [calistungData, setCalistungData] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showPetaModal, setShowPetaModal] = useState(false);
-  const [filterJuz30Only, setFilterJuz30Only] = useState(true);
+  const [showModalBeriPr, setShowModalBeriPr] = useState(false);
+  const [petaFilter, setPetaFilter] = useState<"selesai" | "juz30" | "semua">("selesai");
 
   const loadData = async () => {
     try {
@@ -55,12 +61,14 @@ export default function StudentSummaryCard({
           }
         }
       } else {
-        const [hafalan, iqro, absRes] = await Promise.all([
+        const [hafalan, murajaah, iqro, absRes] = await Promise.all([
           tampilRiwayatHafalan(enrollmentId).catch(() => []),
+          tampilRiwayatMurajaah(enrollmentId).catch(() => []),
           tampilRiwayatIqro(enrollmentId).catch(() => []),
           tampilAbsensiMurid(enrollmentId).catch(() => []),
         ]);
         setHafalanList(hafalan);
+        setMurajaahList(murajaah);
         setIqroList(iqro);
         setAttendances(absRes);
       }
@@ -74,23 +82,59 @@ export default function StudentSummaryCard({
   useEffect(() => {
     loadData();
     const handleRefresh = () => loadData();
+    const handleOpenPr = () => setShowModalBeriPr(true);
     window.addEventListener("refresh-student-summary", handleRefresh);
-    return () => window.removeEventListener("refresh-student-summary", handleRefresh);
+    window.addEventListener("open-pr-modal", handleOpenPr);
+    return () => {
+      window.removeEventListener("refresh-student-summary", handleRefresh);
+      window.removeEventListener("open-pr-modal", handleOpenPr);
+    };
   }, [enrollmentId, classType]);
 
-  // ── KEHADIRAN (10 sesi terakhir) ─────────────────────────
-  const recentAttendances = attendances.slice(0, 10);
-  const hadirCount = recentAttendances.filter((a) => a.status === "H").length;
-  const totalSesi = recentAttendances.length;
+  // ── KEHADIRAN (Bulan Berjalan & Akumulasi Total) ─────────
+  const currentYM = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+  const monthAttendances = attendances.filter((a) => a.date && a.date.startsWith(currentYM));
+  const isBulanIni = monthAttendances.length > 0;
+  const activeAttendances = isBulanIni ? monthAttendances : attendances;
+  const hadirCount = activeAttendances.filter((a) => a.status === "H").length;
+  const totalSesi = activeAttendances.length;
   const attendanceRate = totalSesi > 0 ? Math.round((hadirCount / totalSesi) * 100) : null;
 
   // ── KALKULASI TAHFIDZ ──────────────────────────────────────────
   const latestHafalan = hafalanList[0] || null;
 
-  // Cek PR terakhir yang belum disimak
-  const latestPr = useMemo(() => {
-    return hafalanList.find((h) => h.is_pr && !h.parent_simak_at) || null;
-  }, [hafalanList]);
+  // Cek daftar PR aktif (belum disimak) dari Hafalan & Muroja'ah
+  const activePrList = useMemo(() => {
+    const hPrs = hafalanList
+      .filter((h) => h.is_pr && !h.parent_simak_at)
+      .map((h) => ({
+        id: h.id,
+        type: "hafalan" as const,
+        surahName: h.surah_name,
+        surahNumber: h.surah_number,
+        range: `${h.ayat_reached}/${h.total_ayat} ${h.surah_number === 0 ? "hlm" : "ayat"}`,
+        deadline: h.session_date,
+        notes: h.pr_notes_guru,
+      }));
+
+    const mPrs = murajaahList
+      .filter((m) => m.is_pr && !m.parent_simak_at)
+      .map((m) => ({
+        id: m.id,
+        type: "murajaah" as const,
+        surahName: m.surah_name,
+        surahNumber: m.surah_number,
+        range: m.ayat_or_page_range || "",
+        deadline: m.session_date,
+        notes: m.pr_notes_guru,
+      }));
+
+    return [...hPrs, ...mPrs].sort(
+      (a, b) => new Date(b.deadline).getTime() - new Date(a.deadline).getTime()
+    );
+  }, [hafalanList, murajaahList]);
+
+  const latestPr = activePrList[0] || null;
 
   // Jumlah sesi ngulang di surat yang sama (surat aktif)
   const ngulangCount = useMemo(() => {
@@ -103,25 +147,61 @@ export default function StudentSummaryCard({
     ).length;
   }, [hafalanList, latestHafalan]);
 
+  // Pencapaian Makro Juz Terakhir (Juz & Halaman) agar TIDAK TENGGELAM saat diisi setoran surat harian
+  const latestJuzRecord = useMemo(() => {
+    return (
+      hafalanList.find(
+        (h) => h.surah_number === 0 || h.surah_name.startsWith("Juz ")
+      ) || null
+    );
+  }, [hafalanList]);
+
   // Peta status per surat
   const surahProgressMap = useMemo(() => {
-    const map = new Map<number, { reached: number; total: number; isLulus: boolean }>();
+    const map = new Map<number, { reached: number; total: number; isLulus: boolean; date?: string }>();
+
     hafalanList.forEach((item) => {
       if (item.surah_number > 0) {
         const existing = map.get(item.surah_number);
-        if (!existing || item.ayat_reached > existing.reached) {
-          map.set(item.surah_number, {
-            reached: item.ayat_reached,
-            total: item.total_ayat,
-            isLulus:
-              (item.status ?? "lulus") === "lulus" &&
-              item.ayat_reached >= item.total_ayat,
+        const itemIsLulus =
+          (item.status ?? "lulus") === "lulus" &&
+          item.ayat_reached >= item.total_ayat;
+        const reached = Math.max(item.ayat_reached, existing?.reached || 0);
+        const isLulus = Boolean(existing?.isLulus || itemIsLulus);
+
+        map.set(item.surah_number, {
+          reached,
+          total: item.total_ayat,
+          isLulus,
+          date: itemIsLulus ? item.session_date : existing?.date || item.session_date,
+        });
+      }
+    });
+
+    // Jika murid sudah dinyatakan lulus Juz 30 (20/20 halaman), pastikan seluruh surat Juz 30 (78-114) terhitung tuntas
+    const isJuz30Lulus =
+      latestJuzRecord &&
+      latestJuzRecord.surah_name === "Juz 30" &&
+      (latestJuzRecord.status ?? "lulus") === "lulus" &&
+      latestJuzRecord.ayat_reached >= (latestJuzRecord.total_ayat || 20);
+
+    if (isJuz30Lulus) {
+      for (let num = 78; num <= 114; num++) {
+        const existing = map.get(num);
+        if (!existing || !existing.isLulus) {
+          const surahObj = QURAN_SURAHS.find((s) => s.number === num);
+          map.set(num, {
+            reached: surahObj?.ayat || 1,
+            total: surahObj?.ayat || 1,
+            isLulus: true,
+            date: latestJuzRecord.session_date,
           });
         }
       }
-    });
+    }
+
     return map;
-  }, [hafalanList]);
+  }, [hafalanList, latestJuzRecord]);
 
   // Statistik Juz 30 (Surat 78–114)
   const juz30Stats = useMemo(() => {
@@ -137,14 +217,20 @@ export default function StudentSummaryCard({
     return { tuntas, berprogres, total: 37 };
   }, [surahProgressMap]);
 
-  // Pencapaian Makro Juz Terakhir (Juz & Halaman) agar TIDAK TENGGELAM saat diisi setoran surat harian
-  const latestJuzRecord = useMemo(() => {
-    return (
-      hafalanList.find(
-        (h) => h.surah_number === 0 || h.surah_name.startsWith("Juz ")
-      ) || null
-    );
-  }, [hafalanList]);
+  // Daftar seluruh surat yang sudah tuntas dihafalkan
+  const completedSurahsList = useMemo(() => {
+    return QURAN_SURAHS.filter((s) => surahProgressMap.get(s.number)?.isLulus);
+  }, [surahProgressMap]);
+
+  const completedSurahsSummary = useMemo(() => {
+    if (completedSurahsList.length === 0) return "";
+    if (completedSurahsList.length === 37 && juz30Stats.tuntas === 37) {
+      return "An-Nas s.d. An-Naba'";
+    }
+    const first = completedSurahsList[0]?.name;
+    const last = completedSurahsList[completedSurahsList.length - 1]?.name;
+    return first === last ? first : `${first} s.d. ${last}`;
+  }, [completedSurahsList, juz30Stats]);
 
   // Data Makro Capaian Juz & Halaman
   const macroData = useMemo(() => {
@@ -152,15 +238,17 @@ export default function StudentSummaryCard({
       const isLulus =
         (latestJuzRecord.status ?? "lulus") === "lulus" &&
         latestJuzRecord.ayat_reached >= (latestJuzRecord.total_ayat || 20);
+      const totalHalaman = latestJuzRecord.total_ayat || 20;
+      const halamanTuntas = latestJuzRecord.ayat_reached;
       const percent = Math.min(
         100,
-        Math.round(
-          (latestJuzRecord.ayat_reached / (latestJuzRecord.total_ayat || 20)) * 100
-        )
+        Math.round((halamanTuntas / totalHalaman) * 100)
       );
       return {
         title: latestJuzRecord.surah_name,
-        subtitle: `${latestJuzRecord.ayat_reached}/${latestJuzRecord.total_ayat || 20} Halaman`,
+        subtitle: `${halamanTuntas}/${totalHalaman} Halaman`,
+        halamanTuntas,
+        totalHalaman,
         percent,
         isLulus,
         statusLabel: isLulus ? "Lulus" : "Sedang Ditempuh",
@@ -173,16 +261,68 @@ export default function StudentSummaryCard({
     }
 
     const isLulus = juz30Stats.tuntas === 37;
+    const totalHalaman = 20;
+    const halamanTuntas = Math.round((juz30Stats.tuntas / 37) * 20);
     const percent = Math.min(100, Math.round((juz30Stats.tuntas / 37) * 100));
     return {
       title: "Juz 30",
-      subtitle: `${juz30Stats.tuntas}/37 Surat Selesai`,
+      subtitle: `${halamanTuntas}/${totalHalaman} Halaman`,
+      halamanTuntas,
+      totalHalaman,
       percent,
       isLulus,
       statusLabel: isLulus ? "Lulus" : "Berprogres",
       date: null,
     };
   }, [latestJuzRecord, juz30Stats]);
+
+  // Level Murid berdasarkan akumulasi juz yang sudah tuntas
+  const studentLevel = useMemo(() => {
+    const completedJuzCount = hafalanList.filter(
+      (h) =>
+        (h.surah_number === 0 || h.surah_name.startsWith("Juz ")) &&
+        (h.status ?? "lulus") === "lulus" &&
+        h.ayat_reached >= (h.total_ayat || 20)
+    ).length;
+    const effectiveJuzCount = Math.max(completedJuzCount, juz30Stats.tuntas >= 37 ? 1 : 0);
+
+    if (effectiveJuzCount >= 10) return { label: "Level 5 (Mutqin)", color: "bg-purple-100 text-purple-800 border-purple-200" };
+    if (effectiveJuzCount >= 6) return { label: "Level 4 (Utama)", color: "bg-blue-100 text-blue-800 border-blue-200" };
+    if (effectiveJuzCount >= 4) return { label: "Level 3 (Madya)", color: "bg-indigo-100 text-indigo-800 border-indigo-200" };
+    if (effectiveJuzCount >= 2) return { label: "Level 2 (Pratama)", color: "bg-cyan-100 text-cyan-800 border-cyan-200" };
+    if (effectiveJuzCount === 1) return { label: "Level 1 (Juz 'Amma)", color: "bg-emerald-100 text-emerald-800 border-emerald-200" };
+    return { label: "Level 1 (Juz 'Amma)", color: "bg-emerald-50 text-emerald-800 border-emerald-200/60" };
+  }, [hafalanList, juz30Stats]);
+
+  // Evaluasi jika mencapai batas kelipatan halaman atau tuntas juz (pengganti milestone)
+  const thresholdEvaluation = useMemo(() => {
+    if (!latestHafalan) return null;
+    if (latestJuzRecord) {
+      const reached = latestJuzRecord.ayat_reached;
+      const total = latestJuzRecord.total_ayat || 20;
+      if (reached >= total) {
+        return {
+          title: `Tuntas ${latestJuzRecord.surah_name}!`,
+          desc: `Ananda telah menyelesaikan ${reached}/${total} halaman. Siap untuk Ujian Kenaikan Juz.`,
+          buttonText: "Ujian Kenaikan Juz",
+        };
+      }
+      if (reached > 0 && reached % 5 === 0) {
+        return {
+          title: `Batas Kelipatan Tercapai (${reached} Hlm)`,
+          desc: `Target kelipatan ${reached} halaman ${latestJuzRecord.surah_name} tercapai. Siap untuk Uji Tasmi'.`,
+          buttonText: `Uji Tasmi' ${reached} Hlm`,
+        };
+      }
+    } else if (juz30Stats.tuntas >= 37) {
+      return {
+        title: "Tuntas Juz 30 (37 Surat)!",
+        desc: "Seluruh 37 surat Juz 30 telah tuntas. Siap untuk Ujian Tasmi' Juz 30.",
+        buttonText: "Ujian Tasmi' Juz 30",
+      };
+    }
+    return null;
+  }, [latestHafalan, latestJuzRecord, juz30Stats]);
 
   // ── KALKULASI IQRO ─────────────────────────────────────────────
   const latestIqro = iqroList[0] || null;
@@ -216,16 +356,17 @@ export default function StudentSummaryCard({
 
   // ── REUSABLE: Baris kehadiran ringkas ─────────────────────
   const AttendanceRow = () => {
-    if (attendanceRate === null) return null;
+    if (attendanceRate === null || totalSesi === 0) return null;
     const isRendah = attendanceRate < 70;
+    const labelPeriode = isBulanIni ? "Bulan Ini" : "Total";
     return (
       <div className="flex items-center justify-between text-xs text-slate-600 pt-0.5">
         <span>
-          Kehadiran (10 sesi):{" "}
+          Kehadiran ({labelPeriode}):{" "}
           <strong className={isRendah ? "text-amber-700" : "text-slate-900"}>
             {hadirCount}×
           </strong>{" "}
-          hadir
+          dari {totalSesi} sesi
         </span>
         <span
           className={`font-semibold px-1.5 py-0.5 rounded text-[10px] ${
@@ -402,143 +543,283 @@ export default function StudentSummaryCard({
     <>
       <div className="bg-white rounded-2xl border border-slate-200/80 p-4 md:p-5">
         <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2.5">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-            Rangkuman Capaian
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              Rangkuman Capaian
+            </span>
+            <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${studentLevel.color}`}>
+              {studentLevel.label}
+            </span>
+          </div>
           <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/60">
             Tahfidz Al-Qur'an
           </span>
         </div>
 
         {latestHafalan ? (
-          <div className="space-y-3.5">
-            {/* ── 1. Posisi Pencapaian Makro: Juz & Halaman (Tidak tenggelam saat ada setoran surat harian) ── */}
-            <div className="bg-emerald-50/50 p-3.5 rounded-2xl border border-emerald-100/80">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-800">
-                  Pencapaian Hafalan (Juz & Halaman)
-                </span>
-                <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                    macroData.isLulus
-                      ? "bg-emerald-100 text-emerald-800 border-emerald-300"
-                      : "bg-blue-50 text-blue-700 border-blue-200"
-                  }`}
-                >
-                  {macroData.statusLabel}
-                </span>
-              </div>
-
-              <div className="flex items-baseline justify-between mt-0.5">
-                <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-                  <span>{macroData.title}</span>
-                  {macroData.date && (
-                    <span className="text-[10px] font-medium text-slate-400">
-                      ({macroData.date})
+          <div className="space-y-3">
+            {/* ── 1. Posisi Pencapaian Makro: Juz & Halaman (Tampilan Persis Sesuai Kartu Acuan Guru) ── */}
+            <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs space-y-3">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-black text-slate-900 tracking-tight">
+                      {macroData.title}
+                    </h3>
+                    <span
+                      className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${
+                        macroData.isLulus
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-blue-50 text-blue-700 border-blue-200"
+                      }`}
+                    >
+                      {macroData.isLulus ? "✅ Lulus" : "🔄 Sedang Ditempuh"}
                     </span>
-                  )}
-                </h3>
-                <span className="text-xs font-bold text-emerald-900">
-                  {macroData.subtitle}
-                </span>
-              </div>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {macroData.date || "Capaian Kumulatif"}
+                  </p>
+                </div>
 
-              <div className="h-2 bg-emerald-200/50 rounded-full mt-2 overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all ${
-                    macroData.isLulus ? "bg-emerald-600" : "bg-blue-600"
-                  }`}
-                  style={{ width: `${macroData.percent}%` }}
-                />
-              </div>
-            </div>
-
-            {/* ── 2. Sesi Terakhir Murid (Surat/Ayat Harian) ── */}
-            <div className="bg-slate-50/80 p-3 rounded-2xl border border-slate-100 space-y-1.5">
-              <div className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Sesi Terakhir:
+                <div className="text-right">
+                  <span className="text-base font-black text-blue-600 tracking-tight">
+                    {macroData.halamanTuntas}/{macroData.totalHalaman}
                   </span>
-                  <strong className="text-slate-800 font-bold">
-                    {latestHafalan.surah_name}
-                  </strong>
-                  <span className="text-slate-500 font-medium">
-                    ({latestHafalan.ayat_reached}/{latestHafalan.total_ayat}{" "}
-                    {latestHafalan.surah_number === 0 ? "hlm" : "ayat"})
+                  <span className="text-[10px] font-medium text-slate-400 block -mt-0.5">
+                    Halaman
                   </span>
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  {ngulangCount > 0 && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
-                      Ngulang {ngulangCount}×
-                    </span>
-                  )}
-                  <span
-                    className={`font-semibold px-2 py-0.5 rounded-md text-[10px] border ${
-                      isLatestLulus
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                        : "bg-amber-50 text-amber-700 border-amber-200"
+              </div>
+
+              {/* Progress Bar Makro */}
+              <div className="space-y-1">
+                <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      macroData.isLulus ? "bg-emerald-500" : "bg-blue-600"
                     }`}
-                  >
-                    {isLatestLulus ? "Lulus" : "Ngulang"}
-                  </span>
+                    style={{ width: `${macroData.percent}%` }}
+                  />
+                </div>
+                <div className="flex justify-between items-center text-[10px] text-slate-400 pt-0.5">
+                  <span>Progres Total Juz</span>
+                  <span className="font-bold text-slate-700">{macroData.percent}%</span>
                 </div>
               </div>
 
-              <div className="text-[11px] text-slate-400">
-                Tanggal:{" "}
-                {new Date(latestHafalan.session_date).toLocaleDateString("id-ID", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })}
-              </div>
-
-              {latestHafalan.notes ? (
-                <p className="text-xs text-slate-600 italic bg-white/70 p-2 rounded-xl border border-slate-100 line-clamp-2">
-                  "{latestHafalan.notes}"
-                </p>
-              ) : null}
-            </div>
-
-            {/* ── 3. PR belum disimak ── */}
-            {latestPr && (
-              <div className="flex items-start gap-2 text-xs bg-amber-50 border border-amber-200/70 rounded-xl px-3 py-2">
-                <span className="shrink-0 mt-0.5 text-amber-600">⚠</span>
-                <span className="text-amber-800">
-                  PR <strong>{latestPr.surah_name}</strong> ({latestPr.ayat_reached}/{latestPr.total_ayat} {latestPr.surah_number === 0 ? "hlm" : "ayat"}) belum disimak orang tua.
-                </span>
-              </div>
-            )}
-
-            {/* ── 4. Statistik bawah: Peta Surat & Kehadiran ── */}
-            <div className="space-y-1.5 pt-0.5">
-              <div className="flex items-center justify-between text-xs text-slate-600">
-                <span>
-                  Surat Selesai: <strong className="text-slate-900">{juz30Stats.tuntas}</strong>/37 di Juz 30
-                  {juz30Stats.berprogres > 0 && (
-                    <span className="text-slate-400"> · {juz30Stats.berprogres} proses</span>
+              {/* Akses Cepat Surat Tuntas */}
+              <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-1.5 text-slate-600 min-w-0">
+                  <span className="shrink-0">📖 Surat Tuntas:</span>
+                  <strong className="text-emerald-700 font-bold shrink-0">
+                    {completedSurahsList.length} Surat
+                  </strong>
+                  {completedSurahsSummary && (
+                    <span className="text-slate-400 truncate text-[11px] hidden sm:inline">
+                      ({completedSurahsSummary})
+                    </span>
                   )}
-                </span>
+                </div>
                 <button
                   type="button"
-                  onClick={() => setShowPetaModal(true)}
-                  className="text-blue-600 hover:text-blue-700 font-semibold inline-flex items-center gap-0.5"
+                  onClick={() => {
+                    setPetaFilter("selesai");
+                    setShowPetaModal(true);
+                  }}
+                  className="text-blue-600 hover:text-blue-700 font-bold inline-flex items-center gap-0.5 shrink-0 ml-2 hover:underline"
                 >
                   Peta Surat <ChevronRight size={13} />
                 </button>
               </div>
-              <AttendanceRow />
             </div>
 
-            {/* ── 5. Tombol utama ── */}
-            <button
-              onClick={() => handleStartTeachingHafalan()}
-              className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition mt-1"
-            >
-              Input Sesi Hari Ini
-            </button>
+            {/* ── 2. Sesi Terakhir Murid (Ringkas / Subdued agar fokus tetap di capaian Juz) ── */}
+            <div className="bg-slate-50/70 p-3 rounded-2xl border border-slate-100 space-y-1">
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0">
+                    Sesi Terakhir:
+                  </span>
+                  <strong className="text-slate-800 font-bold truncate">
+                    {latestHafalan.surah_name}
+                  </strong>
+                  <span className="text-slate-500 font-medium shrink-0">
+                    ({latestHafalan.ayat_reached}/{latestHafalan.total_ayat}{" "}
+                    {latestHafalan.surah_number === 0 ? "hlm" : "ayat"})
+                  </span>
+                </div>
+                <span
+                  className={`font-semibold px-2 py-0.5 rounded-md text-[10px] border shrink-0 ${
+                    isLatestLulus
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                      : "bg-amber-50 text-amber-700 border-amber-200"
+                  }`}
+                >
+                  {isLatestLulus
+                    ? "Lulus"
+                    : ngulangCount > 1
+                    ? `Ngulang (${ngulangCount}×)`
+                    : "Ngulang"}
+                </span>
+              </div>
+
+              <div className="text-[10px] text-slate-400 flex items-center justify-between">
+                <span>
+                  Tanggal:{" "}
+                  {new Date(latestHafalan.session_date).toLocaleDateString("id-ID", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </span>
+                {latestHafalan.notes && (
+                  <span className="italic text-slate-500 truncate max-w-[200px]">
+                    "{latestHafalan.notes}"
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* ── 3. Tugas Rumah (PR) & Penugasan Weekend ── */}
+            {activePrList.length > 0 ? (
+              <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-3.5 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-base">🏠</span>
+                    <span className="text-xs font-bold text-amber-950">
+                      Tugas Rumah Aktif ({activePrList.length})
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowModalBeriPr(true)}
+                    className="text-[11px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 px-2.5 py-1 rounded-xl transition"
+                  >
+                    + Buat PR Baru
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  {activePrList.slice(0, 2).map((pr) => (
+                    <div
+                      key={`${pr.type}-${pr.id}`}
+                      className="bg-white/90 p-2.5 rounded-xl border border-amber-200/70 text-xs flex items-center justify-between gap-2"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <strong className="text-slate-900 font-bold truncate">
+                            {pr.surahName}
+                          </strong>
+                          <span className="text-slate-500 font-medium shrink-0">
+                            ({pr.range})
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500 flex-wrap">
+                          <span>
+                            Batas:{" "}
+                            {new Date(pr.deadline).toLocaleDateString("id-ID", {
+                              day: "numeric",
+                              month: "short",
+                            })}
+                          </span>
+                          {pr.notes && (
+                            <span className="italic text-amber-800 truncate max-w-[180px]">
+                              "{pr.notes}"
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1 shrink-0">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 border border-amber-200">
+                          ⏳ Belum Disimak
+                        </span>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (confirm(`Hapus/batalkan tugas PR ${pr.surahName}?`)) {
+                              if (pr.type === "murajaah") await hapusMurajaah(pr.id);
+                              else await hapusHafalan(pr.id);
+                              loadData();
+                            }
+                          }}
+                          className="p-1 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
+                          title="Batalkan PR ini"
+                        >
+                          <X size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-3 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0 text-xs text-slate-600">
+                  <span className="text-lg shrink-0">🏠</span>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-slate-800 truncate">
+                      Belum Ada PR Pekan Ini
+                    </p>
+                    <p className="text-[11px] text-slate-400 truncate">
+                      Tugaskan capaian pekanan atau PR Weekend
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowModalBeriPr(true)}
+                  className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl shadow-xs transition shrink-0 whitespace-nowrap flex items-center gap-1"
+                >
+                  <span>+ Beri PR Weekend</span>
+                </button>
+              </div>
+            )}
+
+            {/* ── 4. Notifikasi Batas Tercapai & Evaluasi (Eks-Milestone) ── */}
+            {thresholdEvaluation && (
+              <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border border-amber-300 rounded-2xl p-3 flex items-center justify-between gap-3 shadow-xs">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="text-xl shrink-0">🎓</span>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-amber-950 truncate">
+                      {thresholdEvaluation.title}
+                    </p>
+                    <p className="text-[10px] text-amber-800 line-clamp-1">
+                      {thresholdEvaluation.desc}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleStartTeachingHafalan()}
+                  className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-xs transition shrink-0 whitespace-nowrap"
+                >
+                  {thresholdEvaluation.buttonText}
+                </button>
+              </div>
+            )}
+
+            {/* ── 5. Kehadiran Murid ── */}
+            <AttendanceRow />
+
+            {/* ── 6. Tombol utama ── */}
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={() => handleStartTeachingHafalan()}
+                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition"
+              >
+                Input Sesi Hari Ini
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowModalBeriPr(true)}
+                className="px-3.5 py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-xs rounded-xl border border-amber-200 transition flex items-center gap-1"
+                title="Beri Tugas Rumah (PR)"
+              >
+                <span>🏠 Beri PR</span>
+              </button>
+            </div>
           </div>
         ) : (
           /* Empty State */
@@ -585,18 +866,19 @@ export default function StudentSummaryCard({
             </div>
 
             {/* Filter */}
-            <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between gap-2">
-              <div className="flex gap-1">
+            <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex gap-1 flex-wrap">
                 {[
-                  { label: "Juz 30", val: true },
-                  { label: "Semua Surat", val: false },
+                  { label: `Surat Selesai (${completedSurahsList.length})`, val: "selesai" as const },
+                  { label: `Juz 30 (${juz30Stats.tuntas}/37)`, val: "juz30" as const },
+                  { label: "Semua Surat (114)", val: "semua" as const },
                 ].map(({ label, val }) => (
                   <button
-                    key={label}
+                    key={val}
                     type="button"
-                    onClick={() => setFilterJuz30Only(val)}
+                    onClick={() => setPetaFilter(val)}
                     className={`px-3 py-1 text-xs font-semibold rounded-lg transition ${
-                      filterJuz30Only === val
+                      petaFilter === val
                         ? "bg-white text-blue-600 shadow-xs border border-slate-200/80"
                         : "text-slate-500 hover:text-slate-800"
                     }`}
@@ -620,44 +902,54 @@ export default function StudentSummaryCard({
 
             {/* Grid surat */}
             <div className="p-4 overflow-y-auto flex-1">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {QURAN_SURAHS.filter((s) => (filterJuz30Only ? s.number >= 78 : true)).map((surah) => {
-                  const progress = surahProgressMap.get(surah.number);
-                  const isCompleted = progress?.isLulus ?? false;
-                  const isInProgress = !isCompleted && progress && progress.reached > 0;
+              {petaFilter === "selesai" && completedSurahsList.length === 0 ? (
+                <div className="text-center py-10 text-slate-400 text-xs">
+                  Belum ada surat yang dinyatakan tuntas. Silakan pilih tab <strong>Juz 30</strong> untuk mulai setoran.
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {QURAN_SURAHS.filter((s) => {
+                    if (petaFilter === "selesai") return surahProgressMap.get(s.number)?.isLulus;
+                    if (petaFilter === "juz30") return s.number >= 78;
+                    return true;
+                  }).map((surah) => {
+                    const progress = surahProgressMap.get(surah.number);
+                    const isCompleted = progress?.isLulus ?? false;
+                    const isInProgress = !isCompleted && progress && progress.reached > 0;
 
-                  return (
-                    <button
-                      key={surah.number}
-                      type="button"
-                      onClick={() => handleStartTeachingHafalan(surah.number)}
-                      className={`text-left p-2.5 rounded-xl border transition flex flex-col justify-between ${
-                        isCompleted
-                          ? "bg-emerald-50/50 border-emerald-200 hover:bg-emerald-100/60"
-                          : isInProgress
-                          ? "bg-blue-50/50 border-blue-200 hover:bg-blue-100/60"
-                          : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <span className="text-[10px] font-bold text-slate-400">#{surah.number}</span>
-                        {isCompleted && (
-                          <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100/80 px-1.5 rounded">
-                            Tuntas
-                          </span>
-                        )}
-                        {isInProgress && (
-                          <span className="text-[10px] font-semibold text-blue-700 bg-blue-100/80 px-1.5 rounded">
-                            {progress.reached}/{surah.ayat}
-                          </span>
-                        )}
-                      </div>
-                      <p className="font-semibold text-xs text-slate-800 mt-1 truncate">{surah.name}</p>
-                      <span className="text-[10px] text-slate-400 mt-0.5">{surah.ayat} ayat</span>
-                    </button>
-                  );
-                })}
-              </div>
+                    return (
+                      <button
+                        key={surah.number}
+                        type="button"
+                        onClick={() => handleStartTeachingHafalan(surah.number)}
+                        className={`text-left p-2.5 rounded-xl border transition flex flex-col justify-between ${
+                          isCompleted
+                            ? "bg-emerald-50/50 border-emerald-200 hover:bg-emerald-100/60"
+                            : isInProgress
+                            ? "bg-blue-50/50 border-blue-200 hover:bg-blue-100/60"
+                            : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <span className="text-[10px] font-bold text-slate-400">#{surah.number}</span>
+                          {isCompleted && (
+                            <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100/80 px-1.5 rounded">
+                              Tuntas
+                            </span>
+                          )}
+                          {isInProgress && (
+                            <span className="text-[10px] font-semibold text-blue-700 bg-blue-100/80 px-1.5 rounded">
+                              {progress.reached}/{surah.ayat}
+                            </span>
+                          )}
+                        </div>
+                        <p className="font-semibold text-xs text-slate-800 mt-1 truncate">{surah.name}</p>
+                        <span className="text-[10px] text-slate-400 mt-0.5">{surah.ayat} ayat</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-end">
@@ -672,6 +964,21 @@ export default function StudentSummaryCard({
           </div>
         </div>
       )}
+
+      {/* ── MODAL BERI PR / TUGAS RUMAH ─────────────────── */}
+      <ModalBeriPr
+        isOpen={showModalBeriPr}
+        onClose={() => setShowModalBeriPr(false)}
+        enrollmentId={enrollmentId}
+        guruId={guruId}
+        studentName={studentName}
+        hafalanList={hafalanList}
+        murajaahList={murajaahList}
+        onSuccess={() => {
+          loadData();
+          window.dispatchEvent(new CustomEvent("refresh-student-summary"));
+        }}
+      />
     </>
   );
 }

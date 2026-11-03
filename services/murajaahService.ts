@@ -74,6 +74,31 @@ export const simpanMurajaah = async (input: {
   return data as MurajaahSession;
 };
 
+// ── SIMPAN TUGAS RUMAH (PR) MURAJAAH INDEPENDEN ────────────
+export const simpanPrMurajaah = async (input: {
+  enrollmentId: string;
+  guruId: string;
+  hafalanType: 'surat' | 'juz';
+  surahNumber?: number;
+  surahName: string;
+  ayatOrPageRange: string;
+  sessionDate: string;
+  prNotesGuru: string;
+}): Promise<MurajaahSession> => {
+  return simpanMurajaah({
+    enrollmentId: input.enrollmentId,
+    guruId: input.guruId,
+    hafalanType: input.hafalanType,
+    surahNumber: input.surahNumber,
+    surahName: input.surahName,
+    ayatOrPageRange: input.ayatOrPageRange,
+    quality: 'lancar',
+    sessionDate: input.sessionDate,
+    is_pr: true,
+    pr_notes_guru: input.prNotesGuru,
+  });
+};
+
 export const hapusMurajaah = async (id: string): Promise<void> => {
   const db = getDb();
   const { error } = await db.from('murajaah_sessions').delete().eq('id', id);
@@ -87,16 +112,21 @@ export const updateParentFeedbackMurajaah = async (input: {
   parentStatus: 'lancar' | 'cukup' | 'perlu_bimbingan';
   parentNotes?: string;
 }): Promise<void> => {
-  const db = getDb();
-  const { error } = await db
-    .from('murajaah_sessions')
-    .update({
-      parent_rating: input.parentRating,
-      parent_status: input.parentStatus,
-      parent_notes: input.parentNotes ?? null,
-      parent_simak_at: new Date().toISOString(),
-    })
-    .eq('id', input.murajaahId);
-  if (error) throw new Error(error.message);
+  const res = await fetch('/api/pr/simak', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      type: 'murajaah',
+      id: input.murajaahId,
+      rating: input.parentRating,
+      status: input.parentStatus,
+      notes: input.parentNotes,
+    }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || 'Gagal menyimpan penilaian simakan murajaah.');
+  }
 };
 
