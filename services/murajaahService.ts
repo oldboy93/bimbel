@@ -9,7 +9,8 @@ export const tampilRiwayatMurajaah = async (enrollmentId: string): Promise<Muraj
     .from('murajaah_sessions')
     .select('*')
     .eq('enrollment_id', enrollmentId)
-    .order('session_date', { ascending: false });
+    .order('session_date', { ascending: false })
+    .order('created_at', { ascending: false });
   if (error) throw new Error(error.message);
   return data ?? [];
 };
@@ -22,7 +23,8 @@ export const tampilPrMurajaah = async (enrollmentId: string): Promise<MurajaahSe
     .select('*')
     .eq('enrollment_id', enrollmentId)
     .eq('is_pr', true)
-    .order('session_date', { ascending: false });
+    .order('session_date', { ascending: false })
+    .order('created_at', { ascending: false });
   if (error) throw new Error(error.message);
   return data ?? [];
 };
@@ -129,4 +131,3 @@ export const updateParentFeedbackMurajaah = async (input: {
     throw new Error(data.error || 'Gagal menyimpan penilaian simakan murajaah.');
   }
 };
-

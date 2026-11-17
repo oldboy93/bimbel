@@ -38,6 +38,9 @@ export default function ModalBeriPr({
   const [juzNum, setJuzNum] = useState<number>(30);
   const [ayatFrom, setAyatFrom] = useState<number>(1);
   const [ayatTo, setAyatTo] = useState<number>(10);
+  // BUG-3: State untuk rentang halaman Juz di form kustom
+  const [pageFrom, setPageFrom] = useState<number>(1);
+  const [pageTo, setPageTo] = useState<number>(10);
   const [customRangeText, setCustomRangeText] = useState<string>("");
   const [deadlineDate, setDeadlineDate] = useState<string>("");
   const [prNotes, setPrNotes] = useState<string>("");
@@ -89,6 +92,12 @@ export default function ModalBeriPr({
         latestThisWeek.ayat_reached
       );
 
+      // BUG-2: Bedakan satuan Halaman untuk Juz dan Ayat untuk Surat
+      const isJuz =
+        latestThisWeek.surah_number === 0 ||
+        latestThisWeek.surah_name.startsWith("Juz ");
+      const unit = isJuz ? "Halaman" : "Ayat";
+
       return {
         isFoundThisWeek: true,
         sessionCount: thisWeekClassSessions.length,
@@ -96,8 +105,8 @@ export default function ModalBeriPr({
         surahName: latestThisWeek.surah_name,
         totalAyat: latestThisWeek.total_ayat,
         maxReached,
-        rangeLabel: `Ayat 1 - ${maxReached}`,
-        suggestedNotes: `[PR Weekend] Capaian pekan ini: Mohon disimak lancar ayat 1 s.d. ${maxReached} saat akhir pekan.`,
+        rangeLabel: `${unit} 1 - ${maxReached}`,
+        suggestedNotes: `[PR Weekend] Capaian pekan ini: Mohon disimak lancar ${unit.toLowerCase()} 1 s.d. ${maxReached} saat akhir pekan.`,
       };
     }
 
@@ -105,6 +114,10 @@ export default function ModalBeriPr({
     const nonPrList = hafalanList.filter((h) => !h.is_pr);
     if (nonPrList.length > 0) {
       const last = nonPrList[0];
+      const isJuz =
+        last.surah_number === 0 || last.surah_name.startsWith("Juz ");
+      const unit = isJuz ? "Halaman" : "Ayat";
+
       return {
         isFoundThisWeek: false,
         sessionCount: 0,
@@ -112,8 +125,8 @@ export default function ModalBeriPr({
         surahName: last.surah_name,
         totalAyat: last.total_ayat,
         maxReached: last.ayat_reached,
-        rangeLabel: `Ayat 1 - ${last.ayat_reached}`,
-        suggestedNotes: `[PR Weekend] Mohon disimak kembali hafalan ${last.surah_name} ayat 1 s.d. ${last.ayat_reached} di rumah.`,
+        rangeLabel: `${unit} 1 - ${last.ayat_reached}`,
+        suggestedNotes: `[PR Weekend] Mohon disimak kembali hafalan ${last.surah_name} ${unit.toLowerCase()} 1 s.d. ${last.ayat_reached} di rumah.`,
       };
     }
 
@@ -127,12 +140,30 @@ export default function ModalBeriPr({
       setErrorMsg("");
 
       if (weeklyAchievement) {
-        setSurahNum(weeklyAchievement.surahNumber > 0 ? weeklyAchievement.surahNumber : 78);
-        setAyatFrom(1);
-        setAyatTo(weeklyAchievement.maxReached || 10);
+        const isJuz =
+          weeklyAchievement.surahNumber === 0 ||
+          weeklyAchievement.surahName.startsWith("Juz ");
+        if (isJuz) {
+          setTargetMode("juz");
+          const jParsed = parseInt(
+            weeklyAchievement.surahName.replace("Juz ", "").trim(),
+            10
+          );
+          if (!Number.isNaN(jParsed)) setJuzNum(jParsed);
+          setPageFrom(1);
+          setPageTo(weeklyAchievement.maxReached || 10);
+        } else {
+          setTargetMode("surat");
+          setSurahNum(
+            weeklyAchievement.surahNumber > 0 ? weeklyAchievement.surahNumber : 78
+          );
+          setAyatFrom(1);
+          setAyatTo(weeklyAchievement.maxReached || 10);
+        }
         setPrNotes(weeklyAchievement.suggestedNotes);
         setCustomRangeText(weeklyAchievement.rangeLabel);
       } else {
+        setTargetMode("surat");
         setSurahNum(78);
         const s78 = getSurahByNumber(78);
         setAyatFrom(1);
@@ -184,9 +215,12 @@ export default function ModalBeriPr({
     try {
       const finalSurahName =
         targetMode === "surat" ? currentSurahObj?.name || `Surat ke-${surahNum}` : `Juz ${juzNum}`;
-      const finalRange =
-        customRangeText.trim() ||
-        (targetMode === "surat" ? `Ayat ${ayatFrom} - ${ayatTo}` : `Halaman 1 - 20`);
+      // BUG-2 & BUG-3: Range format yang benar untuk Juz vs Surat
+      const defaultRange =
+        targetMode === "surat"
+          ? `Ayat ${ayatFrom} - ${ayatTo}`
+          : `Halaman ${pageFrom} - ${pageTo} (Juz ${juzNum})`;
+      const finalRange = customRangeText.trim() || defaultRange;
 
       if (kategori === "murajaah") {
         await simpanPrMurajaah({
@@ -205,8 +239,8 @@ export default function ModalBeriPr({
           guruId,
           surahNumber: targetMode === "surat" ? surahNum : 0,
           surahName: finalSurahName,
-          totalAyat: currentTotalAyat,
-          ayatReached: ayatTo,
+          totalAyat: targetMode === "surat" ? currentTotalAyat : 20,
+          ayatReached: targetMode === "surat" ? ayatTo : pageTo,
           sessionDate: deadlineDate || upcomingSundayStr,
           prNotesGuru: prNotes.trim() || "[PR Hafalan Baru] Mohon disimak oleh orang tua di rumah.",
         });
@@ -307,8 +341,9 @@ export default function ModalBeriPr({
                       {weeklyAchievement.surahName}
                     </h4>
                     <p className="text-xs text-slate-600 mt-0.5">
-                      Target akumulasi: Ayat 1 s.d. {weeklyAchievement.maxReached} (dari{" "}
-                      {weeklyAchievement.totalAyat} ayat)
+                      Target akumulasi: {weeklyAchievement.rangeLabel} (dari{" "}
+                      {weeklyAchievement.totalAyat}{" "}
+                      {weeklyAchievement.surahNumber === 0 ? "halaman" : "ayat"})
                     </p>
                   </div>
 
@@ -436,7 +471,10 @@ export default function ModalBeriPr({
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => setTargetMode("surat")}
+                  onClick={() => {
+                    setTargetMode("surat");
+                    setCustomRangeText(`Ayat ${ayatFrom} - ${ayatTo}`);
+                  }}
                   className={`py-2 px-3 rounded-xl border text-xs font-bold transition ${
                     targetMode === "surat"
                       ? "bg-blue-600 text-white border-blue-600"
@@ -447,7 +485,10 @@ export default function ModalBeriPr({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setTargetMode("juz")}
+                  onClick={() => {
+                    setTargetMode("juz");
+                    setCustomRangeText(`Halaman ${pageFrom} - ${pageTo} (Juz ${juzNum})`);
+                  }}
                   className={`py-2 px-3 rounded-xl border text-xs font-bold transition ${
                     targetMode === "juz"
                       ? "bg-blue-600 text-white border-blue-600"
@@ -489,7 +530,7 @@ export default function ModalBeriPr({
                     onChange={(e) => {
                       const num = +e.target.value;
                       setJuzNum(num);
-                      setCustomRangeText(`Halaman 1 - 20 (Juz ${num})`);
+                      setCustomRangeText(`Halaman ${pageFrom} - ${pageTo} (Juz ${num})`);
                     }}
                     className="w-full px-3.5 py-2.5 text-xs border border-slate-200 rounded-xl bg-white outline-none focus:ring-2 focus:ring-blue-500"
                   >
@@ -502,7 +543,7 @@ export default function ModalBeriPr({
                 </div>
               )}
 
-              {/* Range Target */}
+              {/* Range Target Surat */}
               {targetMode === "surat" && (
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -566,6 +607,94 @@ export default function ModalBeriPr({
                         10 Ayat Pertama
                       </button>
                     )}
+                  </div>
+                </div>
+              )}
+
+              {/* BUG-3: Range Target Juz (Halaman 1–20) */}
+              {targetMode === "juz" && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Rentang Halaman Target (Maks. 20 Halaman)
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <span className="text-[10px] text-slate-400">Dari Halaman:</span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={20}
+                        value={pageFrom}
+                        onChange={(e) => {
+                          const val = Math.max(1, Math.min(20, +e.target.value));
+                          setPageFrom(val);
+                          setCustomRangeText(`Halaman ${val} - ${pageTo} (Juz ${juzNum})`);
+                        }}
+                        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white outline-none focus:ring-2 focus:ring-blue-500 font-bold"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400">Sampai Halaman:</span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={20}
+                        value={pageTo}
+                        onChange={(e) => {
+                          const val = Math.max(1, Math.min(20, +e.target.value));
+                          setPageTo(val);
+                          setCustomRangeText(`Halaman ${pageFrom} - ${val} (Juz ${juzNum})`);
+                        }}
+                        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white outline-none focus:ring-2 focus:ring-blue-500 font-bold"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-1.5 mt-2 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPageFrom(1);
+                        setPageTo(20);
+                        setCustomRangeText(`Halaman 1 - 20 (Juz ${juzNum})`);
+                      }}
+                      className="px-2 py-0.5 text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"
+                    >
+                      Semua Halaman (1 - 20)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPageFrom(1);
+                        setPageTo(5);
+                        setCustomRangeText(`Halaman 1 - 5 (Juz ${juzNum})`);
+                      }}
+                      className="px-2 py-0.5 text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"
+                    >
+                      5 Hlm Pertama (1 - 5)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPageFrom(1);
+                        setPageTo(10);
+                        setCustomRangeText(`Halaman 1 - 10 (Juz ${juzNum})`);
+                      }}
+                      className="px-2 py-0.5 text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"
+                    >
+                      10 Hlm Pertama (1 - 10)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPageFrom(11);
+                        setPageTo(20);
+                        setCustomRangeText(`Halaman 11 - 20 (Juz ${juzNum})`);
+                      }}
+                      className="px-2 py-0.5 text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"
+                    >
+                      10 Hlm Kedua (11 - 20)
+                    </button>
                   </div>
                 </div>
               )}
@@ -653,4 +782,3 @@ export default function ModalBeriPr({
     </div>
   );
 }
-

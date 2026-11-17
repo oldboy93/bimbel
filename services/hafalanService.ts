@@ -14,7 +14,8 @@ export const tampilRiwayatHafalan = async (enrollmentId: string): Promise<Hafala
     .from('hafalan_progress')
     .select('*')
     .eq('enrollment_id', enrollmentId)
-    .order('session_date', { ascending: false });
+    .order('session_date', { ascending: false })
+    .order('created_at', { ascending: false });
   if (error) throw new Error(error.message);
   return data ?? [];
 };
@@ -27,7 +28,8 @@ export const tampilPrHafalan = async (enrollmentId: string): Promise<HafalanProg
     .select('*')
     .eq('enrollment_id', enrollmentId)
     .eq('is_pr', true)
-    .order('session_date', { ascending: false });
+    .order('session_date', { ascending: false })
+    .order('created_at', { ascending: false });
   if (error) throw new Error(error.message);
   return data ?? [];
 };
@@ -40,6 +42,7 @@ export const tampilHafalanTerkini = async (enrollmentId: string): Promise<Hafala
     .select('*')
     .eq('enrollment_id', enrollmentId)
     .order('session_date', { ascending: false })
+    .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
   return data ?? null;
@@ -62,7 +65,13 @@ export const simpanHafalan = async (input: {
   pr_notes_guru?: string;
 }): Promise<HafalanProgress> => {
   const db = getDb();
-  const baseQuery = db.from('hafalan_progress').select('*').eq('enrollment_id', input.enrollmentId).order('session_date', { ascending: false }).limit(1);
+  const baseQuery = db
+    .from('hafalan_progress')
+    .select('*')
+    .eq('enrollment_id', input.enrollmentId)
+    .order('session_date', { ascending: false })
+    .order('created_at', { ascending: false })
+    .limit(1);
 
   const matchingQuery = input.mode === 'surat'
     ? baseQuery.eq('surah_number', input.surahNumber)

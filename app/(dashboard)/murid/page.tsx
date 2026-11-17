@@ -539,11 +539,18 @@ export default function MuridDashboard() {
                       {medals[idx] ?? `#${idx + 1}`}
                     </span>
                     <div>
-                      <p className={`text-xs font-bold leading-tight ${isMe ? "text-amber-900" : "text-slate-800"}`}>
-                        {entry.student_name} {isMe && <span className="text-[10px] text-amber-700 bg-amber-200/80 px-1.5 py-0.2 rounded font-black ml-1">(Kamu)</span>}
-                      </p>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <p className={`text-xs font-bold leading-tight ${isMe ? "text-amber-900" : "text-slate-800"}`}>
+                          {entry.student_name} {isMe && <span className="text-[10px] text-amber-700 bg-amber-200/80 px-1.5 py-0.2 rounded font-black ml-1">(Kamu)</span>}
+                        </p>
+                        {entry.student_level && (
+                          <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded-full bg-blue-50 text-blue-700 border border-blue-200/70">
+                            {entry.student_level}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-[10px] text-slate-400 mt-0.5">
-                        {entry.total_setoran} setoran • {entry.attendance_rate}% hadir
+                        {entry.hadir_count} sesi hadir ({entry.attendance_rate}% kehadiran)
                       </p>
                     </div>
                   </div>

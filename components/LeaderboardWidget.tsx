@@ -160,21 +160,29 @@ export default function LeaderboardWidget({
 
                 {/* Name + class */}
                 <div className="flex-1 min-w-0">
-                  <p
-                    className={`font-bold truncate ${
-                      variant === "sidebar" ? "text-[11px]" : "text-xs"
-                    } ${isMe ? "text-blue-700" : "text-slate-800"}`}
-                  >
-                    {firstName(entry.student_name)}
-                    {isMe && (
-                      <span className="ml-1 text-[9px] bg-blue-600 text-white px-1.5 py-0.5 rounded-full font-extrabold">
-                        Kamu
+                  <div className="flex items-center gap-1 flex-wrap">
+                    <p
+                      className={`font-bold truncate ${
+                        variant === "sidebar" ? "text-[11px]" : "text-xs"
+                      } ${isMe ? "text-blue-700" : "text-slate-800"}`}
+                    >
+                      {firstName(entry.student_name)}
+                      {isMe && (
+                        <span className="ml-1 text-[9px] bg-blue-600 text-white px-1.5 py-0.5 rounded-full font-extrabold">
+                          Kamu
+                        </span>
+                      )}
+                    </p>
+                    {entry.student_level && (
+                      <span className="text-[8px] font-bold px-1 py-0.2 rounded bg-slate-100 text-slate-600">
+                        {entry.student_level}
                       </span>
                     )}
+                  </div>
+                  <p className="text-[9px] text-slate-400 truncate">
+                    {entry.hadir_count} hadir · {entry.attendance_rate}%
+                    {variant === "drawer" && ` · ${entry.class_name}`}
                   </p>
-                  {variant === "drawer" && (
-                    <p className="text-[10px] text-slate-400 truncate">{entry.class_name}</p>
-                  )}
                 </div>
 
                 {/* Score */}

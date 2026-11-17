@@ -11,6 +11,15 @@ import { calcAttendanceRate } from "@/lib/helpers";
 import type { HafalanProgress, MurajaahSession, IqroProgress, Attendance } from "@/types";
 import { ChevronRight, X } from "lucide-react";
 import ModalBeriPr from "@/components/ModalBeriPr";
+import {
+  sortHafalanLatest,
+  getLatestJuzRecord,
+  getLatestClassHafalanSession,
+  shouldShowTasmiEvaluation,
+  calculateCapaianTuntas,
+  classifyMurojaahAge,
+  getStudentLevelInfo,
+} from "@/lib/revisionHelpers";
 
 interface Props {
   enrollmentId: string;
@@ -36,6 +45,28 @@ export default function StudentSummaryCard({
   const [showPetaModal, setShowPetaModal] = useState(false);
   const [showModalBeriPr, setShowModalBeriPr] = useState(false);
   const [petaFilter, setPetaFilter] = useState<"selesai" | "juz30" | "semua">("selesai");
+
+  // State untuk melacak banner tasmi yang di-dismiss oleh guru
+  const [dismissedTasmiKeys, setDismissedTasmiKeys] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try {
+      const saved = localStorage.getItem(`dismissed_tasmi_${enrollmentId}`);
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
+  const handleDismissTasmi = (key: string) => {
+    setDismissedTasmiKeys((prev) => {
+      const next = new Set(prev);
+      next.add(key);
+      try {
+        localStorage.setItem(`dismissed_tasmi_${enrollmentId}`, JSON.stringify(Array.from(next)));
+      } catch {}
+      return next;
+    });
+  };
 
   const loadData = async () => {
     try {
@@ -101,7 +132,10 @@ export default function StudentSummaryCard({
   const attendanceRate = totalSesi > 0 ? Math.round((hadirCount / totalSesi) * 100) : null;
 
   // ── KALKULASI TAHFIDZ ──────────────────────────────────────────
-  const latestHafalan = hafalanList[0] || null;
+  // BUG-5: "Sesi Terakhir" murid WAJIB mengambil sesi hafalan kelas (non-PR)
+  const latestHafalan = useMemo(() => {
+    return getLatestClassHafalanSession(hafalanList);
+  }, [hafalanList]);
 
   // Cek daftar PR aktif (belum disimak) dari Hafalan & Muroja'ah
   const activePrList = useMemo(() => {
@@ -115,19 +149,38 @@ export default function StudentSummaryCard({
         range: `${h.ayat_reached}/${h.total_ayat} ${h.surah_number === 0 ? "hlm" : "ayat"}`,
         deadline: h.session_date,
         notes: h.pr_notes_guru,
+        ageCategory: "baru" as const,
       }));
 
     const mPrs = murajaahList
       .filter((m) => m.is_pr && !m.parent_simak_at)
-      .map((m) => ({
-        id: m.id,
-        type: "murajaah" as const,
-        surahName: m.surah_name,
-        surahNumber: m.surah_number,
-        range: m.ayat_or_page_range || "",
-        deadline: m.session_date,
-        notes: m.pr_notes_guru,
-      }));
+      .map((m) => {
+        const isJuz = m.surah_number === 0 || m.surah_name.startsWith("Juz ");
+        // BUG-2: Perbaiki label Ayat menjadi Halaman pada penugasan Juz
+        let rangeLabel = m.ayat_or_page_range || "";
+        if (isJuz && rangeLabel) {
+          rangeLabel = rangeLabel.replace(/ayat/gi, "Halaman");
+        }
+
+        // ENH-2: Deteksi kategori usia hafalan muroja'ah (< 30 hari = baru, >= 30 hari = lama)
+        const ageCategory = classifyMurojaahAge({
+          surahNumber: m.surah_number ?? 0,
+          surahName: m.surah_name,
+          sessionDate: m.session_date,
+          hafalanList,
+        });
+
+        return {
+          id: m.id,
+          type: "murajaah" as const,
+          surahName: m.surah_name,
+          surahNumber: m.surah_number ?? 0,
+          range: rangeLabel,
+          deadline: m.session_date,
+          notes: m.pr_notes_guru,
+          ageCategory,
+        };
+      });
 
     return [...hPrs, ...mPrs].sort(
       (a, b) => new Date(b.deadline).getTime() - new Date(a.deadline).getTime()
@@ -147,13 +200,9 @@ export default function StudentSummaryCard({
     ).length;
   }, [hafalanList, latestHafalan]);
 
-  // Pencapaian Makro Juz Terakhir (Juz & Halaman) agar TIDAK TENGGELAM saat diisi setoran surat harian
+  // BUG-1: Pencapaian Makro Juz Terakhir (Juz & Halaman) berdasarkan session_date DESC & created_at DESC
   const latestJuzRecord = useMemo(() => {
-    return (
-      hafalanList.find(
-        (h) => h.surah_number === 0 || h.surah_name.startsWith("Juz ")
-      ) || null
-    );
+    return getLatestJuzRecord(hafalanList);
   }, [hafalanList]);
 
   // Peta status per surat
@@ -232,6 +281,11 @@ export default function StudentSummaryCard({
     return first === last ? first : `${first} s.d. ${last}`;
   }, [completedSurahsList, juz30Stats]);
 
+  // ENH-1: Capaian Tuntas dinamis (menghitung kelulusan Juz maupun Surat)
+  const capaianTuntas = useMemo(() => {
+    return calculateCapaianTuntas(hafalanList);
+  }, [hafalanList]);
+
   // Data Makro Capaian Juz & Halaman
   const macroData = useMemo(() => {
     if (latestJuzRecord) {
@@ -278,51 +332,25 @@ export default function StudentSummaryCard({
 
   // Level Murid berdasarkan akumulasi juz yang sudah tuntas
   const studentLevel = useMemo(() => {
-    const completedJuzCount = hafalanList.filter(
-      (h) =>
-        (h.surah_number === 0 || h.surah_name.startsWith("Juz ")) &&
-        (h.status ?? "lulus") === "lulus" &&
-        h.ayat_reached >= (h.total_ayat || 20)
-    ).length;
+    const completedJuzCount = capaianTuntas.completedJuzCount;
     const effectiveJuzCount = Math.max(completedJuzCount, juz30Stats.tuntas >= 37 ? 1 : 0);
+    const info = getStudentLevelInfo(effectiveJuzCount);
 
-    if (effectiveJuzCount >= 10) return { label: "Level 5 (Mutqin)", color: "bg-purple-100 text-purple-800 border-purple-200" };
-    if (effectiveJuzCount >= 6) return { label: "Level 4 (Utama)", color: "bg-blue-100 text-blue-800 border-blue-200" };
-    if (effectiveJuzCount >= 4) return { label: "Level 3 (Madya)", color: "bg-indigo-100 text-indigo-800 border-indigo-200" };
-    if (effectiveJuzCount >= 2) return { label: "Level 2 (Pratama)", color: "bg-cyan-100 text-cyan-800 border-cyan-200" };
-    if (effectiveJuzCount === 1) return { label: "Level 1 (Juz 'Amma)", color: "bg-emerald-100 text-emerald-800 border-emerald-200" };
-    return { label: "Level 1 (Juz 'Amma)", color: "bg-emerald-50 text-emerald-800 border-emerald-200/60" };
-  }, [hafalanList, juz30Stats]);
+    if (info.level >= 5) return { label: info.label, color: "bg-purple-100 text-purple-800 border-purple-200" };
+    if (info.level >= 4) return { label: info.label, color: "bg-blue-100 text-blue-800 border-blue-200" };
+    if (info.level >= 3) return { label: info.label, color: "bg-indigo-100 text-indigo-800 border-indigo-200" };
+    if (info.level >= 2) return { label: info.label, color: "bg-cyan-100 text-cyan-800 border-cyan-200" };
+    return { label: info.label, color: "bg-emerald-50 text-emerald-800 border-emerald-200/60" };
+  }, [capaianTuntas, juz30Stats]);
 
-  // Evaluasi jika mencapai batas kelipatan halaman atau tuntas juz (pengganti milestone)
+  // BUG-4: Evaluasi jika mencapai batas kelipatan halaman atau tuntas juz dengan support dismiss & deteksi sesi tasmi
   const thresholdEvaluation = useMemo(() => {
-    if (!latestHafalan) return null;
-    if (latestJuzRecord) {
-      const reached = latestJuzRecord.ayat_reached;
-      const total = latestJuzRecord.total_ayat || 20;
-      if (reached >= total) {
-        return {
-          title: `Tuntas ${latestJuzRecord.surah_name}!`,
-          desc: `Ananda telah menyelesaikan ${reached}/${total} halaman. Siap untuk Ujian Kenaikan Juz.`,
-          buttonText: "Ujian Kenaikan Juz",
-        };
-      }
-      if (reached > 0 && reached % 5 === 0) {
-        return {
-          title: `Batas Kelipatan Tercapai (${reached} Hlm)`,
-          desc: `Target kelipatan ${reached} halaman ${latestJuzRecord.surah_name} tercapai. Siap untuk Uji Tasmi'.`,
-          buttonText: `Uji Tasmi' ${reached} Hlm`,
-        };
-      }
-    } else if (juz30Stats.tuntas >= 37) {
-      return {
-        title: "Tuntas Juz 30 (37 Surat)!",
-        desc: "Seluruh 37 surat Juz 30 telah tuntas. Siap untuk Ujian Tasmi' Juz 30.",
-        buttonText: "Ujian Tasmi' Juz 30",
-      };
-    }
-    return null;
-  }, [latestHafalan, latestJuzRecord, juz30Stats]);
+    return shouldShowTasmiEvaluation({
+      latestJuz: latestJuzRecord,
+      recentSessions: hafalanList,
+      dismissedKeys: dismissedTasmiKeys,
+    });
+  }, [latestJuzRecord, hafalanList, dismissedTasmiKeys]);
 
   // ── KALKULASI IQRO ─────────────────────────────────────────────
   const latestIqro = iqroList[0] || null;
@@ -535,9 +563,6 @@ export default function StudentSummaryCard({
 
   // ── KELAS TAHFIDZ / UMUM (DEFAULT) ────────────────────────
   const isLatestLulus = (latestHafalan?.status ?? "lulus") === "lulus";
-  const progressPercent = latestHafalan
-    ? Math.min(100, Math.round((latestHafalan.ayat_reached / (latestHafalan.total_ayat || 1)) * 100))
-    : 0;
 
   return (
     <>
@@ -558,7 +583,7 @@ export default function StudentSummaryCard({
 
         {latestHafalan ? (
           <div className="space-y-3">
-            {/* ── 1. Posisi Pencapaian Makro: Juz & Halaman (Tampilan Persis Sesuai Kartu Acuan Guru) ── */}
+            {/* ── 1. Posisi Pencapaian Makro: Juz & Halaman ── */}
             <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs space-y-3">
               <div className="flex items-start justify-between">
                 <div>
@@ -607,14 +632,14 @@ export default function StudentSummaryCard({
                 </div>
               </div>
 
-              {/* Akses Cepat Surat Tuntas */}
+              {/* ENH-1: Akses Cepat Capaian Tuntas (Juz & Surat Tuntas secara akurat) */}
               <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-1.5 text-slate-600 min-w-0">
-                  <span className="shrink-0">📖 Surat Tuntas:</span>
+                  <span className="shrink-0">📖 Capaian Tuntas:</span>
                   <strong className="text-emerald-700 font-bold shrink-0">
-                    {completedSurahsList.length} Surat
+                    {capaianTuntas.label}
                   </strong>
-                  {completedSurahsSummary && (
+                  {completedSurahsSummary && completedSurahsList.length > 0 && (
                     <span className="text-slate-400 truncate text-[11px] hidden sm:inline">
                       ({completedSurahsSummary})
                     </span>
@@ -633,7 +658,7 @@ export default function StudentSummaryCard({
               </div>
             </div>
 
-            {/* ── 2. Sesi Terakhir Murid (Ringkas / Subdued agar fokus tetap di capaian Juz) ── */}
+            {/* ── 2. Sesi Terakhir Murid (Hanya Sesi Kelas / Non-PR) ── */}
             <div className="bg-slate-50/70 p-3 rounded-2xl border border-slate-100 space-y-1">
               <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-1.5 min-w-0">
@@ -706,13 +731,25 @@ export default function StudentSummaryCard({
                       className="bg-white/90 p-2.5 rounded-xl border border-amber-200/70 text-xs flex items-center justify-between gap-2"
                     >
                       <div className="min-w-0">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           <strong className="text-slate-900 font-bold truncate">
                             {pr.surahName}
                           </strong>
                           <span className="text-slate-500 font-medium shrink-0">
                             ({pr.range})
                           </span>
+                          {/* ENH-2: Label Hafalan Baru vs Hafalan Lama */}
+                          {pr.type === "murajaah" && (
+                            <span
+                              className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded ${
+                                pr.ageCategory === "baru"
+                                  ? "bg-purple-100 text-purple-700 border border-purple-200"
+                                  : "bg-slate-100 text-slate-600 border border-slate-200"
+                              }`}
+                            >
+                              {pr.ageCategory === "baru" ? "🌱 Hafalan Baru" : "📜 Hafalan Lama"}
+                            </span>
+                          )}
                         </div>
                         <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500 flex-wrap">
                           <span>
@@ -776,7 +813,7 @@ export default function StudentSummaryCard({
               </div>
             )}
 
-            {/* ── 4. Notifikasi Batas Tercapai & Evaluasi (Eks-Milestone) ── */}
+            {/* ── 4. BUG-4: Notifikasi Batas Tercapai & Evaluasi Tasmi' dengan Tombol Dismiss ── */}
             {thresholdEvaluation && (
               <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border border-amber-300 rounded-2xl p-3 flex items-center justify-between gap-3 shadow-xs">
                 <div className="flex items-center gap-2.5 min-w-0">
@@ -790,13 +827,23 @@ export default function StudentSummaryCard({
                     </p>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleStartTeachingHafalan()}
-                  className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-xs transition shrink-0 whitespace-nowrap"
-                >
-                  {thresholdEvaluation.buttonText}
-                </button>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleStartTeachingHafalan()}
+                    className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-xs transition whitespace-nowrap"
+                  >
+                    {thresholdEvaluation.buttonText}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDismissTasmi(thresholdEvaluation.dismissKey)}
+                    className="p-1.5 text-amber-700 hover:text-amber-900 hover:bg-amber-100 rounded-lg transition"
+                    title="Tutup banner / sudah tasmi'"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
               </div>
             )}
 

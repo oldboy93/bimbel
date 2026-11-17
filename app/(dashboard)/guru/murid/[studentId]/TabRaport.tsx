@@ -16,6 +16,8 @@ import {
 import { Format } from "@/lib/helpers";
 import type { RaportEntry, RaportDataCalistung, RaportDataTahfidz, NilaiLevel } from "@/types/raport";
 import { NILAI_LABEL } from "@/types/raport";
+import { tampilRiwayatHafalan } from "@/services/hafalanService";
+import { generateAutoRaportDraft } from "@/lib/revisionHelpers";
 
 // Props
 interface TabRaportProps {
@@ -469,6 +471,27 @@ export default function TabRaport({ enrollmentId, guruId, classType }: TabRaport
     loadRaports();
   };
 
+  const handleOpenCreateRaport = async () => {
+    try {
+      if (classType === "tahfidz") {
+        const hList = await tampilRiwayatHafalan(enrollmentId).catch(() => []);
+        const draft = generateAutoRaportDraft({ classType: "tahfidz", hafalanList: hList });
+        setPeriod(draft.suggestedPeriod);
+        setFormData({
+          ...defaultTahfidz(),
+          hafalan_entries: draft.hafalanEntries,
+        });
+      } else {
+        const draft = generateAutoRaportDraft({ classType: "calistung", hafalanList: [] });
+        setPeriod(draft.suggestedPeriod);
+        setFormData(defaultCalistung());
+      }
+    } catch {
+      setPeriod(new Date().toLocaleDateString("id-ID", { month: "long", year: "numeric" }));
+    }
+    setShowForm(true);
+  };
+
   const handleDeleteClick = (raportId: string) => {
     setShowDeleteModal(raportId);
   };
@@ -476,16 +499,18 @@ export default function TabRaport({ enrollmentId, guruId, classType }: TabRaport
   const handleDeleteFinal = async () => {
     if (!showDeleteModal) return;
     const raportId = showDeleteModal;
+    const targetRaport = raports.find((r) => r.id === raportId);
+    const isPub = Boolean(targetRaport?.published_at);
 
     const { error } = await supabase.from("report_cards").delete().eq("id", raportId);
     setShowDeleteModal(null);
 
     if (error) {
-      showToast("Gagal menghapus draft: " + error.message, "error");
+      showToast("Gagal menghapus raport: " + error.message, "error");
       return;
     }
 
-    showToast("Draft raport berhasil dihapus.");
+    showToast(isPub ? "Raport resmi berhasil dihapus." : "Draft raport berhasil dihapus.");
     loadRaports();
   };
 
@@ -524,7 +549,7 @@ export default function TabRaport({ enrollmentId, guruId, classType }: TabRaport
         </div>
         {!showForm && (
           <button
-            onClick={() => setShowForm(true)}
+            onClick={handleOpenCreateRaport}
             className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-sm shadow-blue-200"
           >
             <Plus size={14} /> Buat Raport
@@ -626,9 +651,18 @@ export default function TabRaport({ enrollmentId, guruId, classType }: TabRaport
                     </>
                   )}
                   {r.published_at && (
-                    <span className="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
-                      <Eye size={10} /> Publik
-                    </span>
+                    <>
+                      <span className="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
+                        <Eye size={10} /> Publik
+                      </span>
+                      <button
+                        onClick={e => { e.stopPropagation(); handleDeleteClick(r.id); }}
+                        className="text-slate-300 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition"
+                        title="Hapus raport resmi ini"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </>
                   )}
                   {expandedId === r.id ? <ChevronUp size={15} className="text-slate-400" /> : <ChevronDown size={15} className="text-slate-400" />}
                 </div>
@@ -793,8 +827,14 @@ export default function TabRaport({ enrollmentId, guruId, classType }: TabRaport
                 <Trash2 size={24} />
               </div>
               <div>
-                <h4 className="font-black text-slate-800 text-sm">Hapus Draft Raport?</h4>
-                <p className="text-xs text-slate-500 mt-1 font-semibold leading-relaxed">Tindakan ini tidak dapat dibatalkan. Seluruh data draft raport ini akan dihapus permanen.</p>
+                <h4 className="font-black text-slate-800 text-sm">
+                  {raports.find((r) => r.id === showDeleteModal)?.published_at
+                    ? "Hapus Raport Resmi?"
+                    : "Hapus Draft Raport?"}
+                </h4>
+                <p className="text-xs text-slate-500 mt-1 font-semibold leading-relaxed">
+                  Tindakan ini tidak dapat dibatalkan. Raport ini akan dihapus permanen dari sistem.
+                </p>
               </div>
             </div>
             <div className="p-4 border-t border-slate-50 bg-slate-50/50 flex gap-3">
