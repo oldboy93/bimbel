@@ -189,6 +189,13 @@ export default function StudentSummaryCard({
 
   const latestPr = activePrList[0] || null;
 
+  // Sesi Muroja'ah Terkini Murid (mengutamakan sesi kelas non-PR)
+  const latestMurajaah = useMemo(() => {
+    const sorted = sortHafalanLatest(murajaahList);
+    const classSession = sorted.find((m) => !m.is_pr);
+    return classSession || sorted[0] || null;
+  }, [murajaahList]);
+
   // Jumlah sesi ngulang di surat yang sama (surat aktif)
   const ngulangCount = useMemo(() => {
     if (!latestHafalan) return 0;
@@ -632,28 +639,42 @@ export default function StudentSummaryCard({
                 </div>
               </div>
 
-              {/* ENH-1: Akses Cepat Capaian Tuntas (Juz & Surat Tuntas secara akurat) */}
+              {/* Sesi Muroja'ah Terkini Murid (Menggantikan Surat Tuntas) */}
               <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-1.5 text-slate-600 min-w-0">
-                  <span className="shrink-0">📖 Capaian Tuntas:</span>
-                  <strong className="text-emerald-700 font-bold shrink-0">
-                    {capaianTuntas.label}
-                  </strong>
-                  {completedSurahsSummary && completedSurahsList.length > 0 && (
-                    <span className="text-slate-400 truncate text-[11px] hidden sm:inline">
-                      ({completedSurahsSummary})
-                    </span>
+                  <span className="shrink-0 font-medium text-slate-500">🔄 Muroja&apos;ah:</span>
+                  {latestMurajaah ? (
+                    <>
+                      <strong className="text-slate-800 font-bold truncate">
+                        {latestMurajaah.surah_name}
+                      </strong>
+                      {latestMurajaah.ayat_or_page_range && (
+                        <span className="text-slate-500 truncate text-[11px]">
+                          ({(latestMurajaah.surah_number === 0 || latestMurajaah.surah_name.startsWith("Juz "))
+                            ? latestMurajaah.ayat_or_page_range.replace(/ayat/gi, "Hlm")
+                            : latestMurajaah.ayat_or_page_range})
+                        </span>
+                      )}
+                      <span
+                        className={`text-[10px] font-extrabold px-1.5 py-0.2 rounded shrink-0 ${
+                          latestMurajaah.quality === "lancar"
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            : "bg-amber-50 text-amber-700 border border-amber-200"
+                        }`}
+                      >
+                        {latestMurajaah.quality === "lancar" ? "Lancar" : "Perlu Bimbingan"}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-slate-400 italic text-[11px]">Belum ada sesi</span>
                   )}
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    setPetaFilter("selesai");
-                    setShowPetaModal(true);
-                  }}
-                  className="text-blue-600 hover:text-blue-700 font-bold inline-flex items-center gap-0.5 shrink-0 ml-2 hover:underline"
+                  onClick={() => onNavigateToSection("murajaah")}
+                  className="text-purple-600 hover:text-purple-700 font-bold inline-flex items-center gap-0.5 shrink-0 ml-2 hover:underline"
                 >
-                  Peta Surat <ChevronRight size={13} />
+                  Detail Muroja&apos;ah <ChevronRight size={13} />
                 </button>
               </div>
             </div>
