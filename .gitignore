@@ -41,6 +41,7 @@ next-env.d.ts
 /test_*.js
 /check_*.js
 /list_rpcs.js
+/scripts/check_*.js
 /scratch/
 /supabase/.temp/
 .env
